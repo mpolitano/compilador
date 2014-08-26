@@ -1,6 +1,6 @@
  
    
-/* ---------------Seccion de declaraciones preliminares--------------------*/
+/* ---------------Seccion de statament_star preliminares--------------------*/
 package compilador;
 
 /* Import the class java_cup.runtime.*  */
@@ -39,191 +39,152 @@ parser code {:
        de simbolos correspondiente. */
     public static void main(String[] args){
         try {
-            AnalizadorSintactico asin = new AnalizadorSintactico(
+            analizadorSintactico a = new AnalizadorSintactico(
                     new AnalizadorLexico( new FileReader(args[0])));
-            Object result = asin.parse().value;
+            Object result = a.parse().value;
             System.out.println("\n*** Resultados finales ***");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 :};
-   
 
-terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, 
-          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, MENORIG, 
-          MAYORIG, MAYOR, MENOR, NEGACION, SUMA,RESTA,MULT,DIVI,MOD, IGUALDAD,DISTINTO, 
-          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, FLOAT, 
-          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGSUMA,ASIG
-             
    
-/* ------------Declaracion de simbolos terminales y no terminales---------- */
+   
+/* ------------statament de simbolos terminales y no terminales---------- */
    
 /* Terminales (tokens obtenidos por el analizador lexico).  
 
    Terminales que no tienen un valor son listados primero, los terminales que
    tienen un valor como los enteros son listados en la segunda o demas lineas. */
 terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, 
-          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, MENORIG, 
-          MAYORIG, MAYOR, MENOR, NEGACION, SUMA,RESTA,MULT,DIVI,MOD, IGUALDAD,DISTINTO, 
+          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
+          HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
           PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, FLOAT, 
-          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGSUMA,ASIG,ASSIGRESTA,EXTERNINVK
+          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGPLUS,ASIG,ASSIGSUB,EXTERNINVK;
 
-non terminal program, un_metodo, metodos, un_atributo, type, un_atributo, atributos, 
+non terminal   non terminal program, field_decl_star, method_decl_star, field_decl, field_plus, field,method_decl
+              return_type, parameters, parameter_plus2, parameter_plus, block,statament_star, type, statament,
+              else_optional, expr_opcional, assing_op, method_call, expr_coma_optional, expresiones, expresiones2,
+              externinvk_opcional,externivks, externivks2, externinvk_arg, location, location2, expr,
+              bin_op, arit_op, rel_op, eq_op, literal;
 
    
 
 /* -------------Seccion de predencia y asociacion de los terminales----------- */
-   
-/*
-  Precedencia de los no terminales, no sirve con simbolos terminales.
-  Por eso no la usamos. Además indica si se asocia a izquierda o derecha.
-*/
-  /*precedence left OP_SUMA, OP_RESTA; 
-  precedence left OP_MULT;*/
-
+  
+precedence left EQUAL, AND, NEG, DIFFERENT;
+precedence left OR;
+precedence left HIGHER, LOWER, LOWEREQUAL, HIGHEREQUAL;
+precedence left PLUS, SUB;             
+precedence left MULT, DIVI, MOD;           
 
 /* ------------------- Seccion de la gramatica ------------------------ */
    
 /* La gramatica de nuestro analizador.*/
-program: 	CLASS ID LLAB atributos metodos LLCER 
 
 
-PROGRAM  ::= WCLASS ID LLL SET_FIELD_DECL SET_METHOD_DECL RLL ;
+start with program;
 
-SET_FIELD_DECL ::= FIELD_DECL SET_FIELD_DECL | /* LAMBDA */ ;
+program: 	CLASS ID LLAB field_decl_star method_decl_star LLCER ;
 
-SET_METHOD_DECL ::= METHOD_DECL SET_METHOD_DECL | /* LAMBDA */ ;
+field_decl_star ::= 	field_decl field_decl_star
+						          |;
 
-FIELD_DECL  ::= TYPE SET_COMPLETE_ID SEMICOLON ;
+field_decl ::=	type field_plus;
 
-SET_COMPLETE_ID ::= COMPLETE_ID SET_COMPLETE_ID | COMPLETE_ID ;
+field_plus::=	field field_plus| field;
 
-COMPLETE_ID ::= ID | ID LC INT RC COMMA ;
+field::=  ID field_2;
 
-METHOD_DECL ::= TYPE_RETURN ID LPAR PARAMETERS RPAR BLOCK ;
+field_2 ::=  ID CORAB INT CORCER COMA
+            |;
 
-PARAMETERS ::= SET_TYPE_ID | /*LAMBDA*/ ;
+method_decl_star ::=   method_decl method_decl_star
+                        |;
 
-SET_TYPE_ID ::= TYPE ID COMMA SET_TYPE_ID | TYPE ID ;
+method_decl: 	return_type ID PARENDER parameterS  PARENIZQ block;
 
-TYPE_RETURN ::= TYPE | WVOID ;
+return_type:	type
+			|VOID;
 
+parameterS:	parameter_plus 
+					|;
 
-atributos ::= 	un_atributo atributos
-						|
-						;
+parameter_plus:	parameter COMA parameter_plus | parameter
 
-metodos ::=	 un_metodo metodos
-						|
-						;
-
-un_atributo ::=	type campo_atributo
-			;
-
-campo_atributo::=	factor_atributo campo_atributo| factor_atributo
-					;
-
-factor_atributo::=  ID | ID CORAB INT CORCER COMA
-			;
-
-
-un_metodo: 	campo_metodo ID PARENDER campo_opcional_metodo  PARENIZQ block 
-				;
-
-campo_metodo:	type
-			|VOID
-			;
-
-campo_opcional_metodo:	campo2_metodo 
-					|
-					;
-
-campo2_metodo:	type ID campo2_metodo2
-					;
-
-campo2_metodo2:	COMA type ID campo2_metodo2
-						|
-						;
+parameter:	type ID
   
-block::=  LLAB atributos declaraciones LLCER
+block::=  LLAB field_decl_star statament_star LLCER;
 
-declaraciones::= declaracion declaraciones 
-						|
-						;
+statament_star::= statament statament_star 
+						|;
 
 
-type: ENTERO|STRING|FLOAT 
+type: ENTERO|STRING|literal_boolean;
 
-declaracion::= 	location asignacion expr PUNTOCOMA
-				| llamada_metodo PUNTOCOMA
-				| IF PARENIZQ expr PARENDER block else_opcional
-				| FOR ID ASIG expr COMA expr block
+literal_boolean ::= TRUE | FALSE;
+
+
+statament::= 	location assing_op expr PUNTOCOMA
+  				| method_call PUNTOCOMA
+  				| IF PARENIZQ expr PARENDER block else_optional
+  				| FOR ID ASSIG expr COMA expr block
 			    | WHILE expr block
-			    | RETURN expr_opcional PUNTOCOMA 
+			    | RETURN expr_optional PUNTOCOMA 
 			    | BREAK PUNTOCOMA
 			    | CONTINUE PUNTOCOMA
 			    | PUNTOCOMA
-			    | BLOCK PUNTOCOMA
+			    | BLOCK ;
 
 
-else_opcional ::= ELSE block
-					|
-					;
+else_optional ::= ELSE block
+					|;					
 
-expr_opcional ::=	expr
-					|
-					;
+expr_optional ::=	expr
+					|;
 
-asignacion ::= ASIG | ASIGSUMA | ASSIGRESTA
+assing_op ::= ASSIG | ASIGPLUS | ASSIGSUB;
 
-llamada_metodo ::= ID PARENIZQ expr_coma_opcional PARENDER
-					| EXTERNINVK PARENIZQ STRING COMA type externinvk_opcional PARENDER
+method_call ::= ID PARENIZQ expr_coma_optional PARENDER
+					| EXTERNINVK PARENIZQ STRING COMA return_type externinvk_opcional PARENDER;
 
 
-expr_coma_opcional ::= expresiones 
-						|
-						;
+expr_coma_optional ::= expr_plus 
+                    |;
 
-expresiones ::= expr expresiones2
+expr_plus ::= expr COMA expr_plus | expr
 
-expresiones2 ::= COMA expresiones2 expresiones2
-						|
-						;
 
-externinvk_opcional:  COMA externivks 
-					;
+externinvk_opcional:  COMA externivk_plus
+                      |;
 
-externivks:	COMA externinvk_arg externivks2
-				;
+externinvk_plus:	externinvk_arg COMA externinvk_plus | externinvk_arg;
 
-externivks2:   COMA externinvk_arg externivks2
-				|
-				;
+externinvk_arg::= expr | STRING;
 
-externinvk_arg::= expr | STRING
+location ::= ID location2;
 
-location ::= ID location2
-
-locatiaon2 ::= CORAB expr CORCER
-				|
-				;
+location2 ::= CORAB expr CORCER
+				|;
 
 expr ::= 		location
-				| llamada_metodo
-				| literal
-				| expr operador_bin expr
-			    | RESTA expr
+  				| method_call
+  				| literal
+  				| expr bin_op expr
+			    | SUB expr
 			    | NEG expr
-			    | PARENIZQ expr PARENDER
+			    | PARENIZQ expr PARENDER;
 
 
-operador_bin ::= operador_arit | operador_eq | operador_cond
+bin_op ::= arit_op | rel_op | eq_op | cond_op;
 
-operador_arit ::= SUMA|RESTA|MULT|DIVI|MOD
+arith_op ::= PLUS|SUB|MULT|DIVI|MOD;
 
-operador_eq ::= MAYOR|MAYORIG|MENOR|MENORIG
+rel_op ::= HIGHER|HIGHEREQUAL|LOWER|LOWEREQUAL;
 
-operador_cond ::= AND|OR
+eq_op ::= EQUAL | DIFFERENT
 
-literal ::= ENTERO|BOOLEAN|FLOAT
+cond_op ::= AND|OR;
+
+literal ::= ENTERO|BOOLEAN|FLOAT;

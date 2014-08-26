@@ -56,11 +56,11 @@ Salto = \n
 Espacio= {Salto} | [ \t ]
    
 
-Digito = [0-9]
-Float= Digito
-Letras = [a-zA-Z_]
+Digit = [0-9]
+//Float= Digit
+Alpha = [a-zA-Z_]
 ComentarioLinea= "//"
-
+%%
 <YYINITIAL> {
     /* Regresa que el token la palabra reservada. */
 
@@ -77,6 +77,7 @@ ComentarioLinea= "//"
     "true" { return symbol(sym.TRUE);  System.out.println (yytext())}
     "void" { return symbol(sym.VOID);  System.out.println (yytext())}
     "while" { return symbol(sym.WHILE);  System.out.println (yytext())}
+    "externivk" { return symbol(sym.EXTERNIVK);  System.out.println (yytext())}
 
       /* Comentarios, VER. */
     {ComentarioLinea} {System.out.println (yytext())}
@@ -85,27 +86,27 @@ ComentarioLinea= "//"
 
     /* Op_Aritemetico. */
 
-    "+" { return symbol(sym.SUMA);  System.out.println (yytext())}
-    "-" { return symbol(sym.RESTA);  System.out.println (yytext())}
+    "+" { return symbol(sym.PLUS);  System.out.println (yytext())}
+    "-" { return symbol(sym.SUB);  System.out.println (yytext())}
     "*" { return symbol(sym.MULT);  System.out.println (yytext())}
-    "/" { return symbol(sym.MULT);  System.out.println (yytext())}
+    "/" { return symbol(sym.DIV);  System.out.println (yytext())}
     "%" { return symbol(sym.MOD);  System.out.println (yytext())}
 
     //Operador Relacional
-    "<" { return symbol(sym.MENOR);  System.out.println (yytext())}
-    ">" { return symbol(sym.MAYOR);  System.out.println (yytext())}
-    ">=" { return symbol(sym.MAYORIG);  System.out.println (yytext())}
-    "<=" { return symbol(sym.MENORIG);  System.out.println (yytext())}
+    "<" { return symbol(sym.LOWER);  System.out.println (yytext())}
+    ">" { return symbol(sym.HIGHER);  System.out.println (yytext())}
+    ">=" { return symbol(sym.HIGHEREQUAL);  System.out.println (yytext())}
+    "<=" { return symbol(sym.LOWEREQUAL);  System.out.println (yytext())}
     
     //Operador relacional
-    "==" { return symbol(sym.IGUALDAD);  System.out.println (yytext())}  
-    "!=" { return symbol(sym.DISTINTO);  System.out.println (yytext())}
+    "==" { return symbol(sym.EQUAL);  System.out.println (yytext())}  
+    "!=" { return symbol(sym.DIFFERENT);  System.out.println (yytext())}
 
 
     //Asignaciones
-    "=" { return symbol(sym.ASIG);  System.out.println (yytext())}  
-    "=+" { return symbol(sym.ASIGSUMA);  System.out.println (yytext())}
-    "=-" { return symbol(sym.ASIGSUMA);  System.out.println (yytext())}
+    "=" { return symbol(sym.ASSIG);  System.out.println (yytext())}  
+    "=+" { return symbol(sym.ASSIGSUB);  System.out.println (yytext())}
+    "=-" { return symbol(sym.ASSIGPLUS);  System.out.println (yytext())}
 
     //Condicionales
     "&&" { return symbol(sym.AND);  System.out.println (yytext())}
@@ -130,15 +131,13 @@ ComentarioLinea= "//"
     "[" { return symbol(sym.CORCER);  System.out.println (yytext())}
 
 
+    //Identificador  
+    {Alpha} ({Alpha}|{Digit})* { return symbol(sym.ID);  System.out.println (yytext())}
 
-
- //Identificador  
-{Letra}({Letra}|{Digito})* { return symbol(sym.ID);  System.out.println (yytext())}
-
-//Literales
-{Digito}{Digito}* {return symbol(sym.ENTERO);  System.out.println (yytext())}
-{Digito}{Digito}*"."{Digito}{Digito}* {return symbol(sym.FLOAT);  System.out.println (yytext())}
-["]{Letras}*["] {return symbol(sym.STRING);  System.out.println (yytext())}
+    //Literales
+    {Digit}{Digit}* {return symbol(sym.ENTERO);  System.out.println (yytext())}
+    {Digit}{Digit}*"."{Digit}{Digit}* {return symbol(sym.FLOAT);  System.out.println (yytext())}
+    //["]{Alpha}*["] {return symbol(sym.STRING);  System.out.println (yytext())}
 }   
 
 .   { System.out.println ("ERROR"}                   
