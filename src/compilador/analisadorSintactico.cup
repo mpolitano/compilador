@@ -1,0 +1,229 @@
+ 
+   
+/* ---------------Seccion de declaraciones preliminares--------------------*/
+package compilador;
+
+/* Import the class java_cup.runtime.*  */
+import java_cup.runtime.*;
+import java.io.FileReader;
+   
+/* Codigo del parser, se copia integramente a la clase final.
+    Agregamos el manejo de errores. */
+parser code {:
+    
+    /* Reporte de error encontrado. */
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {                
+                m.append(" in line "+(s.left+1));
+                if (s.right >= 0)
+                    m.append(", column "+(s.right+1));
+            }
+        }
+        m.append(" : "+message);
+        System.err.println(m);
+    }
+   
+    /* Cuando se encuentra un error de donde el sistema no puede
+        recuperarse, se lanza un error fatal. Se despliega el mensaje
+        de error y se finaliza la ejecucion. */
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+
+    /* Metodo main para garantizar la ejecucion del analizador
+       lexico y sintactico, ademas que se pase como parametro la tabla
+       de simbolos correspondiente. */
+    public static void main(String[] args){
+        try {
+            AnalizadorSintactico asin = new AnalizadorSintactico(
+                    new AnalizadorLexico( new FileReader(args[0])));
+            Object result = asin.parse().value;
+            System.out.println("\n*** Resultados finales ***");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+:};
+   
+
+terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, 
+          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, MENORIG, 
+          MAYORIG, MAYOR, MENOR, NEGACION, SUMA,RESTA,MULT,DIVI,MOD, IGUALDAD,DISTINTO, 
+          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, FLOAT, 
+          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGSUMA,ASIG
+             
+   
+/* ------------Declaracion de simbolos terminales y no terminales---------- */
+   
+/* Terminales (tokens obtenidos por el analizador lexico).  
+
+   Terminales que no tienen un valor son listados primero, los terminales que
+   tienen un valor como los enteros son listados en la segunda o demas lineas. */
+terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, 
+          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, MENORIG, 
+          MAYORIG, MAYOR, MENOR, NEGACION, SUMA,RESTA,MULT,DIVI,MOD, IGUALDAD,DISTINTO, 
+          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, FLOAT, 
+          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGSUMA,ASIG,ASSIGRESTA,EXTERNINVK
+
+non terminal program, un_metodo, metodos, un_atributo, type, un_atributo, atributos, 
+
+   
+
+/* -------------Seccion de predencia y asociacion de los terminales----------- */
+   
+/*
+  Precedencia de los no terminales, no sirve con simbolos terminales.
+  Por eso no la usamos. Además indica si se asocia a izquierda o derecha.
+*/
+  /*precedence left OP_SUMA, OP_RESTA; 
+  precedence left OP_MULT;*/
+
+
+/* ------------------- Seccion de la gramatica ------------------------ */
+   
+/* La gramatica de nuestro analizador.*/
+program: 	CLASS ID LLAB atributos metodos LLCER 
+
+
+PROGRAM  ::= WCLASS ID LLL SET_FIELD_DECL SET_METHOD_DECL RLL ;
+
+SET_FIELD_DECL ::= FIELD_DECL SET_FIELD_DECL | /* LAMBDA */ ;
+
+SET_METHOD_DECL ::= METHOD_DECL SET_METHOD_DECL | /* LAMBDA */ ;
+
+FIELD_DECL  ::= TYPE SET_COMPLETE_ID SEMICOLON ;
+
+SET_COMPLETE_ID ::= COMPLETE_ID SET_COMPLETE_ID | COMPLETE_ID ;
+
+COMPLETE_ID ::= ID | ID LC INT RC COMMA ;
+
+METHOD_DECL ::= TYPE_RETURN ID LPAR PARAMETERS RPAR BLOCK ;
+
+PARAMETERS ::= SET_TYPE_ID | /*LAMBDA*/ ;
+
+SET_TYPE_ID ::= TYPE ID COMMA SET_TYPE_ID | TYPE ID ;
+
+TYPE_RETURN ::= TYPE | WVOID ;
+
+
+atributos ::= 	un_atributo atributos
+						|
+						;
+
+metodos ::=	 un_metodo metodos
+						|
+						;
+
+un_atributo ::=	type campo_atributo
+			;
+
+campo_atributo::=	factor_atributo campo_atributo| factor_atributo
+					;
+
+factor_atributo::=  ID | ID CORAB INT CORCER COMA
+			;
+
+
+un_metodo: 	campo_metodo ID PARENDER campo_opcional_metodo  PARENIZQ block 
+				;
+
+campo_metodo:	type
+			|VOID
+			;
+
+campo_opcional_metodo:	campo2_metodo 
+					|
+					;
+
+campo2_metodo:	type ID campo2_metodo2
+					;
+
+campo2_metodo2:	COMA type ID campo2_metodo2
+						|
+						;
+  
+block::=  LLAB atributos declaraciones LLCER
+
+declaraciones::= declaracion declaraciones 
+						|
+						;
+
+
+type: ENTERO|STRING|FLOAT 
+
+declaracion::= 	location asignacion expr PUNTOCOMA
+				| llamada_metodo PUNTOCOMA
+				| IF PARENIZQ expr PARENDER block else_opcional
+				| FOR ID ASIG expr COMA expr block
+			    | WHILE expr block
+			    | RETURN expr_opcional PUNTOCOMA 
+			    | BREAK PUNTOCOMA
+			    | CONTINUE PUNTOCOMA
+			    | PUNTOCOMA
+			    | BLOCK PUNTOCOMA
+
+
+else_opcional ::= ELSE block
+					|
+					;
+
+expr_opcional ::=	expr
+					|
+					;
+
+asignacion ::= ASIG | ASIGSUMA | ASSIGRESTA
+
+llamada_metodo ::= ID PARENIZQ expr_coma_opcional PARENDER
+					| EXTERNINVK PARENIZQ STRING COMA type externinvk_opcional PARENDER
+
+
+expr_coma_opcional ::= expresiones 
+						|
+						;
+
+expresiones ::= expr expresiones2
+
+expresiones2 ::= COMA expresiones2 expresiones2
+						|
+						;
+
+externinvk_opcional:  COMA externivks 
+					;
+
+externivks:	COMA externinvk_arg externivks2
+				;
+
+externivks2:   COMA externinvk_arg externivks2
+				|
+				;
+
+externinvk_arg::= expr | STRING
+
+location ::= ID location2
+
+locatiaon2 ::= CORAB expr CORCER
+				|
+				;
+
+expr ::= 		location
+				| llamada_metodo
+				| literal
+				| expr operador_bin expr
+			    | RESTA expr
+			    | NEG expr
+			    | PARENIZQ expr PARENDER
+
+
+operador_bin ::= operador_arit | operador_eq | operador_cond
+
+operador_arit ::= SUMA|RESTA|MULT|DIVI|MOD
+
+operador_eq ::= MAYOR|MAYORIG|MENOR|MENORIG
+
+operador_cond ::= AND|OR
+
+literal ::= ENTERO|BOOLEAN|FLOAT
