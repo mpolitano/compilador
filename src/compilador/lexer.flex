@@ -136,7 +136,7 @@ ComentarioLinea= "//"
 
     //Literales
     {Digit}{Digit}* {return symbol(sym.ENTERO);  System.out.println (yytext())}
-    {Digit}{Digit}*"."{Digit}{Digit}* {return symbol(sym.FLOAT);  System.out.println (yytext())}
+    {Digit} {Digit}* "." {Digit} {Digit}* {return symbol(sym.FLOAT);  System.out.println (yytext())}
     //["]{Alpha}*["] {return symbol(sym.STRING);  System.out.println (yytext())}
 }   
 

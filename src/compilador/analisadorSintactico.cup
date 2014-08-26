@@ -1,6 +1,6 @@
  
    
-/* ---------------Seccion de statament_star preliminares--------------------*/
+/* ---------------Seccion de STATAMENT_STAR preliminares--------------------*/
 package compilador;
 
 /* Import the class java_cup.runtime.*  */
@@ -51,140 +51,136 @@ parser code {:
 
    
    
-/* ------------statament de simbolos terminales y no terminales---------- */
+/* ------------STATAMENT de simbolos terminales y no terminales---------- */
    
 /* Terminales (tokens obtenidos por el analizador lexico).  
 
    Terminales que no tienen un valor son listados primero, los terminales que
    tienen un valor como los enteros son listados en la segunda o demas lineas. */
-terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, 
-          FALSE, FLOAT, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
+terminal  BOOLEAN, BREAK, CLASS, CONTINUE, ELSE, ENTERO,
+          FALSE, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
           HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
-          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, FLOAT, 
-          BOOLEAN, LLAB, LLCE, CORAB, CORCER, ID, STRING, FLOAT, ASIGPLUS,ASIG,ASSIGSUB,EXTERNINVK;
+          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, INT, 
+          LLAB, LLCER, CORAB, CORCER, ID, STRING, FLOAT, ASIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK;
 
-non terminal   non terminal program, field_decl_star, method_decl_star, field_decl, field_plus, field,method_decl
-              return_type, parameters, parameter_plus2, parameter_plus, block,statament_star, type, statament,
-              else_optional, expr_opcional, assing_op, method_call, expr_coma_optional, expresiones, expresiones2,
-              externinvk_opcional,externivks, externivks2, externinvk_arg, location, location2, expr,
-              bin_op, arit_op, rel_op, eq_op, literal;
-
+non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL, FIELD_PLUS, FIELD,METHOD_DECL, FIELD_2,
+              RETURN_TYPE, PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, TYPE, LITERAL_BOOLEAN, STATAMENT, ELSE_OPTIONAL,
+              EXPR_OPTIONAL, ASSING_OP, METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
+              LOCATION, LOCATION2, EXPR, BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL;
    
-
 /* -------------Seccion de predencia y asociacion de los terminales----------- */
   
 precedence left EQUAL, AND, NEG, DIFFERENT;
 precedence left OR;
 precedence left HIGHER, LOWER, LOWEREQUAL, HIGHEREQUAL;
 precedence left PLUS, SUB;             
-precedence left MULT, DIVI, MOD;           
+precedence left MULT, DIVI, MOD;         
 
 /* ------------------- Seccion de la gramatica ------------------------ */
    
 /* La gramatica de nuestro analizador.*/
 
 
-start with program;
+start with PROGRAM ;
 
-program: 	CLASS ID LLAB field_decl_star method_decl_star LLCER ;
+PROGRAM ::= CLASS ID LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER ;
 
-field_decl_star ::= 	field_decl field_decl_star
-						          |;
+FIELD_DECL_STAR ::= FIELD_DECL FIELD_DECL_STAR
+						          | ;
 
-field_decl ::=	type field_plus;
+FIELD_DECL  ::=	TYPE FIELD_PLUS ;
 
-field_plus::=	field field_plus| field;
+FIELD_PLUS ::=	FIELD FIELD_PLUS| FIELD ;
 
-field::=  ID field_2;
+FIELD ::=  ID FIELD_2 ;
 
-field_2 ::=  ID CORAB INT CORCER COMA
-            |;
+FIELD_2  ::= CORAB INT CORCER COMA
+            | ;
 
-method_decl_star ::=   method_decl method_decl_star
-                        |;
+METHOD_DECL_STAR  ::=   METHOD_DECL METHOD_DECL_STAR
+                        | ;
 
-method_decl: 	return_type ID PARENDER parameterS  PARENIZQ block;
+METHOD_DECL ::= 	RETURN_TYPE ID PARENDER PARAMETERS  PARENIZQ BLOCK ;
 
-return_type:	type
-			|VOID;
+RETURN_TYPE ::=	TYPE
+			|VOID ;
 
-parameterS:	parameter_plus 
-					|;
+PARAMETERS ::= PARAMETER_PLUS 
+					| ;
 
-parameter_plus:	parameter COMA parameter_plus | parameter
+PARAMETER_PLUS  ::=	PARAMETER COMA PARAMETER_PLUS | PARAMETER ;
 
-parameter:	type ID
+PARAMETER ::=	TYPE ID ;
   
-block::=  LLAB field_decl_star statament_star LLCER;
+BLOCK  ::=  LLAB FIELD_DECL_STAR STATAMENT_STAR LLCER ;
 
-statament_star::= statament statament_star 
-						|;
-
-
-type: ENTERO|STRING|literal_boolean;
-
-literal_boolean ::= TRUE | FALSE;
+STATAMENT_STAR  ::= STATAMENT STATAMENT_STAR 
+						| ;
 
 
-statament::= 	location assing_op expr PUNTOCOMA
-  				| method_call PUNTOCOMA
-  				| IF PARENIZQ expr PARENDER block else_optional
-  				| FOR ID ASSIG expr COMA expr block
-			    | WHILE expr block
-			    | RETURN expr_optional PUNTOCOMA 
+TYPE::= ENTERO|STRING|LITERAL_BOOLEAN ;
+
+LITERAL_BOOLEAN  ::= TRUE | FALSE ;
+
+
+STATAMENT ::= 	LOCATION ASSING_OP EXPR PUNTOCOMA
+  				| METHOD_CALL PUNTOCOMA
+  				| IF PARENIZQ EXPR PARENDER BLOCK ELSE_OPTIONAL
+  				| FOR ID ASSIG EXPR COMA EXPR BLOCK
+			    | WHILE EXPR BLOCK
+			    | RETURN EXPR_OPTIONAL PUNTOCOMA 
 			    | BREAK PUNTOCOMA
 			    | CONTINUE PUNTOCOMA
 			    | PUNTOCOMA
 			    | BLOCK ;
 
 
-else_optional ::= ELSE block
-					|;					
+ELSE_OPTIONAL  ::= ELSE BLOCK
+					| ;					
 
-expr_optional ::=	expr
-					|;
+EXPR_OPTIONAL  ::=	EXPR
+					| ;
 
-assing_op ::= ASSIG | ASIGPLUS | ASSIGSUB;
+ASSING_OP  ::= ASSIG | ASIGPLUS | ASSIGSUB ;
 
-method_call ::= ID PARENIZQ expr_coma_optional PARENDER
-					| EXTERNINVK PARENIZQ STRING COMA return_type externinvk_opcional PARENDER;
-
-
-expr_coma_optional ::= expr_plus 
-                    |;
-
-expr_plus ::= expr COMA expr_plus | expr
+METHOD_CALL  ::= ID PARENIZQ EXPR_COMA_OPTIONAL PARENDER
+					| EXTERNINVK PARENIZQ STRING COMA RETURN_TYPE EXTERNINVK_OPTIONAL PARENDER ;
 
 
-externinvk_opcional:  COMA externivk_plus
-                      |;
+EXPR_COMA_OPTIONAL  ::= EXPR_PLUS 
+                    | ;
 
-externinvk_plus:	externinvk_arg COMA externinvk_plus | externinvk_arg;
+EXPR_PLUS  ::= EXPR COMA EXPR_PLUS | EXPR ;
 
-externinvk_arg::= expr | STRING;
+EXTERNINVK_OPTIONAL ::= COMA EXTERNINVK_PLUS
+                      | ;
 
-location ::= ID location2;
+EXTERNINVK_PLUS ::=	EXTERNINVK_ARG COMA EXTERNINVK_PLUS | EXTERNINVK_ARG ;
 
-location2 ::= CORAB expr CORCER
+EXTERNINVK_ARG ::= EXPR | STRING ;
+
+LOCATION  ::= ID LOCATION2 ;
+
+LOCATION2  ::= CORAB EXPR CORCER
 				|;
 
-expr ::= 		location
-  				| method_call
-  				| literal
-  				| expr bin_op expr
-			    | SUB expr
-			    | NEG expr
-			    | PARENIZQ expr PARENDER;
+EXPR  ::= 		LOCATION
+  				| METHOD_CALL
+  				| LITERAL
+  				| EXPR BIN_OP EXPR
+			    | SUB EXPR
+			    | NEG EXPR
+			    | PARENIZQ EXPR PARENDER ;
 
 
-bin_op ::= arit_op | rel_op | eq_op | cond_op;
+BIN_OP  ::= ARITH_OP | REL_OP | EQ_OP | COND_OP ; 
 
-arith_op ::= PLUS|SUB|MULT|DIVI|MOD;
+ARITH_OP  ::= PLUS|SUB|MULT|DIVI|MOD ;
 
-rel_op ::= HIGHER|HIGHEREQUAL|LOWER|LOWEREQUAL;
+REL_OP  ::= HIGHER|HIGHEREQUAL|LOWER|LOWEREQUAL ;
 
-eq_op ::= EQUAL | DIFFERENT
+EQ_OP  ::= EQUAL | DIFFERENT ;
 
-cond_op ::= AND|OR;
+COND_OP  ::= AND|OR ;
 
-literal ::= ENTERO|BOOLEAN|FLOAT;
+LITERAL  ::= ENTERO|BOOLEAN|FLOAT ; 
