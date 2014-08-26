@@ -78,6 +78,7 @@ ComentarioLinea= "//"
     "void" { return symbol(sym.VOID);  System.out.println (yytext())}
     "while" { return symbol(sym.WHILE);  System.out.println (yytext())}
     "externivk" { return symbol(sym.EXTERNIVK);  System.out.println (yytext())}
+    "int" { return symbol(sym.INT);  System.out.println (yytext())}
 
       /* Comentarios, VER. */
     {ComentarioLinea} {System.out.println (yytext())}
@@ -135,9 +136,9 @@ ComentarioLinea= "//"
     {Alpha} ({Alpha}|{Digit})* { return symbol(sym.ID);  System.out.println (yytext())}
 
     //Literales
-    {Digit}{Digit}* {return symbol(sym.ENTERO);  System.out.println (yytext())}
+    {Digit}{Digit}* {return symbol(sym.TYPE_INT);  System.out.println (yytext())}
     {Digit} {Digit}* "." {Digit} {Digit}* {return symbol(sym.FLOAT);  System.out.println (yytext())}
-    //["]{Alpha}*["] {return symbol(sym.STRING);  System.out.println (yytext())}
+    {Alpha}* {return symbol(sym.STRING);  System.out.println (yytext())}
 }   
 
 .   { System.out.println ("ERROR"}                   
