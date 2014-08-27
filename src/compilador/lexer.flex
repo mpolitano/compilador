@@ -125,9 +125,9 @@ ComentarioLinea= "//"
     {Alpha} ({Alpha}|{Digit})* {System.out.println(yytext()); return  symbol(sym.ID);   }
 
     //Literales
-    {Digit}{Digit}* {return symbol(sym.INT);   }
-    {Digit} {Digit}* "." {Digit} {Digit}* {return symbol(sym.FLOAT);   }
-    {Alpha}* {return symbol(sym.STRING);   }
+    {Digit}{Digit}* {System.out.println(yytext()); return symbol(sym.INT);   }
+    {Digit} {Digit}* "." {Digit} {Digit}* {System.out.println(yytext()); return symbol(sym.FLOAT);   }
+    "\""{Alpha}*"\"" {System.out.println(yytext()); return symbol(sym.STRING);   }
   
     .   { System.out.println ("ERROR");}                   
 }
