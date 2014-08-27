@@ -1,0 +1,24 @@
+class test_if{
+
+int pruif(int b, int c ){
+	
+        float res[8];
+        int i;   
+
+	if(b > c) 
+		res[0] = 1 - c;         
+ 
+
+	return res[0];
+		
+}
+
+int main(){
+
+    externinvk("printf", int , pruif(4,8 ));
+    externinvk("printf", int);
+
+    
+}
+
+}

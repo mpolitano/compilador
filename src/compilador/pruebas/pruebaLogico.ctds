@@ -1,0 +1,11 @@
+class test_logicos{
+boolean a;
+int pruebaLogica(boolean i){
+                a = true;
+		return ( ((false || a ) && !true) && !i);
+	}
+
+int main(){
+    externinvk("printf", int , pruebaLogica(false));
+}
+}

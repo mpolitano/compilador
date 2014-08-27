@@ -1,15 +1,10 @@
-/* --------------------------Codigo de Usuario----------------------- */
-
-
 import java_cup.runtime.*;
 import java.io.Reader;
       
 %% //inicio de opciones
-   
-/* ------ Seccion de opciones y declaraciones de JFlex -------------- */  
-   
+      
 /* 
-    Cambiamos el nombre de la clase del analizador a Lexer
+    Nombre de la clase .java que crea
 */
 %class AnalizadorLexico
 
@@ -21,8 +16,7 @@ import java.io.Reader;
 %column
     
 /* 
-   Activamos la compatibilidad con Java CUP para analizadores
-   sintacticos(parser)
+   Activamos la compatibilidad con Java CUP
 */
 %cup
    
@@ -45,15 +39,13 @@ import java.io.Reader;
         return new Symbol(type, yyline, yycolumn, value);
     }
 %}
-   
-/*  Un salto de linea es un \n  */
-Salto = \n
-   
-Espacio= {Salto} | [ \t ]
-   
+    
+Espacio= [ \t\r\n ] 
 Digit = [0-9]
 Alpha = [a-zA-Z_]
-ComentarioLinea= "//"
+ASCII =  [!-z] //Todos los caracteres del codigo ASCII que consideramos validos.
+ComentarioLinea= "//".*\n 
+ComentarioBloque= "/*"(.|\n)*"*/"
 %%
 
 <YYINITIAL> {
@@ -72,12 +64,12 @@ ComentarioLinea= "//"
     "while" {System.out.println(yytext()); return  symbol(sym.WHILE);   }
     "externinvk" {System.out.println(yytext()); return  symbol(sym.EXTERNINVK);   }
 
-      /* Comentarios, VER. */
+    // Comentarios 
     {ComentarioLinea} { }
     {Espacio} { }
+    {ComentarioBloque} {}
 
-    /* Op_Aritemetico. */
-
+    //Op_Aritemetico. 
     "+" {System.out.println(yytext()); return  symbol(sym.PLUS);   }
     "-" {System.out.println(yytext()); return  symbol(sym.SUB);   }
     "*" {System.out.println(yytext()); return  symbol(sym.MULT);   }
@@ -118,8 +110,8 @@ ComentarioLinea= "//"
     //Llaves.
     "{" {System.out.println(yytext()); return  symbol(sym.LLAB);   }
     "}" {System.out.println(yytext()); return  symbol(sym.LLCER);   }
-    "]" {System.out.println(yytext()); return  symbol(sym.CORAB);   }
-    "[" {System.out.println(yytext()); return  symbol(sym.CORCER);   }
+    "[" {System.out.println(yytext()); return  symbol(sym.CORAB);   }
+    "]" {System.out.println(yytext()); return  symbol(sym.CORCER);   }
 
     //Identificador  
     {Alpha} ({Alpha}|{Digit})* {System.out.println(yytext()); return  symbol(sym.ID);   }
@@ -127,8 +119,9 @@ ComentarioLinea= "//"
     //Literales
     {Digit}{Digit}* {System.out.println(yytext()); return symbol(sym.INT);   }
     {Digit} {Digit}* "." {Digit} {Digit}* {System.out.println(yytext()); return symbol(sym.FLOAT);   }
-    "\""{Alpha}*"\"" {System.out.println(yytext()); return symbol(sym.STRING);   }
+    "\""{ASCII}*"\"" {System.out.println(yytext()); return symbol(sym.STRING);   }
   
+    //Otro es Error
     .   { System.out.println ("ERROR");}                   
 }
                           
