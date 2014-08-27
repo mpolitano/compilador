@@ -39,7 +39,7 @@ parser code {:
        de simbolos correspondiente. */
     public static void main(String[] args){
         try {
-            analizadorSintactico a = new AnalizadorSintactico(
+            Compilador a = new Compilador(
                     new AnalizadorLexico( new FileReader(args[0])));
             Object result = a.parse().value;
             System.out.println("\n*** Resultados finales ***");
