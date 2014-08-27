@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 import java.io.FileReader;
+
    
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -34,10 +35,10 @@ parser code {:
     public static void main(String[] args){
         try {
             parser a = new parser(
-            new AnalizadorLexico( new FileReader("metodos.ctds")));
+            new AnalizadorLexico( new FileReader("pruebas/metodos.ctds")));
             Object result = a.parse().value;
             System.out.println("---- Parser Completado ------");
-        } catch (Exception ex) {a
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
