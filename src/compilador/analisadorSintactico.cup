@@ -1,7 +1,7 @@
  
    
 /* ---------------Seccion de STATAMENT_STAR preliminares--------------------*/
-package compilador;
+
 
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
@@ -39,8 +39,8 @@ parser code {:
        de simbolos correspondiente. */
     public static void main(String[] args){
         try {
-            Compilador a = new Compilador(
-                    new AnalizadorLexico( new FileReader(args[0])));
+            parser a = new parser(
+            new AnalizadorLexico( new FileReader("prog.txt")));
             Object result = a.parse().value;
             System.out.println("\n*** Resultados finales ***");
         } catch (Exception ex) {
@@ -60,7 +60,7 @@ parser code {:
 terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
           HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
           PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, 
-          LLAB, LLCER, CORAB, CORCER, ID, STRING, FLOAT, ASIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK,RESERV_FLOAT,RESERV_INT, RESERV_BOOLEAN, INT;
+          LLAB, LLCER, CORAB, CORCER, ID, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK,RESERV_FLOAT,RESERV_INT, RESERV_BOOLEAN, INT;
 
 non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL, FIELD_PLUS, FIELD,METHOD_DECL,
               PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, TYPE, STATAMENT, ELSE_OPTIONAL,
@@ -138,7 +138,7 @@ ELSE_OPTIONAL  ::= ELSE BLOCK
 EXPR_OPTIONAL  ::=	EXPR
 					| ;
 
-ASSING_OP  ::= ASSIG | ASIGPLUS | ASSIGSUB ;
+ASSING_OP  ::= ASSIG | ASSIGPLUS | ASSIGSUB ;
 
 METHOD_CALL  ::= ID PARENIZQ EXPR_COMA_OPTIONAL PARENDER
 					| EXTERNINVK PARENIZQ STRING COMA VOID EXTERNINVK_OPTIONAL PARENDER 
