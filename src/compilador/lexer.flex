@@ -121,9 +121,9 @@ ComentarioLinea= "//"
     "," { return symbol(sym.COMA);  System.out.println (yytext())}
 
     //Tipos
-    "int" { return symbol(sym.INT);  System.out.println (yytext())}
-    "float" { return symbol(sym.FLOAT);  System.out.println (yytext())}
-    "boolean" { return symbol(sym.BOOLEAN);  System.out.println (yytext())}
+    "int" { return symbol(sym.INT_RESERV);  System.out.println (yytext())}
+    "float" { return symbol(sym.FLOAT_RESERV);  System.out.println (yytext())}
+    "boolean" { return symbol(sym.BOOLEAN_RESERV);  System.out.println (yytext())}
 
     //Llaves.
     "{" { return symbol(sym.LLAB);  System.out.println (yytext())}
