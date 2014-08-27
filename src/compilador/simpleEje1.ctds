@@ -1,5 +1,0 @@
-class Program {
-	int main(int a){
-   		 externinvk("printf", int , pruebaLogica(false));
-}
-	}
