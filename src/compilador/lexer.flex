@@ -88,8 +88,8 @@ ComentarioBloque= "/*"(.|\n)*"*/"
 
     //Asignaciones
     "=" {System.out.println(yytext()); return  symbol(sym.ASSIG);   }  
-    "=+" {System.out.println(yytext()); return  symbol(sym.ASSIGPLUS);   }
-    "=-" {System.out.println(yytext()); return  symbol(sym.ASSIGSUB);   }
+    "+=" {System.out.println(yytext()); return  symbol(sym.ASSIGPLUS);   }
+    "-=" {System.out.println(yytext()); return  symbol(sym.ASSIGSUB);   }
 
     //Condicionales
     "&&" {System.out.println(yytext()); return  symbol(sym.AND);   }

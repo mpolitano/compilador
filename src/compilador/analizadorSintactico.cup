@@ -35,7 +35,7 @@ parser code {:
     public static void main(String[] args){
         try {
             parser a = new parser(
-            new AnalizadorLexico( new FileReader("pruebas/metodos.ctds")));
+            new AnalizadorLexico( new FileReader("pruebas/ifAnidados.ctds")));
             Object result = a.parse().value;
             System.out.println("---- Parser Completado ------");
         } catch (Exception ex) {
