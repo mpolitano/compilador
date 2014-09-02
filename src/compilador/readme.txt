@@ -4,7 +4,7 @@ Necesitamos tener instalado Jflex y Cup.
 Se ejecuta:
 1º= jflex lexer.flex
 2º= cup AnalizadorSintactico.cup
-3º= export CLASSPATH:./usr/share/java/JFlex.jar:/usr/share/java/cup.jar
+3º=  export CLASSPATH=.:/usr/share/java/JFlex.jar:/usr/share/java/cup.jar
 4º= javac -d . sym.java parser.java AnalizadorLexico.java
 5º= java parserº
 
