@@ -43,7 +43,7 @@ import java.io.Reader;
 Espacio= [ \t\r\n ] 
 Digit = [0-9]
 Alpha = [a-zA-Z_]
-ASCII =  [!-z] //Todos los caracteres del codigo ASCII que consideramos validos.
+ASCII = [^"\""] //Todos los caracteres del codigo ASCII que consideramos validos.
 ComentarioLinea= "//".*\n 
 ComentarioBloque= "/*"(.|\n)*"*/"
 %%
