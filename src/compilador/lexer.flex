@@ -70,7 +70,6 @@ ComentarioLinea= "//".*\n
     //Ignoro espacios
     {Espacio} { }
 
-
     //Op_Aritemetico. 
     "+" {  return  symbol(sym.PLUS);   }
     "-" {  return  symbol(sym.SUB);   }
@@ -128,11 +127,11 @@ ComentarioLinea= "//".*\n
       throw new Error();}    
 }
 
-    <COMENTARIO> {
-         {Espacio}  {}
-        "*/"       {yybegin(YYINITIAL); }
-        .           {}
+<COMENTARIO> {
+     {Espacio}  {}
+    "*/"       {yybegin(YYINITIAL); }
+    .           {}
 
-     }
+ }
                      
                          
