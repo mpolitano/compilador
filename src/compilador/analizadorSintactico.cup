@@ -18,6 +18,7 @@ parser code {:
             }
         }
         m.append(" : "+message);
+        System.out.println(m + "  " + info.toString());
         System.err.println(m);
     }
    
@@ -26,6 +27,7 @@ parser code {:
         de error y se finaliza la ejecucion. */
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
+        System.out.println(message + "  " + info.toString());
         System.exit(1);
     }
 
@@ -39,7 +41,6 @@ parser code {:
             Object result = a.parse().value;
             System.out.println("---- Parser Completado ------");
         } catch (Exception ex) {
-            System.out.println("++ERROR PARSER++");
             ex.printStackTrace();
         }
     }
