@@ -45,84 +45,94 @@ Digit = [0-9]
 Alpha = [a-zA-Z_]
 ASCII = [^"\""] //Todos los caracteres del codigo ASCII que consideramos validos.
 ComentarioLinea= "//".*\n 
-ComentarioBloque= "/*"(.|\n)*"*/"
+%state COMENTARIO
 %%
 
 <YYINITIAL> {
     /* Regresa que el token la palabra reservada. */
 
     "break" {   return symbol(sym.BREAK);}
-    "class" {System.out.println(yytext()); return  symbol(sym.CLASS);   }
-    "continue" {System.out.println(yytext()); return  symbol(sym.CONTINUE);   }
-    "else" {System.out.println(yytext()); return  symbol(sym.ELSE);   }
-    "false" {System.out.println(yytext()); return  symbol(sym.FALSE);   }
-    "for" {System.out.println(yytext()); return  symbol(sym.FOR);   }
-    "if" {System.out.println(yytext()); return  symbol(sym.IF);   }
-    "return" {System.out.println(yytext()); return  symbol(sym.RETURN);   }
-    "true" {System.out.println(yytext()); return  symbol(sym.TRUE);   }
-    "void" {System.out.println(yytext()); return  symbol(sym.VOID);   }
-    "while" {System.out.println(yytext()); return  symbol(sym.WHILE);   }
-    "externinvk" {System.out.println(yytext()); return  symbol(sym.EXTERNINVK);   }
+    "class" {  return  symbol(sym.CLASS);   }
+    "continue" {  return  symbol(sym.CONTINUE);   }
+    "else" {  return  symbol(sym.ELSE);   }
+    "false" {  return  symbol(sym.FALSE);   }
+    "for" {  return  symbol(sym.FOR);   }
+    "if" {  return  symbol(sym.IF);   }
+    "return" {  return  symbol(sym.RETURN);   }
+    "true" {  return  symbol(sym.TRUE);   }
+    "void" {  return  symbol(sym.VOID);   }
+    "while" {  return  symbol(sym.WHILE);   }
+    "externinvk" {  return  symbol(sym.EXTERNINVK);   }
 
     // Comentarios 
     {ComentarioLinea} { }
+
+    //Ignoro espacios
     {Espacio} { }
-    {ComentarioBloque} {}
+
 
     //Op_Aritemetico. 
-    "+" {System.out.println(yytext()); return  symbol(sym.PLUS);   }
-    "-" {System.out.println(yytext()); return  symbol(sym.SUB);   }
-    "*" {System.out.println(yytext()); return  symbol(sym.MULT);   }
-    "/" {System.out.println(yytext()); return  symbol(sym.DIVI);   }
-    "%" {System.out.println(yytext()); return  symbol(sym.MOD);   }
+    "+" {  return  symbol(sym.PLUS);   }
+    "-" {  return  symbol(sym.SUB);   }
+    "*" {  return  symbol(sym.MULT);   }
+    "/" {  return  symbol(sym.DIVI);   }
+    "%" {  return  symbol(sym.MOD);   }
 
     //Operador Relacional
-    "<" {System.out.println(yytext()); return  symbol(sym.LOWER);   }
-    ">" {System.out.println(yytext()); return  symbol(sym.HIGHER);   }
-    ">=" {System.out.println(yytext()); return  symbol(sym.HIGHEREQUAL);   }
-    "<=" {System.out.println(yytext()); return  symbol(sym.LOWEREQUAL);   }
+    "<" {  return  symbol(sym.LOWER);   }
+    ">" {  return  symbol(sym.HIGHER);   }
+    ">=" {  return  symbol(sym.HIGHEREQUAL);   }
+    "<=" {  return  symbol(sym.LOWEREQUAL);   }
     
     //Operador relacional
-    "==" {System.out.println(yytext()); return  symbol(sym.EQUAL);   }  
-    "!=" {System.out.println(yytext()); return  symbol(sym.DIFFERENT);   }
+    "==" {  return  symbol(sym.EQUAL);   }  
+    "!=" {  return  symbol(sym.DIFFERENT);   }
 
     //Asignaciones
-    "=" {System.out.println(yytext()); return  symbol(sym.ASSIG);   }  
-    "+=" {System.out.println(yytext()); return  symbol(sym.ASSIGPLUS);   }
-    "-=" {System.out.println(yytext()); return  symbol(sym.ASSIGSUB);   }
+    "=" {  return  symbol(sym.ASSIG);   }  
+    "+=" {  return  symbol(sym.ASSIGPLUS);   }
+    "-=" {  return  symbol(sym.ASSIGSUB);   }
 
     //Condicionales
-    "&&" {System.out.println(yytext()); return  symbol(sym.AND);   }
-    "||" {System.out.println(yytext()); return  symbol(sym.OR);   }
-     "!" {System.out.println(yytext()); return  symbol(sym.NEG);   }
+    "&&" {  return  symbol(sym.AND);   }
+    "||" {  return  symbol(sym.OR);   }
+     "!" {  return  symbol(sym.NEG);   }
 
     //Delimitadores
-    "(" {System.out.println(yytext()); return  symbol(sym.PARENIZQ);   }
-    ")" {System.out.println(yytext()); return  symbol(sym.PARENDER);   }
-    ";" {System.out.println(yytext()); return  symbol(sym.PUNTOCOMA);   }
-    "," {System.out.println(yytext()); return  symbol(sym.COMA);   }
+    "(" {  return  symbol(sym.PARENIZQ);   }
+    ")" {  return  symbol(sym.PARENDER);   }
+    ";" {  return  symbol(sym.PUNTOCOMA);   }
+    "," {  return  symbol(sym.COMA);   }
 
     //Tipos
-    "int" {System.out.println(yytext()); return  symbol(sym.RESERV_INT);   }
-    "float" {System.out.println(yytext()); return  symbol(sym.RESERV_FLOAT);   }
-    "boolean" {System.out.println(yytext()); return  symbol(sym.RESERV_BOOLEAN);   }
+    "int" {  return  symbol(sym.RESERV_INT);   }
+    "float" {  return  symbol(sym.RESERV_FLOAT);   }
+    "boolean" {  return  symbol(sym.RESERV_BOOLEAN);   }
 
     //Llaves.
-    "{" {System.out.println(yytext()); return  symbol(sym.LLAB);   }
-    "}" {System.out.println(yytext()); return  symbol(sym.LLCER);   }
-    "[" {System.out.println(yytext()); return  symbol(sym.CORAB);   }
-    "]" {System.out.println(yytext()); return  symbol(sym.CORCER);   }
+    "{" {  return  symbol(sym.LLAB);   }
+    "}" {  return  symbol(sym.LLCER);   }
+    "[" {  return  symbol(sym.CORAB);   }
+    "]" {  return  symbol(sym.CORCER);   }
 
     //Identificador  
-    {Alpha} ({Alpha}|{Digit})* {System.out.println(yytext()); return  symbol(sym.ID);   }
+    {Alpha} ({Alpha}|{Digit})* {  return  symbol(sym.ID);   }
 
     //Literales
-    {Digit}{Digit}* {System.out.println(yytext()); return symbol(sym.INT);   }
-    {Digit} {Digit}* "." {Digit} {Digit}* {System.out.println(yytext()); return symbol(sym.FLOAT);   }
-    "\""{ASCII}*"\"" {System.out.println(yytext()); return symbol(sym.STRING);   }
-  
-    //Otro es Error
-    .   { System.out.println ("ERROR");}                   
-}
-                          
+    {Digit}{Digit}* {  return symbol(sym.INT);   }
+    {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT);   }
+    "\""{ASCII}*"\"" {  return symbol(sym.STRING);   }
+    "/*"        {yybegin(COMENTARIO);     }
 
+      .   {   System.out.println ("Caracter ilegal!!!   " + yytext() + " en linea " + yyline + " columna " + yycolumn);
+      throw new Error();}    
+}
+
+    <COMENTARIO> {
+         {Espacio}  {}
+        "*/"       {yybegin(YYINITIAL); }
+        .           {}
+
+     }
+                     
+                         
