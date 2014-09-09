@@ -1,10 +1,29 @@
 import java_cup.runtime.*;
 import java.io.FileReader;
 
-   
+//{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
-parser code {:
+
+action code {:
+    // Symbol table
+    public SymbolTable symTable= new SymbolTable();
+    
+    public boolean inMethodDecl;
+
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof Information) {
+                m.append(" in line "+ (((Information)info).line+1));
+                m.append(", column "+ (((Information)info).col+1));
+        }
+        m.append(" : "+message);
+        System.out.println(m + " " + ((Information)info).name);
+        System.exit(1); //Interrumpo la ejecucion
+    }
+:}
+
+parser code{:
     
     /* Reporte de error encontrado. Modificamos */
     public void report_error(String message, Object info) {
@@ -36,7 +55,17 @@ parser code {:
             ex.printStackTrace();
         }
     }
-:};
+
+:}
+
+init with {: 
+/*
+               symTable= new SymbolTable();
+               symTable.pushLevel(); 
+               inMethodDecl= false;
+*/               
+             
+          :}
 
   
    
@@ -45,13 +74,15 @@ parser code {:
 terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
           HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
           PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, 
-          LLAB, LLCER, CORAB, CORCER, ID, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK,RESERV_FLOAT,RESERV_INT, RESERV_BOOLEAN, INT;
+          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK,RESERV_FLOAT,RESERV_INT, RESERV_BOOLEAN, INT;
+
+terminal Information ID;
 
 // No Terminales (producciones).  
 non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL, FIELD_PLUS, FIELD,METHOD_DECL,
               PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, TYPE, STATAMENT, ELSE_OPTIONAL,
               EXPR_OPTIONAL, ASSING_OP, METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
-              LOCATION, LOCATION2, EXPR, BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN;
+              LOCATION, LOCATION2, EXPR, BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN, PRUEBA;
    
 // -------------Seccion de predencia y asociacion de los terminales----------- 
   
@@ -67,7 +98,12 @@ precedence left TRUE, FALSE;
 // La gramatica 
 
 
-start with PROGRAM ;
+start with PRUEBA ;
+
+PRUEBA ::=     {:symTable= new SymbolTable();
+               symTable.pushLevel(); 
+               inMethodDecl= false;:} PROGRAM;
+
 
 PROGRAM ::=             CLASS ID LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER 
               					| CLASS ID LLAB METHOD_DECL_STAR LLCER;
@@ -80,15 +116,34 @@ FIELD_DECL  ::=	        TYPE FIELD_PLUS;
 FIELD_PLUS ::=	        FIELD COMA  FIELD_PLUS 
                         | FIELD PUNTOCOMA;
 
-FIELD ::=               ID CORAB INT CORCER
-					             |ID;
+FIELD ::=               ID:ide {: 
+                                  if(!symTable.addSymbolToLevel(ide)){
+                                    report_error("Symbol Redefine: ", ide);          
+                                  }
+                                :} CORAB INT CORCER
+					             |ID:ide {:
+                                  if (!symTable.addSymbolToLevel(ide)){
+                                    report_error("Symbol Redefine: ",ide);
+                                  }
+                                :};
 
 
 METHOD_DECL_STAR  ::=   METHOD_DECL METHOD_DECL_STAR
                         | ;
 
-METHOD_DECL ::= 	       TYPE ID PARENIZQ PARAMETERS  PARENDER BLOCK
-                        | VOID ID PARENIZQ PARAMETERS  PARENDER BLOCK ;
+METHOD_DECL ::= 	       TYPE ID:ide 
+                         {:
+                          inMethodDecl=true; //Set true flag inMethodDecl for drive levels
+                          symTable.addSymbolToLevel(ide);//add symbol to current level for forbid declarate other symbol with same name
+                          symTable.pushLevel();//push this method's level
+                          symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                        :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:}
+                        | VOID ID:ide {:
+                                        symTable.pushLevel();
+                                        if(!symTable.addSymbolToLevel(ide)){
+                                           throw new Error("ERROR Symbol Table");          
+                                        }
+                                      :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:};
 
 
 PARAMETERS ::=            PARAMETER_PLUS
@@ -99,11 +154,11 @@ PARAMETER_PLUS  ::=     PARAMETER COMA PARAMETER_PLUS
                         | PARAMETER ;
 
 
-PARAMETER ::=	          TYPE ID ;
+PARAMETER ::=	          TYPE ID:ide {:symTable.addSymbolToLevel(ide);:} ;
   
 
-BLOCK  ::=              LLAB FIELD_DECL_STAR STATAMENT_STAR LLCER
-                        |LLAB STATAMENT_STAR LLCER;
+BLOCK  ::=              LLAB  {: if(!inMethodDecl){symTable.pushLevel();} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :}
+                        |LLAB {: if(!inMethodDecl){symTable.pushLevel();} :} STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :};
 
 
 STATAMENT_STAR  ::=     STATAMENT STATAMENT_STAR 

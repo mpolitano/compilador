@@ -26,7 +26,7 @@ import java.io.Reader;
     El codigo entre %{  y %} sera copiado integramente en el 
     analizador generado.
 */
-%{
+%{    
     /*  Generamos un java_cup.Symbol para guardar el tipo de token 
         encontrado */
     private Symbol symbol(int type) {
@@ -69,6 +69,7 @@ ComentarioLinea= "//".*\n
 
     //Ignoro espacios
     {Espacio} { }
+
 
     //Op_Aritemetico. 
     "+" {  return  symbol(sym.PLUS);   }
@@ -115,7 +116,9 @@ ComentarioLinea= "//".*\n
     "]" {  return  symbol(sym.CORCER);   }
 
     //Identificador  
-    {Alpha} ({Alpha}|{Digit})* {  return  symbol(sym.ID);   }
+    {Alpha} ({Alpha}|{Digit})* {Information value= new Information(yytext(),0,0,yyline,yycolumn);
+                                return symbol(sym.ID,value);   
+                                }
 
     //Literales
     {Digit}{Digit}* {  return symbol(sym.INT);   }
@@ -127,11 +130,11 @@ ComentarioLinea= "//".*\n
       throw new Error();}    
 }
 
-<COMENTARIO> {
-     {Espacio}  {}
-    "*/"       {yybegin(YYINITIAL); }
-    .           {}
+    <COMENTARIO> {
+         {Espacio}  {}
+        "*/"       {yybegin(YYINITIAL); }
+        .           {}
 
- }
+     }
                      
                          
