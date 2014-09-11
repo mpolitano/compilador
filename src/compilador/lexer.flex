@@ -127,7 +127,7 @@ ComentarioLinea= "//".*\n
     "/*"        {yybegin(COMENTARIO);     }
 
       .   {   System.out.println ("Caracter ilegal!!!   " + yytext() + " en linea " + yyline + " columna " + yycolumn);
-      throw new Error();}    
+      }    
 }
 
     <COMENTARIO> {

@@ -10,6 +10,7 @@ action code {:
     public SymbolTable symTable= new SymbolTable();
     
     public boolean inMethodDecl;
+    public int cantMain;
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
@@ -102,11 +103,20 @@ start with PRUEBA ;
 
 PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
-               inMethodDecl= false;:} PROGRAM;
+               inMethodDecl= false;
+               cantMain=0;:} PROGRAM;
 
 
-PROGRAM ::=             CLASS ID LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER 
-              					| CLASS ID LLAB METHOD_DECL_STAR LLCER;
+PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER {: 
+                                  if(cantMain==0){
+                                    report_error("Missing Main ", ide);          
+                                  }
+                                :}
+              					| CLASS ID:ide LLAB METHOD_DECL_STAR LLCER{: 
+                                  if(cantMain==0){
+                                    report_error("Missing Main ", ide);          
+                                  }
+                                :};
 
 FIELD_DECL_STAR ::=     FIELD_DECL_STAR FIELD_DECL
                         | FIELD_DECL;
@@ -133,16 +143,31 @@ METHOD_DECL_STAR  ::=   METHOD_DECL METHOD_DECL_STAR
 
 METHOD_DECL ::= 	       TYPE ID:ide 
                          {:
+                          if (ide.name.equals("main")){
+                            cantMain++;
+                          }
+                          if (ide.name.equals("main")){
+                            cantMain++;
+                          }
                           inMethodDecl=true; //Set true flag inMethodDecl for drive levels
-                          symTable.addSymbolToLevel(ide);//add symbol to current level for forbid declarate other symbol with same name
+                          if(!symTable.addSymbolToLevel(ide)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                            report_error("Method Redefine: ",ide);
+                          }
                           symTable.pushLevel();//push this method's level
                           symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                          symTable.pushLevel();
                         :} PARENIZQ PARAMETERS  PARENDER BLOCK
                         | VOID ID:ide {:
-                                        symTable.pushLevel();
-                                        if(!symTable.addSymbolToLevel(ide)){
-                                           throw new Error("ERROR Symbol Table");          
+                                        if (ide.name.equals("main")){
+                                          cantMain++;
                                         }
+                                        inMethodDecl=true; //Set true flag inMethodDecl for drive levels
+                                        if(!symTable.addSymbolToLevel(ide)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                                          report_error("Method Redefine: ",ide);
+                                        }
+                                        symTable.pushLevel();//push this method's level
+                                        symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                                        symTable.pushLevel();
                                       :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:};
 
 
@@ -156,8 +181,8 @@ PARAMETER_PLUS  ::=     PARAMETER COMA PARAMETER_PLUS
 
 PARAMETER ::=	          TYPE ID:ide {:symTable.addSymbolToLevel(ide);:} ;
   
-BLOCK  ::=              LLAB  {: System.out.println(symTable.toString()); if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :}
-                        |LLAB {: System.out.println(symTable.toString()); if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :};
+BLOCK  ::=              LLAB  {:  if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {: symTable.popLevel(); :}
+                        |LLAB {:if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} STATAMENT_STAR LLCER {: symTable.popLevel(); :};
 
 
 STATAMENT_STAR  ::=     STATAMENT STATAMENT_STAR 
