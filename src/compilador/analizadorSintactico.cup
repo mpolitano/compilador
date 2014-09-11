@@ -120,7 +120,7 @@ FIELD ::=               ID:ide {:
                                   if(!symTable.addSymbolToLevel(ide)){
                                     report_error("Symbol Redefine: ", ide);          
                                   }
-                                :} CORAB INT CORCER
+                                :} CORAB INT CORCER //Debo chequear que INT sea > 0
 					             |ID:ide {:
                                   if (!symTable.addSymbolToLevel(ide)){
                                     report_error("Symbol Redefine: ",ide);
@@ -137,7 +137,7 @@ METHOD_DECL ::= 	       TYPE ID:ide
                           symTable.addSymbolToLevel(ide);//add symbol to current level for forbid declarate other symbol with same name
                           symTable.pushLevel();//push this method's level
                           symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
-                        :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:}
+                        :} PARENIZQ PARAMETERS  PARENDER BLOCK
                         | VOID ID:ide {:
                                         symTable.pushLevel();
                                         if(!symTable.addSymbolToLevel(ide)){
@@ -156,9 +156,8 @@ PARAMETER_PLUS  ::=     PARAMETER COMA PARAMETER_PLUS
 
 PARAMETER ::=	          TYPE ID:ide {:symTable.addSymbolToLevel(ide);:} ;
   
-
-BLOCK  ::=              LLAB  {: if(!inMethodDecl){symTable.pushLevel();} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :}
-                        |LLAB {: if(!inMethodDecl){symTable.pushLevel();} :} STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :};
+BLOCK  ::=              LLAB  {: System.out.println(symTable.toString()); if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :}
+                        |LLAB {: System.out.println(symTable.toString()); if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} STATAMENT_STAR LLCER {:System.out.println(symTable.toString()); symTable.popLevel(); :};
 
 
 STATAMENT_STAR  ::=     STATAMENT STATAMENT_STAR 
@@ -213,9 +212,9 @@ EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG COMA EXTERNINVK_PLUS
 
 EXTERNINVK_ARG ::=       EXPR | STRING ;
 
-LOCATION  ::=           ID LOCATION2 ;
+LOCATION  ::=           ID LOCATION2 ; //Debo verifificar que ID este en SymbolTable
 
-LOCATION2  ::=          CORAB EXPR CORCER
+LOCATION2  ::=          CORAB EXPR CORCER 
 				                |;
 
 EXPR  ::= 		          LOCATION
