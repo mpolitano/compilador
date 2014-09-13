@@ -1,6 +1,6 @@
 import java_cup.runtime.*;
 import java.io.Reader;
-      
+import ir.ast.*;      
 %% //inicio de opciones
       
 /* 
@@ -60,7 +60,6 @@ ComentarioLinea= "//".*\n
     "if" {  return  symbol(sym.IF);   }
     "return" {  return  symbol(sym.RETURN);   }
     "true" {  return  symbol(sym.TRUE);   }
-    "void" {  return  symbol(sym.VOID);   }
     "while" {  return  symbol(sym.WHILE);   }
     "externinvk" {  return  symbol(sym.EXTERNINVK);   }
 
@@ -105,10 +104,11 @@ ComentarioLinea= "//".*\n
     "," {  return  symbol(sym.COMA);   }
 
     //Tipos
-    "int" {  return  symbol(sym.RESERV_INT);   }
-    "float" {  return  symbol(sym.RESERV_FLOAT);   }
-    "boolean" {  return  symbol(sym.RESERV_BOOLEAN);   }
-
+    "int" {Type t=Type.INT; return symbol(sym.RESERV_INT,t);}
+    "float" {Type t=Type.FLOAT; return symbol(sym.RESERV_FLOAT,t);}
+    "boolean" {Type t=Type.BOOLEAN; return symbol(sym.RESERV_BOOLEAN,t);}
+    "void" {  Type t= Type.VOID; return  symbol(sym.VOID,t); }
+    
     //Llaves.
     "{" {  return  symbol(sym.LLAB);   }
     "}" {  return  symbol(sym.LLCER);   }
@@ -116,12 +116,12 @@ ComentarioLinea= "//".*\n
     "]" {  return  symbol(sym.CORCER);   }
 
     //Identificador  
-    {Alpha} ({Alpha}|{Digit})* {Information value= new Information(yytext(),0,0,yyline,yycolumn);
+    {Alpha} ({Alpha}|{Digit})* {VarLocation value= new VarLocation(yytext(),yyline,yycolumn,-1);
                                 return symbol(sym.ID,value);   
                                 }
 
     //Literales
-    {Digit}{Digit}* {  return symbol(sym.INT);   }
+    {Digit}{Digit}* {  return symbol(sym.INT,new IntLiteral(yytext()));   }
     {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT);   }
     "\""{ASCII}*"\"" {  return symbol(sym.STRING);   }
     "/*"        {yybegin(COMENTARIO);     }

@@ -1,6 +1,7 @@
 import java_cup.runtime.*;
 import java.io.FileReader;
-
+import ir.ast.*;
+import java.util.*;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -11,15 +12,16 @@ action code {:
     
     public boolean inMethodDecl;
     public int cantMain;
+    private LinkedList<Location> identifierList;
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
-        if (info instanceof Information) {
-                m.append(" in line "+ (((Information)info).line+1));
-                m.append(", column "+ (((Information)info).col+1));
+        if (info instanceof Location) {
+                m.append(" in line "+ (((Location)info).getLineNumber()+1));
+                m.append(", column "+ (((Location)info).getColumnNumber()+1));
         }
         m.append(" : "+message);
-        System.out.println(m + " " + ((Information)info).name);
+        System.out.println(m + " " + ((Location)info).getId());
         System.exit(1); //Interrumpo la ejecucion
     }
 :}
@@ -72,19 +74,24 @@ init with {:
    
 // Terminales (tokens obtenidos por el analizador lexico).  
 
-terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, VOID, WHILE, LOWEREQUAL, 
+terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, WHILE, LOWEREQUAL, 
           HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
           PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, 
-          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK,RESERV_FLOAT,RESERV_INT, RESERV_BOOLEAN, INT;
+          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK;
 
-terminal Information ID;
-
+terminal Location ID;
+terminal Type RESERV_BOOLEAN, RESERV_INT, RESERV_FLOAT, VOID;
+terminal IntLiteral INT;
 // No Terminales (producciones).  
-non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL, FIELD_PLUS, FIELD,METHOD_DECL,
-              PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, TYPE, STATAMENT, ELSE_OPTIONAL,
+non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL,METHOD_DECL,
+              PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, STATAMENT, ELSE_OPTIONAL,
               EXPR_OPTIONAL, ASSING_OP, METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
               LOCATION, LOCATION2, EXPR, BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN, PRUEBA;
-   
+
+non terminal Type TYPE;
+non terminal LinkedList<Location> FIELD_PLUS;   
+non terminal Location FIELD; 
+
 // -------------Seccion de predencia y asociacion de los terminales----------- 
   
 precedence left EQUAL, AND, NEG, DIFFERENT;
@@ -104,7 +111,8 @@ start with PRUEBA ;
 PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
-               cantMain=0;:} PROGRAM;
+               cantMain=0;
+               identifierList=new LinkedList<Location>(); :} PROGRAM;
 
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER {: 
@@ -121,32 +129,43 @@ PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER
 FIELD_DECL_STAR ::=     FIELD_DECL_STAR FIELD_DECL
                         | FIELD_DECL;
 
-FIELD_DECL  ::=	        TYPE FIELD_PLUS;
+FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
+                                                for (Location id:decl){
+                                                  if(id instanceof VarLocation){ 
+                                                    id.setType(t);                       
+                                                  }else{//id instance of ArrayLocation
+                                                    switch(t){
+                                                      case INT:
+                                                        id.setType(Type.INTARRAY);
+                                                      case BOOLEAN:
+                                                        id.setType(Type.BOOLEANARRAY);
+                                                      case FLOAT:
+                                                        id.setType(Type.FLOATARRAY);        
+                                                    }
+                                                  } 
+                                                  if(!symTable.addSymbolToLevel(id)){
+                                                    report_error("Symbol Redefine: ", id);          
+                                                  } 
+                                                }
+                                                decl=new LinkedList<Location>(); //Clean list for next fiels declaration 
+                                               :};
 
-FIELD_PLUS ::=	        FIELD COMA  FIELD_PLUS 
-                        | FIELD PUNTOCOMA;
+FIELD_PLUS ::=	        FIELD:f {:identifierList.add(f);:}COMA  FIELD_PLUS 
+                        | FIELD:f PUNTOCOMA {:identifierList.add(f); RESULT=identifierList;:};
 
-FIELD ::=               ID:ide {: 
-                                  if(!symTable.addSymbolToLevel(ide)){
-                                    report_error("Symbol Redefine: ", ide);          
-                                  }
-                                :} CORAB INT CORCER //Debo chequear que INT sea > 0
-					             |ID:ide {:
-                                  if (!symTable.addSymbolToLevel(ide)){
-                                    report_error("Symbol Redefine: ",ide);
-                                  }
-                                :};
+FIELD ::=               ID:ide CORAB INT:i CORCER {:RESULT= new ArrayLocation(ide.getId(),ide.getLineNumber(),ide.getColumnNumber(),ide.getBlockId(),i);:} //define a array's identifier
+					              |ID:ide {: RESULT=ide; :};
 
 
 METHOD_DECL_STAR  ::=   METHOD_DECL METHOD_DECL_STAR
                         | ;
 
-METHOD_DECL ::= 	       TYPE ID:ide 
+METHOD_DECL ::= 	       TYPE:t ID:ide 
                          {:
-                          if (ide.name.equals("main")){
+                          if (ide.getId().equals("main")){
                             cantMain++;
                           }
-                          if (ide.name.equals("main")){
+                          if (ide.getId().equals("main")){
                             cantMain++;
                           }
                           inMethodDecl=true; //Set true flag inMethodDecl for drive levels
@@ -154,11 +173,12 @@ METHOD_DECL ::= 	       TYPE ID:ide
                             report_error("Method Redefine: ",ide);
                           }
                           symTable.pushLevel();//push this method's level
+                          ide.setType(t);//Set return type to method identifier
                           symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                           symTable.pushLevel();
                         :} PARENIZQ PARAMETERS  PARENDER BLOCK
-                        | VOID ID:ide {:
-                                        if (ide.name.equals("main")){
+                        | VOID:t ID:ide {:
+                                        if (ide.getId().equals("main")){
                                           cantMain++;
                                         }
                                         inMethodDecl=true; //Set true flag inMethodDecl for drive levels
@@ -166,6 +186,7 @@ METHOD_DECL ::= 	       TYPE ID:ide
                                           report_error("Method Redefine: ",ide);
                                         }
                                         symTable.pushLevel();//push this method's level
+                                        ide.setType(t);
                                         symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                                         symTable.pushLevel();
                                       :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:};
@@ -189,7 +210,7 @@ STATAMENT_STAR  ::=     STATAMENT STATAMENT_STAR
             						| ;
 
 
-TYPE::=                 RESERV_INT|RESERV_BOOLEAN|RESERV_FLOAT ;
+TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:}|RESERV_FLOAT:t {:RESULT=t;:};
 
 
 BOOLEAN  ::=            TRUE | FALSE ;
