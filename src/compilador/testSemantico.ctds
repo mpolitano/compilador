@@ -1,6 +1,7 @@
 class Nando{
 	int main(){
 	int a;
+	boolean b[10];
 	a=3+2;
 	a=2+a;
 	}
