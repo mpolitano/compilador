@@ -1,0 +1,31 @@
+/*test de integracion de parametros, combina los eventos testeados anteriormente, pasa mayor cantidad de parametros que la necesaria, pasa parametros de tipos no esperados y devuelve un valor a una variable de tipo diferente, ademas, intenta escribir un boolean y le pasa un float
+*/
+class integrationParameters{
+
+	int inside(int a, int b, int c){
+		if (((a<b) && (a>c)) || ((a<c) && (a>b))){
+			return a;			
+		}else{
+			if (((b<a) && (b>c)) || ((b<c) && (b>a)){
+				return b;			
+			}else{
+				return c;			
+			}		
+		}
+	}
+
+	int main(){
+		int a;
+		float b;
+		int c;
+		float d;
+		boolean e;
+		e=true;
+		a=1;
+		b=2;
+		c=3;
+		d=inside(a,b,c,e); //llamamos a inside con mas valores que parametros que tiene, y ademas b es un boolean, inside espera un int, otro error es que d es de tipo float y le asignamos el resultado de inside (tipo de retorno=int), por lo cual aqui cometemos muchos errores
+		externinvk("printf", boolean, d); //pasamos el tipo boolean y d, cuando d es un float
+	}
+
+}

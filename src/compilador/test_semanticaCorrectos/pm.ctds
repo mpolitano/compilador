@@ -1,0 +1,27 @@
+/*test valido, pasa la hora a formato am pm*/
+
+class pm{
+
+	int horaEnAMPM(int hora){
+		if ((hora>12) && (hora<25)) {
+			hora-=12;
+			return hora;		
+		}else{
+			if(hora>24){
+				return 9999999999999999;
+			}else{
+			return hora;
+			}
+		}
+	}
+
+	int main(){
+		int a;
+		a=11;
+		int b;
+		b=15; 
+		externinvk("printf", int, horaEnAMPM(a));
+		externinvk("printf", int, horaEnAMPM(b));	
+	}
+
+}

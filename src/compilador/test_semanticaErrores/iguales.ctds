@@ -1,0 +1,21 @@
+/*en este test, probaremos que no es posible asignar distintos valores, isEqual devuelve un boolean e intentaremos setearlo en un int, debe fallar */
+class iguales{
+
+	boolean isEqual(int a, int b){
+		if (a==b){
+			return true;		
+		}else{
+		return false;
+				}
+	}
+
+	int main(){
+		int a;
+		a=10;
+		int b;
+		b=10;
+		int c;
+		c=isEqual(a,b); // c es de tipo int y isEqual retorna un boolean, lo cual es un error
+	}
+
+}
