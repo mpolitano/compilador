@@ -1,5 +1,6 @@
 import java.util.*;
 import java_cup.runtime.*;
+import ir.ast.Location;
 
 public class SymbolTable{
 
@@ -19,7 +20,7 @@ public class SymbolTable{
 	}
 
 	//This methods returns true if sym could be inserted to level and false if exist other symbol thas has the same name. 
-	public boolean addSymbolToLevel(Information sym){
+	public boolean addSymbolToLevel(Location sym){
 		return levels.getFirst().addSymbol(sym);		
 	}	
 
@@ -30,6 +31,16 @@ public class SymbolTable{
 			aux= aux + l.toString() + "\n";		
 		}		
 		return aux;
+	}
+
+	public Location getByIde(String id){
+		for(Level l: levels){
+			Location e= l.getByIde(id);
+			if (e!=null){
+				return e;
+			}
+		}
+		return null;
 	}
 
 }
