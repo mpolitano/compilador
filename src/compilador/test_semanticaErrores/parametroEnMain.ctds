@@ -1,0 +1,12 @@
+/*en este test probamos que no se aceptan parametros en el main*/
+class parametroEnMain{
+
+int suma(int a, int b){
+	return a+b;
+}
+
+int main (int a, int b){
+	externinvk("printf", int, suma(a,b));
+}
+
+}

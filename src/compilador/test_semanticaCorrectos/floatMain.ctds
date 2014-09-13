@@ -1,0 +1,16 @@
+/*test para probar que main puede ser float. */
+class floatMain{
+
+	float div(float a, float b){
+		return (a/b);	
+	}
+
+	float main(){ //definimos main como float
+		float a;
+		float b;
+		a=1;
+		b=2;
+		externinvk("printf", float, div(a,b));
+	}
+
+}

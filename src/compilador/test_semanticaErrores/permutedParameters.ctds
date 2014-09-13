@@ -1,0 +1,33 @@
+/*en este test probamos que falle al pasar mal el orden de los parametros(distintos tipos)*/
+
+class permutedParameters{
+
+	int floatOrBoolean(int a, float b, boolean c){ //recibe tres parametros int, float, boolean
+		if a=1{
+			return 1;		
+		}else{
+			if(b=10000){
+				return 2;			
+			}else{
+				if (c=true){
+				return 3;
+				}
+			}
+		}
+		return 4;
+	}
+
+	boolean main (){
+		int a;
+		a=1;
+		float b;
+		b=10000;
+		boolean c;
+		c=true;
+		int result;
+		result= floatOrBoolean(c,a,b); //llamamos a float o boolean, la cual recibe un int, float, boolean(en ese orden), pero lo pasamos en un orden distinto, aqui se produce un error
+		externinvk("printf", int, result);
+	}
+
+
+}

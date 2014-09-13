@@ -1,0 +1,8 @@
+/*test en el que pruebo que no se permita declarar un arreglo negativo, debe fallar*/
+class negativeArray{
+
+int main(){
+	int a[-1000];
+}
+
+}

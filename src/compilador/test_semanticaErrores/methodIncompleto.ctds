@@ -1,0 +1,22 @@
+/* test en el que declaramos un metodo y no retorna nada ni se declara como void
+*/
+
+class methodIncompleto{
+
+	masGrande(float a, float b){
+		if (a<b){
+			return b;
+		}else{
+			return a;
+		}
+	}
+
+	int main(){
+		float a;
+		float b;
+		a=1;
+		b=2;
+		externinvk("printf", float, masGrande(a,b));
+	}
+
+}

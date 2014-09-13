@@ -1,0 +1,43 @@
+/*test que prueba metodos sin parametros y hace muchos llamados de los mismos para una asignacion (hace crecer el arbol),
+ademas, prueba un metodo void, no deberia fallar */
+
+class sinParameters{
+
+ int First(){
+	return 1;
+	}
+
+ int Second(){
+	return 2;
+	}
+
+ int Third(){
+	return 3;
+	}
+
+ int Fourth (){
+	return 4;
+	}
+
+ int Fifth (){
+	return 5;
+	}
+
+void oneMore(int a){
+	a=a+1;
+	}
+
+	int main(){
+		int a;
+		a= First();
+		a = (Second() + Third())
+		externinvk("printf", int,a);
+		externinvk("printf", int, Fourth());
+		externinvk("printf", int, (Fifth()+First()));
+		externinvk("printf", int, ((((Fifth()+First())+Second())+Third())+Fourth()));		
+		a=((((Fifth()+First())+Second())+Third())+Fourth());		
+		oneMore(a);
+		externinvk("printf", int, a);
+		externinvk("printf", int, oneMore(a));					
+	}
+}

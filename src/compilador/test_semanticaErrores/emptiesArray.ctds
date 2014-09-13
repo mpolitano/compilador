@@ -1,0 +1,12 @@
+/*test en el que creo un arreglo con n=0, debe fallar*/
+class emptiesArray{
+
+int main(){
+	int a[1000];
+	int b[0000];
+	int c[1000];
+	int d[0];
+	int e[000000010000];
+}
+
+}

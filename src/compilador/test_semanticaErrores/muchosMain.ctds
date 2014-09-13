@@ -1,0 +1,27 @@
+/*test con muchos main, deberia fallar ya que no puede haber mas de uno*/
+class muchosMain{
+
+	int suma(int a, int b){
+		return a+b ;
+	}
+
+int main(){
+	int a;
+	int b;
+	externinvk("printf", int, suma(a,b));
+}
+
+float main(){
+	int a;
+	int b;
+	a=1;
+	b=2;
+	externinvk("printf", int, suma(a,b));
+}
+
+
+void main(){
+	externinvk("printf", int, suma(a,b));
+}
+
+}
