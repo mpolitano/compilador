@@ -1,18 +1,18 @@
 import java_cup.runtime.*;
 import java.util.*;
-
+import ir.ast.Location;
 public class Level{
 	
-	private LinkedList<Information> definition;
+	private LinkedList<Location> definition;
 
 	public Level(){
-		definition= new LinkedList<Information>();
+		definition= new LinkedList<Location>();
 	}
 
 	//This methods returns true if sym could be inserted to level and false if exist other symbol thas has the same name. 
-	public boolean addSymbol(Information newSymbol){
-		for(Information s: definition){
-			if (s.name.equals(newSymbol.name)){
+	public boolean addSymbol(Location newSymbol){
+		for(Location s: definition){
+			if (s.getId().equals(newSymbol.getId())){
 				return false;		
 			}
 		}
@@ -27,9 +27,19 @@ public class Level{
 	public String toString(){
 		String aux= new String();
 		aux= "\n" + "----Level----"+ "\n";
-		for(Information s: definition){
-			aux= aux + s.name + "\n";
+		for(Location s: definition){
+			aux= aux + s.toString() + "\n";
 		}	
 		return aux;		
 	}
+
+	public Location getByIde(String id){
+		for(Location e: definition){
+			if (e.getId().equals(id)){
+				return e;
+			}
+		}
+		return null;
+	}		
+
 }

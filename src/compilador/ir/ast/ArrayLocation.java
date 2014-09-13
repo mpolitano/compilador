@@ -26,7 +26,7 @@ public class ArrayLocation extends Location {
 	
 	@Override
 	public String toString() {
-		return id+"["+ size +"]";
+		return type.toString()+" "+id+"["+ size +"]";
 	}
 /*
 	@Override

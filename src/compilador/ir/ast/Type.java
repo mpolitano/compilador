@@ -41,5 +41,17 @@ public enum Type {
 		
 		return false;
 	}
+
+	public Type toArray(){
+		switch(this){
+			case INT:
+				return INTARRAY;
+			case FLOAT:
+				return FLOATARRAY;
+			case BOOLEAN:
+				return BOOLEANARRAY;
+		}
+		return UNDEFINED;
+	}
 }
 //For build a Type's Object= Type.INT|INTARRAY|VOID|UNDEFINED 

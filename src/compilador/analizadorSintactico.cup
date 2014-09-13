@@ -129,25 +129,20 @@ PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER
 FIELD_DECL_STAR ::=     FIELD_DECL_STAR FIELD_DECL
                         | FIELD_DECL;
 
-FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
+FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:System.out.println("++++"+t.toString());
+
                                                 for (Location id:decl){
                                                   if(id instanceof VarLocation){ 
                                                     id.setType(t);                       
-                                                  }else{//id instance of ArrayLocation
-                                                    switch(t){
-                                                      case INT:
-                                                        id.setType(Type.INTARRAY);
-                                                      case BOOLEAN:
-                                                        id.setType(Type.BOOLEANARRAY);
-                                                      case FLOAT:
-                                                        id.setType(Type.FLOATARRAY);        
-                                                    }
+                                                  }else{//id instance of ArrayLocation                                      
+                                                    id.setType(t.toArray());
                                                   } 
                                                   if(!symTable.addSymbolToLevel(id)){
                                                     report_error("Symbol Redefine: ", id);          
                                                   } 
                                                 }
-                                                decl=new LinkedList<Location>(); //Clean list for next fiels declaration 
+                                                identifierList=new LinkedList<Location>(); //Clean list for next fiels declaration 
+                                                System.out.println(symTable.toString());
                                                :};
 
 FIELD_PLUS ::=	        FIELD:f {:identifierList.add(f);:}COMA  FIELD_PLUS 
