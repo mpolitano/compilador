@@ -28,6 +28,7 @@ public class ArrayLocation extends Location {
 	public String toString() {
 		return type.toString()+" "+id+"["+ size +"]";
 	}
+
 /*
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {

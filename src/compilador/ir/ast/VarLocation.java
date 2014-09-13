@@ -5,7 +5,6 @@ import ir.ASTVisitor;
 public class VarLocation extends Location {
 	private int blockId;
 
-
 	public VarLocation(String my_name,int my_line, int my_col,int my_block_id){
 		this.id =  my_name;
 		this.blockId = my_block_id;
@@ -21,6 +20,10 @@ public class VarLocation extends Location {
 	@Override
 	public String toString() {
 		return type.toString()+" "+id;
+	}
+
+	public int getBlockId() {
+		return blockId;
 	}
 /*
 	@Override
