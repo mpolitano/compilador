@@ -1,14 +1,17 @@
 class Nando{
 	int b;
+
 	void nando(int a){
 		b=3;
 	}
 	
-	int main(){
+int main(){
 	int a;
-	b=2;	
 	boolean b[10];	
+	b=2;	
 	a=3+2;
 	a=2+a;
 	}
 }
+
+//DEBERIA DAR ERROR SINTACTICO

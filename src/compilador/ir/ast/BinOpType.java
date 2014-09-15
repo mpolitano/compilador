@@ -13,7 +13,8 @@ public enum BinOpType {
 	NEQ, // Equal
 	CEQ, 
 	AND, // Conditional
-	OR;
+	OR,
+	NOT;
 	
 	@Override
 	public String toString() {
@@ -44,7 +45,9 @@ public enum BinOpType {
 				return "&&";
 			case OR:
 				return "||";
-		}
+			case NOT:
+				return "!";		
+	}
 		
 		return null;
 	}

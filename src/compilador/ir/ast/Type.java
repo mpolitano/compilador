@@ -8,7 +8,8 @@ public enum Type {
 	VOID,
 	FLOAT,
 	BOOLEAN,
-	UNDEFINED;
+	UNDEFINED,
+	STRING;
 	
 	@Override
 	public String toString() {
@@ -29,6 +30,8 @@ public enum Type {
 				return "float";
 			case BOOLEAN:
 				return "boolean";
+			case STRING:
+				return "string";
 		}
 		
 		return null;

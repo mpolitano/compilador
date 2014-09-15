@@ -71,21 +71,21 @@ ComentarioLinea= "//".*\n
 
 
     //Op_Aritemetico. 
-    "+" {  return  symbol(sym.PLUS);   }
-    "-" {  return  symbol(sym.SUB);   }
-    "*" {  return  symbol(sym.MULT);   }
-    "/" {  return  symbol(sym.DIVI);   }
-    "%" {  return  symbol(sym.MOD);   }
+    "+" {  return  symbol(sym.PLUS, BinOpType.PLUS);   }
+    "-" {  return  symbol(sym.SUB, BinOpType.MINUS);   }
+    "*" {  return  symbol(sym.MULT, BinOpType.MULTIPLY);   }
+    "/" {  return  symbol(sym.DIVI,BinOpType.DIVIDE);   }
+    "%" {  return  symbol(sym.MOD,BinOpType.MOD);   }
 
     //Operador Relacional
-    "<" {  return  symbol(sym.LOWER);   }
-    ">" {  return  symbol(sym.HIGHER);   }
-    ">=" {  return  symbol(sym.HIGHEREQUAL);   }
-    "<=" {  return  symbol(sym.LOWEREQUAL);   }
+    "<" {  return  symbol(sym.LOWER,BinOpType.LE);   }
+    ">" {  return  symbol(sym.HIGHER,BinOpType.GE);   }
+    ">=" {  return  symbol(sym.HIGHEREQUAL,BinOpType.GEQ);   }
+    "<=" {  return  symbol(sym.LOWEREQUAL,BinOpType.LEQ);   }
     
     //Operador relacional
-    "==" {  return  symbol(sym.EQUAL);   }  
-    "!=" {  return  symbol(sym.DIFFERENT);   }
+    "==" {  return  symbol(sym.EQUAL,BinOpType.CEQ);   }  
+    "!=" {  return  symbol(sym.DIFFERENT,BinOpType.NEQ);   }
 
     //Asignaciones
     "=" {  return  symbol(sym.ASSIG, AssignOpType.ASSIGN);}  
@@ -93,9 +93,9 @@ ComentarioLinea= "//".*\n
     "-=" {  return  symbol(sym.ASSIGSUB,AssignOpType.DECREMENT);   }
 
     //Condicionales
-    "&&" {  return  symbol(sym.AND);   }
-    "||" {  return  symbol(sym.OR);   }
-     "!" {  return  symbol(sym.NEG);   }
+    "&&" {  return  symbol(sym.AND,BinOpType.AND);   }
+    "||" {  return  symbol(sym.OR,BinOpType.OR);   }
+     "!" {  return  symbol(sym.NEG,BinOpType.NOT);   }
 
     //Delimitadores
     "(" {  return  symbol(sym.PARENIZQ);   }
@@ -123,7 +123,7 @@ ComentarioLinea= "//".*\n
     //Literales
     {Digit}{Digit}* {  return symbol(sym.INT,new IntLiteral(yytext()));   }
     {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT, new FloatLiteral(yytext()));   }
-    "\""{ASCII}*"\"" {  return symbol(sym.STRING);  }
+    "\""{ASCII}*"\"" {  return symbol(sym.STRING, new StringExpr(yytext()));  }
     "/*"        {yybegin(COMENTARIO);     }
 
       .   {   System.out.println ("Caracter ilegal!!!   " + yytext() + " en linea " + yyline + " columna " + yycolumn);

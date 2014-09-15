@@ -73,22 +73,23 @@ init with {:
    
 // Terminales (tokens obtenidos por el analizador lexico).  
 
-terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, WHILE, LOWEREQUAL, 
-          HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
-          PARENIZQ, PARENDER, COMA, NEG, OR, AND, 
-          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT,EXTERNINVK;
+terminal  BREAK, CLASS, CONTINUE, ELSE,FOR, IF, RETURN,WHILE,
+          PARENIZQ, PARENDER, COMA,LLAB, LLCER, CORAB, CORCER,EXTERNINVK;
 
 terminal Location ID;
 terminal Type RESERV_BOOLEAN, RESERV_INT, RESERV_FLOAT, VOID;
 terminal IntLiteral INT;
 terminal SecStmt PUNTOCOMA;
 terminal AssignOpType ASSIGSUB,ASSIG,ASSIGPLUS;
-// No Terminales (producciones).  
-non terminal  
-              
-              METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
-              BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN, PRUEBA;
+terminal StringExpr STRING;
+terminal FloatLiteral FLOAT;
+terminal BooleanLiteral TRUE,FALSE;
+terminal BinOpType  LOWEREQUAL,HIGHEREQUAL, HIGHER,LOWER,PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, OR, AND;
+terminal UnaryOpType NEG;
 
+// No Terminales (producciones).  
+                        
+non terminal Program PRUEBA;
 non terminal Type TYPE;
 non terminal List<Location> FIELD_PLUS;   
 non terminal Location FIELD; 
@@ -103,8 +104,13 @@ non terminal List<Statement> STATAMENT_STAR;
 non terminal Statement STATAMENT;
 non terminal Block ELSE_OPTIONAL;
 non terminal AssignOpType ASSING_OP;
-non terminal Expression EXPR, EXPR_OPTIONAL;
+non terminal Expression EXPR, EXPR_OPTIONAL,EXTERNINVK_ARG;
 non terminal Location LOCATION;
+non terminal CallExpr METHOD_CALL;
+non terminal List<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
+non terminal Literal LITERAL;
+non terminal BooleanLiteral BOOLEAN;
+non terminal BinOpType BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP;
 // -------------Seccion de predencia y asociacion de los terminales----------- 
   
 precedence left EQUAL, AND, NEG, DIFFERENT;
@@ -125,7 +131,7 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-              :} PROGRAM:p{:System.out.println(p.getFields().toString());System.out.println(p.getMethods().toString());:};
+              :} PROGRAM:p{:System.out.println(p.getFields().toString());System.out.println(p.getMethods().toString());RESULT=p;:};
 
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
@@ -262,14 +268,14 @@ BOOLEAN  ::=            TRUE | FALSE ;
 
 
 STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr);:}
-                				| METHOD_CALL PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
+                				| METHOD_CALL PUNTOCOMA{:RESULT= new SecStmt();:}
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional);:}
-                				| FOR ID ASSIG EXPR COMA EXPR BLOCK{:RESULT= new SecStmt();:}//CAMBIAR
-              			    | WHILE EXPR BLOCK{:RESULT= new SecStmt();:}//CAMBIAR
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body);:}
+              			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body);:}
               			    | RETURN EXPR_OPTIONAL:expr PUNTOCOMA{: RESULT= new ReturnStmt(expr);:} 
-              			    | BREAK PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
-              			    | CONTINUE PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
-              			    | PUNTOCOMA:s{:RESULT=s;:}
+              			    | BREAK PUNTOCOMA{:RESULT= new BreakStmt();:}
+              			    | CONTINUE PUNTOCOMA{:RESULT= new ContinueStmt();:}
+              			    | PUNTOCOMA:s{:RESULT=s;;:}
               			    | BLOCK:b {:RESULT=b;:};
 
 
@@ -283,25 +289,33 @@ EXPR_OPTIONAL  ::=	   EXPR:expr {:RESULT=expr;:}
 ASSING_OP  ::=         ASSIG:asign{: RESULT=asign;:} | ASSIGPLUS:asign {: RESULT=asign;:}| ASSIGSUB:asign{: RESULT=asign;:} ;
 
 
-METHOD_CALL  ::=       ID PARENIZQ EXPR_COMA_OPTIONAL PARENDER
-              				| EXTERNINVK PARENIZQ STRING COMA VOID EXTERNINVK_OPTIONAL PARENDER 
-              				|EXTERNINVK PARENIZQ STRING COMA TYPE EXTERNINVK_OPTIONAL PARENDER;
+METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PARENDER
+                      {: 
+                        Location m=symTable.getByIde(id.getId());
+                        if (m==null || !(m instanceof MethodLocation)){
+                          report_error("Method not defined: ",id);    
+                        }else{
+                          RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList);
+                        }
+                      :}                          
+              				|EXTERNINVK PARENIZQ STRING:name COMA VOID:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t);:} 
+              				|EXTERNINVK PARENIZQ STRING:name COMA TYPE:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t);:};
 
 
-EXPR_COMA_OPTIONAL  ::= EXPR_PLUS 
-                        | ;
+EXPR_COMA_OPTIONAL  ::= EXPR_PLUS:listExpr{:RESULT=listExpr;:} 
+                        |{:RESULT= new LinkedList<Expression>();:};
 
-EXPR_PLUS  ::=          EXPR COMA EXPR_PLUS 
-                        | EXPR ;
+EXPR_PLUS  ::=          EXPR:expr COMA EXPR_PLUS:listExpr{:listExpr.add(expr);RESULT=listExpr;:} 
+                        | EXPR:expr{:List<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:} ;
 
-EXTERNINVK_OPTIONAL ::= COMA EXTERNINVK_PLUS
-                        | ;
+EXTERNINVK_OPTIONAL ::= COMA EXTERNINVK_PLUS:listExpr{:RESULT= listExpr;:}
+                        |{: RESULT= new LinkedList<Expression>();:} ;
 
-EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG COMA EXTERNINVK_PLUS 
-                        | EXTERNINVK_ARG ;
+EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG:expr COMA EXTERNINVK_PLUS:listExpr{:listExpr.add(expr);RESULT=listExpr;:} 
+                        | EXTERNINVK_ARG:expr{:List<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:};
 
 
-EXTERNINVK_ARG ::=       EXPR | STRING ;
+EXTERNINVK_ARG ::=       EXPR:expr{:RESULT=expr;:} | STRING:str {:RESULT=str;:} ;
 
 LOCATION  ::=           ID:id
                             {:
@@ -324,22 +338,22 @@ LOCATION  ::=           ID:id
 
 
 EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
-                				| METHOD_CALL{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
-                				| LITERAL{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
-                				| EXPR BIN_OP EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
-              			    | SUB EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
-              			    | NEG EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
-              			    | PARENIZQ EXPR PARENDER{:RESULT= new VarLocation(" ",0,0,-1);:};//cambiar
+                				| METHOD_CALL:m{:RESULT= m;:}
+                				| LITERAL:l{:RESULT= l;:}//cambiar
+                				| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr);:}
+              			    | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr);:}//Here use a unary minus operator
+              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr);:}
+              			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
 
 
-BIN_OP  ::=             ARITH_OP | REL_OP | EQ_OP | COND_OP ; 
+BIN_OP  ::=             ARITH_OP:s{:RESULT=s;:} | REL_OP:s{:RESULT=s;:} | EQ_OP:s{:RESULT=s;:} | COND_OP:s{:RESULT=s;:} ; 
 
-ARITH_OP  ::=           PLUS|SUB|MULT|DIVI|MOD ;
+ARITH_OP  ::=           PLUS:s{:RESULT=s;:}|SUB:s{:RESULT=s;:}|MULT:s{:RESULT=s;:}|DIVI:s{:RESULT=s;:}|MOD:s{:RESULT=s;:} ;
 
-REL_OP  ::=             HIGHER|HIGHEREQUAL|LOWER|LOWEREQUAL ;
+REL_OP  ::=             HIGHER:s{:RESULT=s;:}|HIGHEREQUAL:s{:RESULT=s;:}|LOWER:s{:RESULT=s;:}|LOWEREQUAL:s{:RESULT=s;:};
 
-EQ_OP  ::=              EQUAL | DIFFERENT ;
+EQ_OP  ::=              EQUAL:s{:RESULT=s;:} | DIFFERENT:s{:RESULT=s;:} ;
 
-COND_OP  ::=            AND|OR ;
+COND_OP  ::=            AND:s{:RESULT=s;:}|OR:s{:RESULT=s;:} ;
 
-LITERAL  ::=            INT|BOOLEAN|FLOAT ; 
+LITERAL  ::=            INT:i {:RESULT=i;:}|BOOLEAN:b {:RESULT=b;:}|FLOAT:f {:RESULT=f;:} ; 
