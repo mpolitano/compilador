@@ -88,9 +88,9 @@ ComentarioLinea= "//".*\n
     "!=" {  return  symbol(sym.DIFFERENT);   }
 
     //Asignaciones
-    "=" {  return  symbol(sym.ASSIG);   }  
-    "+=" {  return  symbol(sym.ASSIGPLUS);   }
-    "-=" {  return  symbol(sym.ASSIGSUB);   }
+    "=" {  return  symbol(sym.ASSIG, AssignOpType.ASSIGN);}  
+    "+=" {  return  symbol(sym.ASSIGPLUS,AssignOpType.INCREMENT);   }
+    "-=" {  return  symbol(sym.ASSIGSUB,AssignOpType.DECREMENT);   }
 
     //Condicionales
     "&&" {  return  symbol(sym.AND);   }
@@ -100,7 +100,7 @@ ComentarioLinea= "//".*\n
     //Delimitadores
     "(" {  return  symbol(sym.PARENIZQ);   }
     ")" {  return  symbol(sym.PARENDER);   }
-    ";" {  return  symbol(sym.PUNTOCOMA);   }
+    ";" {  return  symbol(sym.PUNTOCOMA, new SecStmt());}
     "," {  return  symbol(sym.COMA);   }
 
     //Tipos

@@ -25,4 +25,8 @@ public class MethodLocation extends Location {
 	public void setBody(Block b){
 		body=b;
 	}
+
+	public String toString(){
+		return id + "(" + formalParameters.toString() + ")";
+	}
 }

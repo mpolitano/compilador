@@ -7,10 +7,12 @@ public class Program extends AST{
 
 	private	List<Location> fields;
 	private List<MethodLocation> methods;
+	private String id;
 
-	public	Program(List<Location> my_fields, List<MethodLocation> my_methods){
+	public	Program(String my_id,List<Location> my_fields, List<MethodLocation> my_methods){
 		fields= my_fields;
 		methods= my_methods;
+		id=my_id;
 	}
 
 	public List<MethodLocation> getMethods(){
@@ -21,4 +23,7 @@ public class Program extends AST{
 		return fields;
 	}
 
+	public String getId(){
+		return id;
+	}
 }

@@ -7,12 +7,6 @@ public class IfStmt extends Statement {
 	private Block ifBlock;
 	private Block elseBlock;
 	
-	public IfStmt(Expression cond, Block ifBl) {
-		this.condition = cond;
-		this.ifBlock = ifBl;
-		this.elseBlock = null;
-	}
-	
 	public IfStmt(Expression cond, Block ifBl, Block elseBl) {
 		this.condition = cond;
 		this.ifBlock = ifBl;

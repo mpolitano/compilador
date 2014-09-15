@@ -12,7 +12,6 @@ action code {:
     
     public boolean inMethodDecl;
     public int cantMain;
-    private LinkedList<Location> identifierList;
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
@@ -76,22 +75,36 @@ init with {:
 
 terminal  BREAK, CLASS, CONTINUE, ELSE,FALSE, FOR, IF, RETURN, TRUE, WHILE, LOWEREQUAL, 
           HIGHEREQUAL, HIGHER, LOWER, PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, 
-          PARENIZQ, PARENDER, PUNTOCOMA, COMA, NEG, OR, AND, 
-          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT, ASSIGPLUS,ASSIG,ASSIGSUB,EXTERNINVK;
+          PARENIZQ, PARENDER, COMA, NEG, OR, AND, 
+          LLAB, LLCER, CORAB, CORCER, STRING, FLOAT,EXTERNINVK;
 
 terminal Location ID;
 terminal Type RESERV_BOOLEAN, RESERV_INT, RESERV_FLOAT, VOID;
 terminal IntLiteral INT;
+terminal SecStmt PUNTOCOMA;
+terminal AssignOpType ASSIGSUB,ASSIG,ASSIGPLUS;
 // No Terminales (producciones).  
-non terminal  PROGRAM, FIELD_DECL_STAR, METHOD_DECL_STAR, FIELD_DECL,METHOD_DECL,
-              PARAMETERS, PARAMETER_PLUS, PARAMETER, BLOCK, STATAMENT_STAR, STATAMENT, ELSE_OPTIONAL,
-              EXPR_OPTIONAL, ASSING_OP, METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
-              LOCATION, LOCATION2, EXPR, BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN, PRUEBA;
+non terminal  
+              
+              METHOD_CALL, EXPR_COMA_OPTIONAL, EXPR_PLUS, EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS, EXTERNINVK_ARG,
+              BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP, LITERAL, BOOLEAN, PRUEBA;
 
 non terminal Type TYPE;
-non terminal LinkedList<Location> FIELD_PLUS;   
+non terminal List<Location> FIELD_PLUS;   
 non terminal Location FIELD; 
-
+non terminal Program PROGRAM;
+non terminal List<Location> FIELD_DECL_STAR, FIELD_DECL;
+non terminal List<MethodLocation> METHOD_DECL_STAR;
+non terminal MethodLocation METHOD_DECL;
+non terminal Block BLOCK;
+non terminal List<Location> PARAMETERS, PARAMETER_PLUS;
+non terminal Location PARAMETER;
+non terminal List<Statement> STATAMENT_STAR;
+non terminal Statement STATAMENT;
+non terminal Block ELSE_OPTIONAL;
+non terminal AssignOpType ASSING_OP;
+non terminal Expression EXPR, EXPR_OPTIONAL;
+non terminal Location LOCATION;
 // -------------Seccion de predencia y asociacion de los terminales----------- 
   
 precedence left EQUAL, AND, NEG, DIFFERENT;
@@ -112,24 +125,26 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-               identifierList=new LinkedList<Location>(); :} PROGRAM;
+              :} PROGRAM:p{:System.out.println(p.getFields().toString());System.out.println(p.getMethods().toString());:};
 
 
-PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR METHOD_DECL_STAR LLCER {: 
+PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){
                                     report_error("Missing Main ", ide);          
                                   }
+                                  RESULT= new Program(ide.getId(),listFiel, listMehod);
                                 :}
-              					| CLASS ID:ide LLAB METHOD_DECL_STAR LLCER{: 
+              					| CLASS ID:ide LLAB METHOD_DECL_STAR:listMehod LLCER{: 
                                   if(cantMain==0){
                                     report_error("Missing Main ", ide);          
                                   }
+                                  RESULT= new Program(ide.getId(),new LinkedList<Location>(), listMehod);
                                 :};
 
-FIELD_DECL_STAR ::=     FIELD_DECL_STAR FIELD_DECL
-                        | FIELD_DECL;
+FIELD_DECL_STAR ::=     FIELD_DECL_STAR:fieldList FIELD_DECL:f {:fieldList.addAll(f); RESULT=fieldList;:}
+                        | FIELD_DECL:f{:RESULT= new LinkedList<Location>(f); :};
 
-FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:System.out.println("++++"+t.toString());
+FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
 
                                                 for (Location id:decl){
                                                   if(id instanceof VarLocation){ 
@@ -140,20 +155,19 @@ FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:System.out.println("++++"+t.toS
                                                   if(!symTable.addSymbolToLevel(id)){
                                                     report_error("Symbol Redefine: ", id);          
                                                   } 
-                                                }
-                                                identifierList=new LinkedList<Location>(); //Clean list for next fiels declaration 
-                                                System.out.println(symTable.toString());
+                                                }                                              
+                                                RESULT=decl;
                                                :};
 
-FIELD_PLUS ::=	        FIELD:f {:identifierList.add(f);:}COMA  FIELD_PLUS 
-                        | FIELD:f PUNTOCOMA {:identifierList.add(f); RESULT=identifierList;:};
+FIELD_PLUS ::=	        FIELD:f COMA  FIELD_PLUS:listId {:listId.add(f); RESULT=listId; :} 
+                        | FIELD:f PUNTOCOMA {: List<Location> listId=new LinkedList<Location>();listId.add(f);RESULT=listId;:};
 
-FIELD ::=               ID:ide CORAB INT:i CORCER {:RESULT= new ArrayLocation(ide.getId(),ide.getLineNumber(),ide.getColumnNumber(),ide.getBlockId(),i);:} //define a array's identifier
+FIELD ::=               ID:ide CORAB INT:i CORCER {:RESULT= new ArrayLocation(ide.getId(),ide.getLineNumber(),ide.getColumnNumber(),-1,i);:} //define a array's identifier
 					              |ID:ide {: RESULT=ide; :};
 
 
-METHOD_DECL_STAR  ::=   METHOD_DECL METHOD_DECL_STAR
-                        | ;
+METHOD_DECL_STAR  ::=   METHOD_DECL:m METHOD_DECL_STAR:listMehod {: listMehod.add(m); RESULT=listMehod;:}
+                        | {:RESULT= new LinkedList<MethodLocation>();:};
 
 METHOD_DECL ::= 	       TYPE:t ID:ide 
                          {:
@@ -164,45 +178,81 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                             cantMain++;
                           }
                           inMethodDecl=true; //Set true flag inMethodDecl for drive levels
-                          if(!symTable.addSymbolToLevel(ide)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
-                            report_error("Method Redefine: ",ide);
+                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                          newMethod.setType(t);//Set return type to method identifier
+                          if(!symTable.addSymbolToLevel(newMethod)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                            report_error("Method Redefine: ",newMethod);
                           }
                           symTable.pushLevel();//push this method's level
-                          ide.setType(t);//Set return type to method identifier
-                          symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                          symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                           symTable.pushLevel();
-                        :} PARENIZQ PARAMETERS  PARENDER BLOCK
+                        :} 
+                        PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
+                        {:
+                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                          newMethod.setParameters(listParameters);
+                          newMethod.setBody(body);                            
+                          RESULT= newMethod; 
+                        :}
                         | VOID:t ID:ide {:
                                         if (ide.getId().equals("main")){
                                           cantMain++;
                                         }
                                         inMethodDecl=true; //Set true flag inMethodDecl for drive levels
-                                        if(!symTable.addSymbolToLevel(ide)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
-                                          report_error("Method Redefine: ",ide);
+                                        MethodLocation newMethod= new MethodLocation(ide.getId());
+                                        newMethod.setType(t);//Set return type to method identifier
+                                        if(!symTable.addSymbolToLevel(newMethod)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                                          report_error("Method Redefine: ",newMethod);
                                         }
                                         symTable.pushLevel();//push this method's level
-                                        ide.setType(t);
-                                        symTable.addSymbolToLevel(ide);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                                        newMethod.setType(t);
+                                        symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                                         symTable.pushLevel();
-                                      :} PARENIZQ PARAMETERS  PARENDER BLOCK {: inMethodDecl=false;:};
+                                      :} 
+                                      PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
+                                                                        {: 
+                                                                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                                                                          newMethod.setParameters(listParameters);
+                                                                          newMethod.setBody(body);                                                                          
+                                                                          RESULT= newMethod;
+                                                                        :};
 
 
-PARAMETERS ::=            PARAMETER_PLUS
-                        |  ;
+PARAMETERS ::=          PARAMETER_PLUS:parametersList {:RESULT=parametersList;:}
+                        | {:RESULT=new LinkedList<Location>();:};
 					
 
-PARAMETER_PLUS  ::=     PARAMETER COMA PARAMETER_PLUS 
-                        | PARAMETER ;
+PARAMETER_PLUS  ::=     PARAMETER:p COMA PARAMETER_PLUS:parametersList {:parametersList.add(p);RESULT=parametersList;:} 
+                        | PARAMETER:p {:List<Location> parametersList= new LinkedList<Location>(); parametersList.add(p); RESULT=parametersList;:} ;
 
 
-PARAMETER ::=	          TYPE ID:ide {:symTable.addSymbolToLevel(ide);:} ;
+PARAMETER ::=	          TYPE:t ID:ide {:symTable.addSymbolToLevel(ide); ide.setType(t);RESULT=ide;:};
   
-BLOCK  ::=              LLAB  {:  if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} FIELD_DECL_STAR STATAMENT_STAR LLCER {: symTable.popLevel(); :}
-                        |LLAB {:if(!inMethodDecl){symTable.pushLevel();}else{inMethodDecl=false;} :} STATAMENT_STAR LLCER {: symTable.popLevel(); :};
+BLOCK  ::=              LLAB
+                            {:
+                              if(!inMethodDecl){
+                                                symTable.pushLevel();
+                                               }else{inMethodDecl=false;} 
+                            :} 
+                            FIELD_DECL_STAR:listField STATAMENT_STAR:listStatament LLCER
+                            {:
+                               symTable.popLevel();
+                               RESULT= new Block(-1,listStatament); 
+                            :}
+                        
+                       |LLAB {:
+                              if(!inMethodDecl){
+                                  symTable.pushLevel();
+                              }else{inMethodDecl=false;}
+                            :}
+                            STATAMENT_STAR:listStatament LLCER {:
+                                                    symTable.popLevel(); 
+                                                    RESULT= new Block(-1,listStatament); 
+                                                 :};
 
 
-STATAMENT_STAR  ::=     STATAMENT STATAMENT_STAR 
-            						| ;
+STATAMENT_STAR  ::=     STATAMENT:s STATAMENT_STAR:listStatament {: listStatament.add(s); RESULT=listStatament;:} 
+            						| {:RESULT=new LinkedList<Statement>(); :};
 
 
 TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:}|RESERV_FLOAT:t {:RESULT=t;:};
@@ -211,26 +261,26 @@ TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:
 BOOLEAN  ::=            TRUE | FALSE ;
 
 
-STATAMENT ::= 	        LOCATION ASSING_OP EXPR PUNTOCOMA
-                				| METHOD_CALL PUNTOCOMA
-                				| IF PARENIZQ EXPR PARENDER BLOCK ELSE_OPTIONAL
-                				| FOR ID ASSIG EXPR COMA EXPR BLOCK
-              			    | WHILE EXPR BLOCK
-              			    | RETURN EXPR_OPTIONAL PUNTOCOMA 
-              			    | BREAK PUNTOCOMA
-              			    | CONTINUE PUNTOCOMA
-              			    | PUNTOCOMA
-              			    | BLOCK ;
+STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr);:}
+                				| METHOD_CALL PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
+                				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional);:}
+                				| FOR ID ASSIG EXPR COMA EXPR BLOCK{:RESULT= new SecStmt();:}//CAMBIAR
+              			    | WHILE EXPR BLOCK{:RESULT= new SecStmt();:}//CAMBIAR
+              			    | RETURN EXPR_OPTIONAL:expr PUNTOCOMA{: RESULT= new ReturnStmt(expr);:} 
+              			    | BREAK PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
+              			    | CONTINUE PUNTOCOMA{:RESULT= new SecStmt();:}//CAMBIAR
+              			    | PUNTOCOMA:s{:RESULT=s;:}
+              			    | BLOCK:b {:RESULT=b;:};
 
 
-ELSE_OPTIONAL  ::=      ELSE BLOCK
-			               		| ;					
+ELSE_OPTIONAL  ::=      ELSE BLOCK:b{:RESULT= b;:}
+			               		|{:RESULT= null;:} ;					
 
-EXPR_OPTIONAL  ::=	   EXPR
-					             | ;  
+EXPR_OPTIONAL  ::=	   EXPR:expr {:RESULT=expr;:}
+					             | {:RESULT=null;:};  
 
 
-ASSING_OP  ::=         ASSIG | ASSIGPLUS | ASSIGSUB ;
+ASSING_OP  ::=         ASSIG:asign{: RESULT=asign;:} | ASSIGPLUS:asign {: RESULT=asign;:}| ASSIGSUB:asign{: RESULT=asign;:} ;
 
 
 METHOD_CALL  ::=       ID PARENIZQ EXPR_COMA_OPTIONAL PARENDER
@@ -253,18 +303,33 @@ EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG COMA EXTERNINVK_PLUS
 
 EXTERNINVK_ARG ::=       EXPR | STRING ;
 
-LOCATION  ::=           ID LOCATION2 ; //Debo verifificar que ID este en SymbolTable
+LOCATION  ::=           ID:id
+                            {:
+                              Location l= symTable.getByIde(id.getId()); 
+                              if (l==null){
+                                report_error("Symbol not defined :",id);
+                              }else{
+                                RESULT=l;                                
+                              }                          
+                            :} 
+                        | ID:id CORAB EXPR CORCER
+                          {:
+                              Location l= symTable.getByIde(id.getId()); 
+                              if (l==null){
+                                report_error("Symbol not defined :",id);
+                              }else{
+                                RESULT=l;                                
+                              }                          
+                          :};
 
-LOCATION2  ::=          CORAB EXPR CORCER 
-				                |;
 
-EXPR  ::= 		          LOCATION
-                				| METHOD_CALL
-                				| LITERAL
-                				| EXPR BIN_OP EXPR
-              			    | SUB EXPR
-              			    | NEG EXPR
-              			    | PARENIZQ EXPR PARENDER ;
+EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
+                				| METHOD_CALL{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
+                				| LITERAL{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
+                				| EXPR BIN_OP EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
+              			    | SUB EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
+              			    | NEG EXPR{:RESULT= new VarLocation(" ",0,0,-1);:}//cambiar
+              			    | PARENIZQ EXPR PARENDER{:RESULT= new VarLocation(" ",0,0,-1);:};//cambiar
 
 
 BIN_OP  ::=             ARITH_OP | REL_OP | EQ_OP | COND_OP ; 
