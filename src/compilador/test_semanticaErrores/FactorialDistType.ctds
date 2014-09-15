@@ -1,4 +1,5 @@
-/*en este test, la funcion factorial tomara un int, pero desde main le pasaremos a, que es de tipo float, por lo tanto debe fallar
+/*en este test, la funcion factorial tomara un int, 
+pero desde main le pasaremos a, que es de tipo float, por lo tanto debe fallar
 */
 class FactorialDistType{
 

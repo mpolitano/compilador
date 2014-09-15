@@ -2,10 +2,11 @@ class test_if{
 
 int suma(int b, int c ){
 	
-        int b;
         int d;
+        int b;
         d=b+c;
-
+        return d;
+	}
 
 int main(){
     externinvk("printf", int , suma(4,8 ));

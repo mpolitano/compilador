@@ -1,0 +1,16 @@
+
+class ifNotBoolean{
+	
+	int main(){
+		int a;
+		a=10;
+		int b;
+		b=10;
+		if (a+b){ //aqui hay un error<expr> no es boolean
+			externinvk("printf", int, a);
+		}else{
+		externinvk("printf", int, b);
+		}
+	}
+
+}

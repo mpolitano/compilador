@@ -1,0 +1,6 @@
+class badTypeAssig4{
+	int main(){
+		int a;
+		a=true;
+	}
+}

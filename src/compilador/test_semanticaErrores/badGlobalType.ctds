@@ -1,0 +1,11 @@
+class badGlobalType{
+	float a;
+
+	int main(){
+	int b;
+	int c;
+	c=b+a;
+	externinvk("printf", int, c);
+	}
+
+}

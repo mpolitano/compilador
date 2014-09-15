@@ -1,4 +1,5 @@
-/*redefino tres veces la variable a, debe fallar cuando la redefino con boolean, ya que esta en el mismo bloque, en float no(distinto bloque)*/
+/*redefino tres veces la variable a, debe fallar cuando la redefino con boolean, 
+ya que esta en el mismo bloque, en float no(distinto bloque)*/
 class tripleId{
 
 	int main(){

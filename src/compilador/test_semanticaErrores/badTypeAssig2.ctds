@@ -1,0 +1,10 @@
+class badTypeAssig2{
+	
+int main(){
+	int a;
+	a=10;
+	boolean bool;
+	a+=bool; //error
+}
+
+}
