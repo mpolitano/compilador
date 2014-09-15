@@ -25,7 +25,8 @@ class permutedParameters{
 		boolean c;
 		c=true;
 		int result;
-		result= floatOrBoolean(c,a,b); //llamamos a float o boolean, la cual recibe un int, float, boolean(en ese orden), pero lo pasamos en un orden distinto, aqui se produce un error
+		result= floatOrBoolean(c,a,b); //llamamos a floatOrBoolean, la cual recibe un int, float, boolean(en ese orden),
+										// pero lo pasamos en un orden distinto, aqui se produce un error
 		externinvk("printf", int, result);
 	}
 

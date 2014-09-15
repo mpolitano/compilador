@@ -1,0 +1,16 @@
+class whileNotBoolean{
+	
+int main(){
+	float a;
+	a=10;
+	float b;
+	b=2;
+	int counter;
+	counter=0;
+	while (a+b){ //<expr> no es de tipo boolean
+		counter+=1;
+		a-=1;
+	}
+}
+
+}

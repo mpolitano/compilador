@@ -1,0 +1,9 @@
+class holaMundo(){
+	
+	int main(){
+
+	externinvk("printf", string, "Hola Mundo! :)");
+
+	}
+
+}

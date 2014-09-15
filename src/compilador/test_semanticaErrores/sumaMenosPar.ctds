@@ -1,4 +1,5 @@
-/*en este test probamos que un metodo no puede recibir menos parametros de los que tiene definidos, debe fallar
+/*en este test probamos que un metodo no puede recibir menos parametros de los que tiene definidos, 
+debe fallar el parser
 */
 class sumaMenosPar{
 
