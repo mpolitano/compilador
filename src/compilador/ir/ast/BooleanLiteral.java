@@ -33,10 +33,9 @@ public class BooleanLiteral extends Literal {
 					return "False";
 				 }
 	}
-/*
+	
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
 }

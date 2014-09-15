@@ -10,10 +10,10 @@ public class ContinueStmt extends Statement {
 		return "continue";
 	}
 
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

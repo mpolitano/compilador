@@ -46,10 +46,10 @@ public class MethodCallExpr extends CallExpr {
 		return rtn;
 	}
 
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

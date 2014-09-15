@@ -20,7 +20,7 @@ action code {:
                 m.append(", column "+ (((Location)info).getColumnNumber()+1));
         }
         m.append(" : "+message);
-        System.out.println(m + " " + ((Location)info).getId());
+        System.out.println(m + " " + ((Location)info).toString());
         System.exit(1); //Interrumpo la ejecucion
     }
 :}
@@ -155,8 +155,11 @@ FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
                                                 for (Location id:decl){
                                                   if(id instanceof VarLocation){ 
                                                     id.setType(t);                       
-                                                  }else{//id instance of ArrayLocation                                      
+                                                  }else{//id instance of ArrayLocation     
                                                     id.setType(t.toArray());
+                                                    if (((ArrayLocation) id).getSize().getValue()<=0){
+                                                      report_error("Wrong number for Array Size: ", id);                      
+                                                    }
                                                   } 
                                                   if(!symTable.addSymbolToLevel(id)){
                                                     report_error("Symbol Redefine: ", id);          

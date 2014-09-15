@@ -10,9 +10,8 @@ public class BreakStmt extends Statement {
 		return "break";
 	}
 
-/*
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
-	}*/
+	}
 }

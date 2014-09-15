@@ -53,10 +53,10 @@ public class ForStmt extends Statement {
 		rtn += block.toString();
 		return rtn;
 	}
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

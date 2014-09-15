@@ -29,4 +29,9 @@ public class MethodLocation extends Location {
 	public String toString(){
 		return "\n"+id + "(" + formalParameters.toString() + ")" + "\n" + body.toString() + "\n" ;
 	}
+
+	@Override
+	public <T> T accept(ASTVisitor<T> v) {
+		return v.visit(this);
+	}
 }

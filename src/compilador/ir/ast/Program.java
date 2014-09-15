@@ -30,4 +30,9 @@ public class Program extends AST{
 	public String toString(){
 		return "Fields: " + fields.toString() + "\n"+ "Methods: " + methods.toString();
 	}
+
+	@Override
+	public <T> T accept(ASTVisitor<T> v) {
+		return v.visit(this);
+	}
 }
