@@ -95,7 +95,7 @@ ComentarioLinea= "//".*\n
     //Condicionales
     "&&" {  return  symbol(sym.AND,BinOpType.AND);   }
     "||" {  return  symbol(sym.OR,BinOpType.OR);   }
-     "!" {  return  symbol(sym.NEG,BinOpType.NOT);   }
+     "!" {  return  symbol(sym.NEG,UnaryOpType.NOT);   }
 
     //Delimitadores
     "(" {  return  symbol(sym.PARENIZQ);   }

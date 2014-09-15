@@ -131,7 +131,7 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-              :} PROGRAM:p{:System.out.println(p.getFields().toString());System.out.println(p.getMethods().toString());RESULT=p;:};
+              :} PROGRAM:p{:System.out.println(p.toString());RESULT=p;:};
 
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
@@ -195,7 +195,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                         :} 
                         PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
                         {:
-                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                          MethodLocation newMethod=(MethodLocation) symTable.getByIde(ide.getId());
                           newMethod.setParameters(listParameters);
                           newMethod.setBody(body);                            
                           RESULT= newMethod; 
@@ -217,7 +217,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                       :} 
                                       PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
                                                                         {: 
-                                                                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                                                                          MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
                                                                           newMethod.setBody(body);                                                                          
                                                                           RESULT= newMethod;
@@ -264,7 +264,7 @@ STATAMENT_STAR  ::=     STATAMENT:s STATAMENT_STAR:listStatament {: listStatamen
 TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:}|RESERV_FLOAT:t {:RESULT=t;:};
 
 
-BOOLEAN  ::=            TRUE | FALSE ;
+BOOLEAN  ::=            TRUE:t{:RESULT= t;:} | FALSE:f{:RESULT= f;:} ;
 
 
 STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr);:}
@@ -339,7 +339,7 @@ LOCATION  ::=           ID:id
 
 EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
                 				| METHOD_CALL:m{:RESULT= m;:}
-                				| LITERAL:l{:RESULT= l;:}//cambiar
+                				| LITERAL:l{:RESULT= l;:}
                 				| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr);:}
               			    | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr);:}//Here use a unary minus operator
               			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr);:}

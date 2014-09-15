@@ -27,6 +27,6 @@ public class MethodLocation extends Location {
 	}
 
 	public String toString(){
-		return id + "(" + formalParameters.toString() + ")";
+		return "\n"+id + "(" + formalParameters.toString() + ")" + "\n" + body.toString() + "\n" ;
 	}
 }

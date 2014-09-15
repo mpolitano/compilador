@@ -9,4 +9,6 @@ class test_class{
       x=  alo() + 1;
    }
 
+	void main(){}
+
 }

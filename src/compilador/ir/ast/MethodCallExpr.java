@@ -32,7 +32,7 @@ public class MethodCallExpr extends CallExpr {
 	
 	@Override
 	public String toString() {
-		String rtn = method.toString() + "(";
+		String rtn = method.getId() + "(";
 		for (Expression arg: args) {
 			rtn += arg + ", ";
 		}

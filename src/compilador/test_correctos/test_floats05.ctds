@@ -19,7 +19,7 @@ void main(){
     y= - 002.5;
     z= 3.5698;
     
-    externinvk("printf", float , "anidandofuncionesflotantes", sum(res(y,x), div(x,z)) );
+    externinvk("printf", float , "anidandofuncionesflotantes", sum(resta(y,x), div(x,z)) );
 }
 
 }
