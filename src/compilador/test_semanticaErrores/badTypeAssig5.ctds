@@ -1,0 +1,7 @@
+
+class badTypeAssig5{
+	int main(){
+		boolean a;
+		a=10;
+	}
+}

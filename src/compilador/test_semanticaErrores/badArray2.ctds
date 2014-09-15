@@ -1,0 +1,10 @@
+class badArray2{
+	
+	int main(){
+		int a;
+		int b;
+		b=a[3];
+		externinvk("printf", int, b);
+	}
+
+}

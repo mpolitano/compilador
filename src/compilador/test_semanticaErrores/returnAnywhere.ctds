@@ -1,0 +1,16 @@
+/*probamos que si un metodo retorna un valor debe ser una expresion*/
+class returnAnywhere{
+	
+	int siguiente(int a){
+		return (a + 1);
+	}
+int main(){
+	
+	int aux;
+	aux=12;
+	siguiente(a);
+	externinvk("printf", int, a);
+
+}
+
+}

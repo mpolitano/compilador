@@ -1,0 +1,12 @@
+class badTypeAssig{
+	
+	int main(){
+		int a;
+		float b;
+		float c;
+		a=10;
+		b=23;
+		c=10+23;
+	}
+
+}

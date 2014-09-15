@@ -1,0 +1,21 @@
+/*en este test probamos que el tipo del return debe ser igual que el declarado*/
+
+class badReturn2{
+	
+	int isTwo(int a){
+		if (a==2){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+int main(){
+	int aux;
+	aux=2;
+	boolean boolean_aux;
+	boolean_aux= isTwo(aux);
+	externinvk("printf",int, boolean_aux);
+}
+
+}
