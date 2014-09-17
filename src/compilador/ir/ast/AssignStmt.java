@@ -42,10 +42,11 @@ public class AssignStmt extends Statement {
 		return location + " " + operator + " " + expr;
 		
 	}
-/*
+
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

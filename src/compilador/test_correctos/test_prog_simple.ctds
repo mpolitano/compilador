@@ -4,4 +4,6 @@ class prueba2{
    void alo(int x){
       x= x + 1;
    }
+
+	void main(){}
 }

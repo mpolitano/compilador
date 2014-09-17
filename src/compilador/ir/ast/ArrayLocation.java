@@ -23,16 +23,20 @@ public class ArrayLocation extends Location {
 	public void setBlockId(int blockId) {
 		this.blockId = blockId;
 	}
+
+	public IntLiteral getSize(){
+		return size;
+	}
 	
 	@Override
 	public String toString() {
 		return type.toString()+" "+id+"["+ size +"]";
 	}
 
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

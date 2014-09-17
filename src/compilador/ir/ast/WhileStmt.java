@@ -33,10 +33,10 @@ public class WhileStmt extends Statement {
 		return "while " + condition + '\n' + whileBlock.toString();
 	}
 
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

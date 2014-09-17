@@ -25,10 +25,10 @@ public class VarLocation extends Location {
 	public int getBlockId() {
 		return blockId;
 	}
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }

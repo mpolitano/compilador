@@ -30,10 +30,10 @@ public class ReturnStmt extends Statement {
 			return "return " + expression;
 		}
 	}
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
-*/
+
 }
