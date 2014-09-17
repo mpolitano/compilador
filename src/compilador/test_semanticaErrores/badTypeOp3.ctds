@@ -1,10 +1,15 @@
 class badTypeOp3{
+
 	int main(){
 		int a;
-		a=1;
+		boolean c;
 		int b;
+		a=1;
 		b=2;
-		int c;
-		c=!(a+b);
+		c= !(a && b); //error!!! aca lanza una excepcion
+		
+
+		return 1;
 	}
+
 }

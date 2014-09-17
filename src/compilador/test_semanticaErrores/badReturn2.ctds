@@ -3,7 +3,7 @@
 class badReturn2{
 	
 	int isTwo(int a){
-		if (a==2){
+		if (a==2) {
 			return true;
 		}else{
 			return false;
@@ -12,10 +12,12 @@ class badReturn2{
 
 int main(){
 	int aux;
-	aux=2;
 	boolean boolean_aux;
-	boolean_aux= isTwo(aux);
+	aux=2;
+	boolean_aux= isTwo(aux);  //isTwo retorna un int y boolean_aux es de tipo boolean
 	externinvk("printf",int, boolean_aux);
+
+	return 1;
 }
 
 }

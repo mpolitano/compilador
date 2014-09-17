@@ -4,12 +4,14 @@ class missingReturn{
 	
 	int triple(int a){
 		a=a*3;
-	}
+	} //no hay return
 
 	int main(){
 		int aux;
 		aux=10;
 		externinvk("printf", int, triple(aux));
+
+		return 1;
 	}
 
 }

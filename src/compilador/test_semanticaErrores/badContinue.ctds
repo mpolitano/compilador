@@ -1,0 +1,13 @@
+class badContinue{
+	int a;
+
+	int main(){
+		a=10;
+		if (a==10){
+		continue; //continue fuera de un while o for
+		}else{
+			a-=1;
+		}
+	return 1;
+	}
+}

@@ -10,6 +10,8 @@ int main (){
 	int b;
 	b=10;
 	externinvk("printf", int, suma(a,b)); //pasamos a cuando este no esta declarado
+
+	return 1;
 }
 
 }

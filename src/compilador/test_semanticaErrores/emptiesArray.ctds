@@ -3,10 +3,12 @@ class emptiesArray{
 
 int main(){
 	int a[1000];
-	int b[0000];
+	int b[0000];  //no puede ser 0
 	int c[1000];
 	int d[0];
 	int e[000000010000];
+
+	return 1;
 }
 
 }

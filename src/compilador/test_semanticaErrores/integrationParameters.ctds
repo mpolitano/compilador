@@ -9,7 +9,7 @@ class integrationParameters{
 		if (((a<b) && (a>c)) || ((a<c) && (a>b))){
 			return a;			
 		}else{
-			if (((b<a) && (b>c)) || ((b<c) && (b>a)){
+			if (((b<a) && (b>c)) || ((b<c) && (b>a))){
 				return b;			
 			}else{
 				return c;			
@@ -31,6 +31,8 @@ class integrationParameters{
 							// y ademas b es un boolean, inside espera un int, 
 							//otro error es que d es de tipo float y le asignamos el resultado de inside (tipo de retorno=int), por lo cual aqui cometemos muchos errores
 		externinvk("printf", int, d); //pasamos el tipo int y d, cuando d es un float
+	
+		return 1;
 	}
 
 }

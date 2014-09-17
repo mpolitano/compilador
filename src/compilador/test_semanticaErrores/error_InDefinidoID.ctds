@@ -8,6 +8,8 @@ int main(){
 	int d;
 	int d;
     externinvk("printf", int , suma(4,8 ));
+
+    return 1;
 }
 
 }

@@ -5,11 +5,13 @@ class returnAnywhere{
 		return (a + 1);
 	}
 int main(){
-	
+
 	int aux;
 	aux=12;
-	siguiente(a);
-	externinvk("printf", int, a);
+	siguiente(aux); //no tiene a que variable darle el valor de retorno!!!!
+	externinvk("printf", int, aux);
+
+	return 1;
 
 }
 

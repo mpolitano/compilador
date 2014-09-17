@@ -9,6 +9,8 @@ int main(){
 	int a;
 	int b;
 	externinvk("printf", int, suma(a,b));
+
+	return 1;
 }
 
 float main(){
@@ -17,6 +19,8 @@ float main(){
 	a=1;
 	b=2;
 	externinvk("printf", int, suma(a,b));
+
+	return 1.10000;
 }
 
 

@@ -4,7 +4,7 @@ class grados{
 
 	float aFahrenheit (float celcius){
 		float result;
-		result = celcius * 1,8;
+		result = (celcius * 1.8);
 		result +=32;
 		return result;
 	}
@@ -12,18 +12,18 @@ class grados{
 	float aCelcius (float f){
 		float result;
 		f -= 32;
-		result = f/1,8;
+		result = f/1.8;
 		return result;
 	}
 
 	void main(){
 		float c;
+		float d;
 		c=28;
+		d=30;
+		d=aCelcius(d);
 		externinvk("printf",float,aFahrenheit(c));
-		float f;
-		f=30;
-		f=aCelcius(f);
-		externinvk("printf", float, f); 
+		externinvk("printf", float, d); 
 	}
 
 }

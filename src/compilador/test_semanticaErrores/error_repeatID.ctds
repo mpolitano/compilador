@@ -3,13 +3,15 @@ class test_if{
 int suma(int b, int c ){
 	
         int d;
-        int b;
+        int b; //b esta siendo redefinida en el mismo bloque ya que es pasada como parametro
         d=b+c;
         return d;
 	}
 
 int main(){
     externinvk("printf", int , suma(4,8 ));
+
+    return 1;
 }
 
 }

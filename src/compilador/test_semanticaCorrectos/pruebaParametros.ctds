@@ -17,6 +17,8 @@ class pruebaParametros{
 		int res;
 		res = sumaCinco(a,b,c,d,e);
 		externinvk("printf", int, res);
+
+		return 1;
 	}
 
 }

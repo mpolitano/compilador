@@ -2,7 +2,9 @@
 class negativeArray{
 
 int main(){
-	int a[-1000];
+	int a[-1000]; //array negativo, no es valido
+
+	return 1;
 }
 
 }

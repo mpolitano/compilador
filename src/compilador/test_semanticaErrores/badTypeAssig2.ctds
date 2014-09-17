@@ -1,10 +1,13 @@
 class badTypeAssig2{
 	
 int main(){
+	boolean bool;
 	int a;
 	a=10;
-	boolean bool;
+	bool=true;
 	a+=bool; //error
+
+	return 1;
 }
 
 }

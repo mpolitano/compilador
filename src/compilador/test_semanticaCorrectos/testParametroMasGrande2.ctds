@@ -17,8 +17,11 @@ class testParametroMasGrande2{
 
 	int main(){
 		int a;
-		int b = 3;
+		int b;
+		b = 3;
 		a = 2;
 		externinvk("printf", int , masGrande(a,b));	
+
+		return 1;
 	} 
 }

@@ -8,8 +8,10 @@ class withoutReturn{
 	int main(){
 int a;
 a=2;
-a=anterior(a);
+a=anterior(a); //anterior no retorna nada, es void
 externinvk("printf",int,a);
+	
+return 1;
 	}
 
 }

@@ -2,12 +2,11 @@
 class badArray{
 
  int main(){
-	int a;
-	a=10;
-	int b[a];
 	float c[10];
 	boolean d[10];
 	int z[hola];
+
+	return 1;
  }
 
 }

@@ -20,6 +20,8 @@ int main(){
 	b=2; //queremos asignar el valor 2 a una variable que no fue definida
 	int b;
 	externinvk("printf", int, masChico("printf",int,masChico(a,b)));
+
+	return 1;
 }
 
 

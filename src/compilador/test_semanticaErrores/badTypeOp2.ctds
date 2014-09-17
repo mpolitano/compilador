@@ -7,5 +7,7 @@ class badTypeOp2{
 		if (a==b){ //error, comparo tipos diferentes
 			externinvk("printf", int, true);
 		}
+
+		return 1;
 	}
 }

@@ -20,6 +20,8 @@ class suma{
 		d=4;
 		e=5;
 		externinvk("printf", int, sumaCuatro(a,b,c,d,e)); // sumaCuatro espera cuatro valores y le pasamos 5
+	
+		return 1;
 	}
 
 }

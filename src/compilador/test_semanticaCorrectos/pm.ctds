@@ -2,13 +2,13 @@
 
 class pm{
 
-	int horaEnAMPM(int hora){
+	int horaEnAMPM (int hora){
 		if ((hora>12) && (hora<25)) {
 			hora-=12;
 			return hora;		
 		}else{
 			if(hora>24){
-				return 9999999999999999;
+				return 99;
 			}else{
 			return hora;
 			}
@@ -17,11 +17,13 @@ class pm{
 
 	int main(){
 		int a;
-		a=11;
 		int b;
+		a=11;
 		b=15; 
 		externinvk("printf", int, horaEnAMPM(a));
 		externinvk("printf", int, horaEnAMPM(b));	
+
+		return 1;
 	}
 
 }

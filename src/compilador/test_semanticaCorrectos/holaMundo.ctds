@@ -1,8 +1,9 @@
-class holaMundo(){
+class holaMundo{
 	
 	int main(){
 
-	externinvk("printf", string, "Hola Mundo! :)");
+		externinvk("printf", int, "HolaMundo");
+		return 1;
 
 	}
 

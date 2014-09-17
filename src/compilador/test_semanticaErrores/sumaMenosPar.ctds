@@ -10,10 +10,12 @@ class sumaMenosPar{
 
 int main(){
 	int a;
-	a=10;
 	int b;
+	a=10;
 	b=100;
 	externinvk("printf",int, suma(a)); //a suma le damos un solo parametro cuando espera recibir 2
+
+	return 1;
 }
 
 }

@@ -30,14 +30,16 @@ void oneMore(int a){
 	int main(){
 		int a;
 		a= First();
-		a = (Second() + Third())
-		externinvk("printf", int,a);
+		a = (Second() + Third());
+		externinvk("printf", int, a);
 		externinvk("printf", int, Fourth());
 		externinvk("printf", int, (Fifth()+First()));
 		externinvk("printf", int, ((((Fifth()+First())+Second())+Third())+Fourth()));		
 		a=((((Fifth()+First())+Second())+Third())+Fourth());		
 		oneMore(a);
 		externinvk("printf", int, a);
-		externinvk("printf", int, oneMore(a));					
+		externinvk("printf", int, oneMore(a));		
+
+		return 1;			
 	}
 }

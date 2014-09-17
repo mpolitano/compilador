@@ -21,6 +21,8 @@ int main(){
     float a;
 	a=10;
     externinvk("printf", int , factorial(a)); //a es tipo float y factorial espera un int
+
+    return 1;
 }
 
 }
