@@ -1,5 +1,7 @@
 package ir.ast;
+import ir.ASTVisitor;
 import java.util.*;
+
 
 public class MethodLocation extends Location {
 

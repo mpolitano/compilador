@@ -1,9 +1,10 @@
 package ir.ast;
+import ir.ASTVisitor;
 
-public class StringExpr extends Literal {
+public class StringLiteral extends Literal {
 	protected String value;
 	
-	public StringExpr(String my_value){
+	public StringLiteral(String my_value){
 		this.value = my_value;
 	}
 
@@ -23,4 +24,11 @@ public class StringExpr extends Literal {
 		return Type.STRING;
 	}
 
+	@Override
+	public <T> T accept(ASTVisitor<T> v) {
+		return v.visit(this);
+	}
+
+
 }
+

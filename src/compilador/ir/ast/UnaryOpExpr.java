@@ -33,11 +33,11 @@ public class UnaryOpExpr extends Expression {
 	public String toString() {
 		return operator.toString() + expression;
 	}
-/*
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
 
-*/
+
 }

@@ -123,7 +123,7 @@ ComentarioLinea= "//".*\n
     //Literales
     {Digit}{Digit}* {  return symbol(sym.INT,new IntLiteral(yytext()));   }
     {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT, new FloatLiteral(yytext()));   }
-    "\""{ASCII}*"\"" {  return symbol(sym.STRING, new StringExpr(yytext()));  }
+    "\""{ASCII}*"\"" {  return symbol(sym.STRING, new StringLiteral(yytext()));  }
     "/*"        {yybegin(COMENTARIO);     }
 
       .   {   System.out.println ("Caracter ilegal!!!   " + yytext() + " en linea " + yyline + " columna " + yycolumn);
