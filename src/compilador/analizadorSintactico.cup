@@ -81,7 +81,7 @@ terminal Type RESERV_BOOLEAN, RESERV_INT, RESERV_FLOAT, VOID;
 terminal IntLiteral INT;
 terminal SecStmt PUNTOCOMA;
 terminal AssignOpType ASSIGSUB,ASSIG,ASSIGPLUS;
-terminal StringExpr STRING;
+terminal StringLiteral STRING;
 terminal FloatLiteral FLOAT;
 terminal BooleanLiteral TRUE,FALSE;
 terminal BinOpType  LOWEREQUAL,HIGHEREQUAL, HIGHER,LOWER,PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, OR, AND;
