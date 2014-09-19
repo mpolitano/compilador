@@ -23,7 +23,7 @@ public class WhileStmt extends Statement {
 		return whileBlock;
 	}
 
-	public void setIfBlock(Block newBlock) {
+	public void setBlock(Block newBlock) {
 		this.whileBlock = newBlock;
 	}
 

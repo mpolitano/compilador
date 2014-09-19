@@ -17,7 +17,15 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		errors= new LinkedList<Error>();
 	}
 //visit program
-	public Type visit(Program prog){return Type.UNDEFINED;};
+	public Type visit(Program prog){
+		for(Location l: prog.getFields()){
+			l.accept(this);
+		}
+		for(MethodLocation m: prog.getMethods()){
+			m.accept(this);
+		}
+		return Type.UNDEFINED;
+	};
 
 // visit statements
 	public Type visit(AssignStmt stmt){
@@ -38,18 +46,60 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		}
 		return Type.UNDEFINED;//default return
    	};
-	public Type visit(ReturnStmt stmt){return Type.UNDEFINED;};
-	public Type visit(IfStmt stmt){return Type.UNDEFINED;};
-	public Type visit(Block stmt){return Type.UNDEFINED;};
+
+	public Type visit(ReturnStmt stmt){
+		return stmt.getExpression().accept(this); //return expresion type
+	};
+
+	public Type visit(IfStmt stmt){
+		Type conditionType= stmt.getCondition().accept(this);
+		if (conditionType!=Type.BOOLEAN){
+			addError(stmt, "If's condition must be a Boolean expression");
+		}
+		stmt.getIfBlock().accept(this); //Visit if block
+		if (stmt.getElseBlock()!=null){
+			stmt.getElseBlock().accept(this);
+		}		
+		return Type.UNDEFINED; //Return a UNDEFINED, because if statement hasn't a type. It ins't an error.
+	};
+
+	public Type visit(Block stmt){
+		for(Statement s:stmt.getStatements()){
+			s.accept(this);//Type check in block's body.
+		}	
+		return Type.UNDEFINED;//Return a UNDEFINED, because block hasn't a type. It ins't an error.
+	};
+
 	public Type visit(BreakStmt stmt){return Type.UNDEFINED;};
 	public Type visit(ContinueStmt stmt){return Type.UNDEFINED;};
-	public Type visit(ForStmt stmt){return Type.UNDEFINED;};
-	public Type visit(SecStmt stmt){return Type.UNDEFINED;};
-	public Type visit(WhileStmt stmt){return Type.UNDEFINED;};
+	
+	public Type visit(ForStmt stmt){
+		Expression initialValue= stmt.getInitialValue();
+		Expression finalValue= stmt.getFinalValue();
+		if(initialValue.accept(this)!=Type.INT && finalValue.accept(this)!=Type.INT){//check for integer expression in initial value and final value
+			addError(stmt,"For loop must have integer expressions: ");
+		}		
+		return Type.UNDEFINED;
+	};
+	public Type visit(SecStmt stmt){return Type.UNDEFINED;};//Should't do anything
+	
+	public Type visit(WhileStmt stmt){
+		Type conditionType= stmt.getCondition().accept(this);
+		if (conditionType!=Type.BOOLEAN){
+			addError(stmt, "While's condition must be a Boolean expression");
+		}
+		stmt.getBlock().accept(this); //Visit while block	
+		return Type.UNDEFINED; //Return a UNDEFINED, because while statement hasn't a type. It ins't an error.
+	};
 
 //Visit Location
 	public Type visit(VarLocation loc){return loc.getType();};
-	public Type visit(MethodLocation loc){return loc.getType();};
+	
+	public Type visit(MethodLocation loc){
+		loc.getBody().accept(this);
+		return loc.getType();
+	};
+	
 	public Type visit(ArrayLocation loc){return loc.getType();};
 	
 

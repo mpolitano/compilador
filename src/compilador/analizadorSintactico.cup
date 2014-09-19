@@ -2,6 +2,8 @@ import java_cup.runtime.*;
 import java.io.FileReader;
 import ir.ast.*;
 import java.util.*;
+import ir.ASTVisitor;
+import ir.semcheck.TypeCheckVisitor;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -131,7 +133,7 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-              :} PROGRAM:p{:System.out.println(p.toString());RESULT=p;:};
+              :} PROGRAM:p{:System.out.println(p.toString()); TypeCheckVisitor typeCheckVisitor= new TypeCheckVisitor();p.accept(typeCheckVisitor);System.out.println(typeCheckVisitor.getErrors().toString());RESULT=p;:};
 
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 

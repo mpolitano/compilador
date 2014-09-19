@@ -8,7 +8,11 @@ public class Error{
 	public Error(int my_line, int my_column, String my_description){
 		line=my_line;
 		column=my_column;
-		my_description= my_description;
+		description= my_description;
+	}
+
+	public String toString(){
+		return "Line: "+ line + " Column: "+ column+" "+description;
 	}
 	
 
