@@ -1,9 +1,9 @@
 class badBreak{
 	float a;
 	int main (){
-		a=2;
-		if (a==2){
-			a=a+1;
+		a=2.00;
+		if (a==2.00){
+			a=a+1.00;
 		}else{
 			break; //break fuera de un while o for
 		}   
