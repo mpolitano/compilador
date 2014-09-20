@@ -114,7 +114,14 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		return loc.getType();
 	};
 	
-	public Type visit(ArrayLocation loc){return loc.getType();};
+	public Type visit(ArrayLocation loc){
+		if (loc.getExpression()!=null){
+			if (loc.accept(this)!=Type.INT){
+				addError(loc, "Type error in Array index Expressio:[expr],expr must be an Int expression ");		
+			}
+		}
+		return loc.getType();
+	};
 	
 
 //DOCUMENTAR

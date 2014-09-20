@@ -331,13 +331,14 @@ LOCATION  ::=           ID:id
                                 RESULT=l;                                
                               }                          
                             :} 
-                        | ID:id CORAB EXPR CORCER
+                        | ID:id CORAB EXPR:expr CORCER //ERROR, HACER ALGO CON EXPR
                           {:
                               Location l= symTable.getByIde(id.getId()); 
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
-                                RESULT=l;                                
+                                if(l instanceof ArrayLocation){l.setExpression(expr); RESULT=l;}
+                                else{report_error("Simbol isn't an Array Location  :",id);};                               
                               }                          
                           :};
 

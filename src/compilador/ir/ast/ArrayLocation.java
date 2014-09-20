@@ -5,6 +5,7 @@ import ir.ASTVisitor;
 public class ArrayLocation extends Location {
 	private int blockId;
 	private IntLiteral size; //this must be > 0
+	private Expression expr;
 
 
 	public ArrayLocation(String my_name,int my_line, int my_col,int my_block_id, IntLiteral my_size){
@@ -26,6 +27,14 @@ public class ArrayLocation extends Location {
 
 	public IntLiteral getSize(){
 		return size;
+	}
+
+	public Expression getExpression(){
+		return expr;
+	}
+
+	public void setExpression(Expression my_expression){
+		expr=my_expression;
 	}
 	
 	@Override
