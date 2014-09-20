@@ -31,6 +31,10 @@ public class ExterninvkCallExpr extends CallExpr {
 	public void setArgs(List<Expression> args) {
 		this.args = args;
 	}
+
+	public Type getReturnType(){
+		return this.returnType;
+	}
 	
 	@Override
 	public String toString() {
