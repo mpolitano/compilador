@@ -53,6 +53,8 @@ private List<Error> errors;
 	public Boolean visit(ForStmt stmt){return false;}	
 	public Boolean visit(SecStmt stmt){return false;}
 	public Boolean visit(WhileStmt stmt){return false;}
+	public Boolean visit(MethodCallStmt stmt){return false;}
+	public Boolean visit(ExterninvkCallStmt stmt){return false;}
 
 //Visit Location
 	public Boolean visit(VarLocation var){return false;}

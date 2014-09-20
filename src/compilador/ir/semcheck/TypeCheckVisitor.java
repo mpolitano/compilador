@@ -92,6 +92,30 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		return Type.UNDEFINED; //Return a UNDEFINED, because while statement hasn't a type. It ins't an error.
 	};
 
+	public Type visit(MethodCallStmt stmt){
+		List<Location> formalParameters=stmt.getMethod().getFormalParameters();
+		List<Expression> actualParameters= stmt.getArguments();
+		if (formalParameters.size() !=actualParameters.size() ){addError(stmt,"Formal Parameters mismatched with actual parameters: "); return Type.UNDEFINED;}
+		else{//formal parameters list and actual parameters list have same size
+				for (int i=0; i<formalParameters.size(); i++){
+					if (formalParameters.get(i).accept(this)!= actualParameters.get(i).accept(this)){
+						addError(stmt,"Formal Parameters mismatched with actual parameters: ");	
+						return Type.UNDEFINED;
+					}
+				}
+				return Type.UNDEFINED; //Return UNDEFINED TYPE.	
+		}
+	};	
+	
+	public Type visit(ExterninvkCallStmt stmt){
+		for (Expression e:stmt.getArguments()){
+			e.accept(this); //Check type in Externinvk actual parameters. 
+		}
+		return Type.UNDEFINED;//return the method's return type
+
+	}
+
+
 //Visit Location
 	public Type visit(VarLocation loc){return loc.getType();};
 	
@@ -161,6 +185,9 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	};
 
 	public Type visit(ExterninvkCallExpr expr){
+		for (Expression e:expr.getArguments()){
+			e.accept(this); //Check type in Externinvk actual parameters. 
+		}
 		return expr.getReturnType();//return the method's return type
 	};
 	

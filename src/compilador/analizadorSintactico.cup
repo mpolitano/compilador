@@ -52,8 +52,7 @@ parser code{:
        de simbolos correspondiente. */
     public static void main(String[] args){
         try {
-            parser a = new parser(
-            new AnalizadorLexico( new FileReader(args[0])));
+            parser a = new parser(new AnalizadorLexico( new FileReader(args[0])));
             Program result = (Program)a.parse().value;
             TypeCheckVisitor typeCheckVisitor= new TypeCheckVisitor();
             result.accept(typeCheckVisitor);
@@ -73,21 +72,7 @@ parser code{:
               }else{
                 System.out.println(typeCheckVisitor.getErrors().toString());
                 } 
-            }
-
-
-
-         /*   if (typeCheckVisitor.getErrors().isEmpty() && breakCheckVisitor.getErrors().isEmpty()){
-              System.out.println("---- PARSER COMPLETADO!! ------");
-            }else{
-              if (!(typeCheckVisitor.getErrors().isEmpty())){
-                System.out.println(typeCheckVisitor.getErrors().toString());
-              }if!(breakCheckVisitor.getErrors().isEmpty())){
-                System.out.println(breakCheckVisitor.getErrors().toString());
-              }else{
-                System.out.println(breakCheckVisitor.getErrors().toString() + "\n" + System.out.println(typeCheckVisitor.getErrors().toString()););
-              }
-            }*/
+            } 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -164,7 +149,7 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-              :} PROGRAM:p{:RESULT=p;:};
+              :} PROGRAM:p{:RESULT=p;:} ;
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){
@@ -303,7 +288,9 @@ BOOLEAN  ::=            TRUE:t{:RESULT= t;:} | FALSE:f{:RESULT= f;:} ;
 
 
 STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr);:}
-                				| METHOD_CALL PUNTOCOMA{:RESULT= new SecStmt();:}
+                				| METHOD_CALL:method PUNTOCOMA{:if (method instanceof MethodCallExpr){ RESULT= new  MethodCallStmt(((MethodCallExpr)method).getMethod(), ((MethodCallExpr)method).getArguments());}
+                                                        else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
+                        :}
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional);:}
                 				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body);:}
               			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body);:}
@@ -367,7 +354,7 @@ LOCATION  ::=           ID:id
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
-                                if(l instanceof ArrayLocation){l.setExpression(expr); RESULT=l;}
+                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr); RESULT=l;}
                                 else{report_error("Simbol isn't an Array Location  :",id);};                               
                               }                          
                           :};

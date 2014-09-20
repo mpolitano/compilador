@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MethodCallExpr extends CallExpr {
-	private MethodLocation method;
-	private List<Expression> args;
+public class MethodCallStmt extends CallStmt {
+	protected MethodLocation method;
 	
-
-	public MethodCallExpr(MethodLocation my_method, List<Expression> a) {
+	public MethodCallStmt(MethodLocation my_method, List<Expression> my_listExpr) {
 		this.method=my_method;
-		this.args = a;
+		this.args = my_listExpr;
 	}
 	
 	public MethodLocation getMethod() {
@@ -22,14 +20,6 @@ public class MethodCallExpr extends CallExpr {
 		this.method = my_method;
 	}
 
-	public List<Expression> getArguments() {
-		return args;
-	}
-
-	public void setArgs(List<Expression> args) {
-		this.args = args;
-	}
-	
 	@Override
 	public String toString() {
 		String rtn = method.getId() + "(";

@@ -11,8 +11,6 @@ int main(){
 	int i;
 	i=2;
 	i=masDos(i); //el metodo masDos no existe, aqui debe fallar
-
-	return 1;
 }
 
 

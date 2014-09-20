@@ -18,6 +18,8 @@ public interface ASTVisitor<T> {
 	public T visit(ForStmt stmt);
 	public T visit(SecStmt stmt);
 	public T visit(WhileStmt stmt);
+	public T visit(MethodCallStmt stmt);
+	public T visit(ExterninvkCallStmt stmt);
 
 //Visit Location
 	public T visit(VarLocation var);
