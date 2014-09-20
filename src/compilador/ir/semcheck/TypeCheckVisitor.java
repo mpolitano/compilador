@@ -96,7 +96,21 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(VarLocation loc){return loc.getType();};
 	
 	public Type visit(MethodLocation loc){
-		loc.getBody().accept(this);
+		Block methodBody=loc.getBody();
+		methodBody.accept(this);
+		for (Statement s: methodBody.getStatements()){
+			if (s instanceof ReturnStmt){
+				if (loc.getType()==Type.VOID){//If method's return type is void so return statement can't has a expression
+					if (((ReturnStmt)s).getExpression()==null){
+						addError(s,"Void Method can't have a 'return <expr>' statement");	
+					}
+				}else{//else method's return type must be equal to expression type
+					if (s.accept(this)!= loc.getType()){
+						addError(s,"Type return not valid");
+					}
+				}
+			}
+		}
 		return loc.getType();
 	};
 	
@@ -139,7 +153,9 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		return Type.UNDEFINED;  
 	};
 
-	public Type visit(ExterninvkCallExpr expr){return Type.UNDEFINED;};
+	public Type visit(ExterninvkCallExpr expr){
+		return expr.getReturnType();//return the method's return type
+	};
 	
 	//This method Should check if actual parameters's type and formal parameter's type are equal and return method's return type
 	public Type visit(MethodCallExpr expr){
