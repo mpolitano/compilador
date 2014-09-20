@@ -19,7 +19,7 @@ public class VarLocation extends Location {
 	
 	@Override
 	public String toString() {
-		return type.toString()+" "+id;
+		return id;
 	}
 
 	public int getBlockId() {

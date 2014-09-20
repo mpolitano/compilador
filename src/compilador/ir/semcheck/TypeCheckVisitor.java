@@ -101,7 +101,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		for (Statement s: methodBody.getStatements()){
 			if (s instanceof ReturnStmt){
 				if (loc.getType()==Type.VOID){//If method's return type is void so return statement can't has a expression
-					if (((ReturnStmt)s).getExpression()==null){
+					if (((ReturnStmt)s).getExpression()!=null){
 						addError(s,"Void Method can't have a 'return <expr>' statement");	
 					}
 				}else{//else method's return type must be equal to expression type

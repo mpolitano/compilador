@@ -4,6 +4,7 @@ import ir.ast.*;
 import java.util.*;
 import ir.ASTVisitor;
 import ir.semcheck.TypeCheckVisitor;
+import ir.semcheck.BreakContinueCheckVisitor;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -53,8 +54,40 @@ parser code{:
         try {
             parser a = new parser(
             new AnalizadorLexico( new FileReader(args[0])));
-            Object result = a.parse().value;
-            System.out.println("---- PARSER COMPLETADO!! ------");
+            Program result = (Program)a.parse().value;
+            TypeCheckVisitor typeCheckVisitor= new TypeCheckVisitor();
+            result.accept(typeCheckVisitor);
+            BreakContinueCheckVisitor breakCheckVisitor= new BreakContinueCheckVisitor();
+            result.accept(breakCheckVisitor);
+            int sizeErrorType = typeCheckVisitor.getErrors().size();
+            int sizeErrorBreak= breakCheckVisitor.getErrors().size();
+            switch(sizeErrorType){
+              case 0:
+                switch(sizeErrorBreak){
+                  case 0:  System.out.println("---- PARSER COMPLETADO!! ------");
+                  default: System.out.println(breakCheckVisitor.getErrors().toString());
+             }
+              default: if (sizeErrorBreak!=0){
+                System.out.println(typeCheckVisitor.getErrors().toString());
+                System.out.println(breakCheckVisitor.getErrors().toString());
+              }else{
+                System.out.println(typeCheckVisitor.getErrors().toString());
+                } 
+            }
+
+
+
+         /*   if (typeCheckVisitor.getErrors().isEmpty() && breakCheckVisitor.getErrors().isEmpty()){
+              System.out.println("---- PARSER COMPLETADO!! ------");
+            }else{
+              if (!(typeCheckVisitor.getErrors().isEmpty())){
+                System.out.println(typeCheckVisitor.getErrors().toString());
+              }if!(breakCheckVisitor.getErrors().isEmpty())){
+                System.out.println(breakCheckVisitor.getErrors().toString());
+              }else{
+                System.out.println(breakCheckVisitor.getErrors().toString() + "\n" + System.out.println(typeCheckVisitor.getErrors().toString()););
+              }
+            }*/
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -91,11 +124,10 @@ terminal UnaryOpType NEG;
 
 // No Terminales (producciones).  
                         
-non terminal Program PRUEBA;
+non terminal Program PRUEBA, PROGRAM;
 non terminal Type TYPE;
 non terminal List<Location> FIELD_PLUS;   
-non terminal Location FIELD; 
-non terminal Program PROGRAM;
+non terminal Location FIELD,LOCATION; 
 non terminal List<Location> FIELD_DECL_STAR, FIELD_DECL;
 non terminal List<MethodLocation> METHOD_DECL_STAR;
 non terminal MethodLocation METHOD_DECL;
@@ -107,7 +139,6 @@ non terminal Statement STATAMENT;
 non terminal Block ELSE_OPTIONAL;
 non terminal AssignOpType ASSING_OP;
 non terminal Expression EXPR, EXPR_OPTIONAL,EXTERNINVK_ARG;
-non terminal Location LOCATION;
 non terminal CallExpr METHOD_CALL;
 non terminal List<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
 non terminal Literal LITERAL;
@@ -133,8 +164,7 @@ PRUEBA ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); 
                inMethodDecl= false;
                cantMain=0;
-              :} PROGRAM:p{:System.out.println(p.toString()); TypeCheckVisitor typeCheckVisitor= new TypeCheckVisitor();p.accept(typeCheckVisitor);System.out.println(typeCheckVisitor.getErrors().toString());RESULT=p;:};
-
+              :} PROGRAM:p{:RESULT=p;:};
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){

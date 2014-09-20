@@ -29,7 +29,8 @@ public class MethodLocation extends Location {
 	}
 
 	public String toString(){
-		return "\n"+id + "(" + formalParameters.toString() + ")" + "\n" + body.toString() + "\n" ;
+		return "Method: " + id;
+		//return "\n"+id + "(" + formalParameters.toString() + ")" + "\n" + body.toString() + "\n" ;
 	}
 
 	@Override
