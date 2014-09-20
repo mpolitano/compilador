@@ -37,8 +37,10 @@ private List<Error> errors;
 
 	public Boolean visit(Block stmt){
 		for (Statement s:stmt.getStatements()){
-				if (s instanceof BreakStmt || s instanceof ContinueStmt ){
-					addError(stmt,"Error in Break or Continue : ");
+				if (s instanceof BreakStmt){
+					addError(stmt,"Break error declaration : ");
+				}if(s instanceof ContinueStmt){
+					addError(stmt,"Continue error declaration : ");					
 				}
 				if(s instanceof IfStmt){s.accept(this);}
 				if(s instanceof Block){s.accept(this);}
