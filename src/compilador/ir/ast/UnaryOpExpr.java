@@ -8,9 +8,11 @@ public class UnaryOpExpr extends Expression {
 	/*
 	 * @param: String enumValue should be either '-' or '!'. Expression expr is an expression
 	 */
-	public UnaryOpExpr(UnaryOpType op, Expression expr){
+	public UnaryOpExpr(UnaryOpType op, Expression expr,int my_line,int my_column){
 		this.operator = op;
 		this.expression = expr;
+		lineNumber=my_line;
+		colNumber= my_column;
 	}
 
 	public UnaryOpType getOperator() {

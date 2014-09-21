@@ -51,15 +51,15 @@ ComentarioLinea= "//".*\n
 <YYINITIAL> {
     /* Regresa que el token la palabra reservada. */
 
-    "break" {   return symbol(sym.BREAK);}
+    "break" {   return symbol(sym.BREAK, new BreakStmt(yyline,yycolumn));}
     "class" {  return  symbol(sym.CLASS);   }
-    "continue" {  return  symbol(sym.CONTINUE);   }
+    "continue" {  return  symbol(sym.CONTINUE,new ContinueStmt(yyline,yycolumn));   }
     "else" {  return  symbol(sym.ELSE);   }
-    "false" {  return  symbol(sym.FALSE, new BooleanLiteral(false));   }
+    "false" {  return  symbol(sym.FALSE, new BooleanLiteral(false,yyline,yycolumn));   }
     "for" {  return  symbol(sym.FOR); }
     "if" {  return  symbol(sym.IF);   }
     "return" {  return  symbol(sym.RETURN);   }
-    "true" {  return  symbol(sym.TRUE,new BooleanLiteral(true));   }
+    "true" {  return  symbol(sym.TRUE,new BooleanLiteral(true,yyline,yycolumn));   }
     "while" {  return  symbol(sym.WHILE);   }
     "externinvk" {  return  symbol(sym.EXTERNINVK);   }
 
@@ -100,7 +100,7 @@ ComentarioLinea= "//".*\n
     //Delimitadores
     "(" {  return  symbol(sym.PARENIZQ);   }
     ")" {  return  symbol(sym.PARENDER);   }
-    ";" {  return  symbol(sym.PUNTOCOMA, new SecStmt());}
+    ";" {  return  symbol(sym.PUNTOCOMA, new SecStmt(yyline,yycolumn));}
     "," {  return  symbol(sym.COMA);   }
 
     //Tipos
@@ -121,9 +121,9 @@ ComentarioLinea= "//".*\n
                                 }
 
     //Literales
-    {Digit}{Digit}* {  return symbol(sym.INT,new IntLiteral(yytext()));   }
-    {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT, new FloatLiteral(yytext()));   }
-    "\""{ASCII}*"\"" {  return symbol(sym.STRING, new StringLiteral(yytext()));  }
+    {Digit}{Digit}* {  return symbol(sym.INT,new IntLiteral(yytext(),yyline,yycolumn));   }
+    {Digit} {Digit}* "." {Digit} {Digit}* {  return symbol(sym.FLOAT, new FloatLiteral(yytext(),yyline,yycolumn));   }
+    "\""{ASCII}*"\"" {  return symbol(sym.STRING, new StringLiteral(yytext(),yyline,yycolumn));  }
     "/*"        {yybegin(COMENTARIO);     }
 
       .   {   System.out.println ("Caracter ilegal!!!   " + yytext() + " en linea " + yyline + " columna " + yycolumn);

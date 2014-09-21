@@ -4,8 +4,10 @@ import ir.ASTVisitor;
 public class StringLiteral extends Literal {
 	protected String value;
 	
-	public StringLiteral(String my_value){
+	public StringLiteral(String my_value,int my_line, int my_column){
 		this.value = my_value;
+		lineNumber=my_line;
+		colNumber= my_column;
 	}
 
 	public void setValue(String my_value) {

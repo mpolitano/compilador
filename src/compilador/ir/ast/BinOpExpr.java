@@ -7,10 +7,12 @@ public class BinOpExpr extends Expression {
 	private Expression lOperand; //left expression
 	private Expression rOperand; //right expression
 	
-	public BinOpExpr(Expression l, BinOpType op, Expression r){
+	public BinOpExpr(Expression l, BinOpType op, Expression r,int my_line,int my_column){
 		operator = op;
 		lOperand = l;
 		rOperand = r;
+		lineNumber= my_line;
+		colNumber= my_column;
 	}
 /*	
 	public BinOpExpr(Expression e, TempExpression t) {

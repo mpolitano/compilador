@@ -76,7 +76,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(ForStmt stmt){
 		Expression initialValue= stmt.getInitialValue();
 		Expression finalValue= stmt.getFinalValue();
-		if(initialValue.accept(this)!=Type.INT && finalValue.accept(this)!=Type.INT){//check for integer expression in initial value and final value
+		if(initialValue.accept(this)!=Type.INT || finalValue.accept(this)!=Type.INT){//check for integer expression in initial value and final value
 			addError(stmt,"For loop must have integer expressions: ");
 		}		
 		return Type.UNDEFINED;
@@ -195,16 +195,15 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(MethodCallExpr expr){
 		List<Location> formalParameters=expr.getMethod().getFormalParameters();
 		List<Expression> actualParameters= expr.getArguments();
-		if (formalParameters.size() !=actualParameters.size() ){addError(expr,"Formal Parameters mismatched with actual parameters: "); return Type.UNDEFINED;}
+		if (formalParameters.size() !=actualParameters.size() ){addError(expr,"Formal Parameters mismatched with actual parameters: ");}
 		else{//formal parameters list and actual parameters list have same size
 				for (int i=0; i<formalParameters.size(); i++){
 					if (formalParameters.get(i).accept(this)!= actualParameters.get(i).accept(this)){
 						addError(expr,"Formal Parameters mismatched with actual parameters: ");	
-						return Type.UNDEFINED;
 					}
 				}
-				return expr.getMethod().getType(); //Return method's return type.	
 		}
+		return expr.getMethod().getType(); //Return method's return type.	
 	};	
 	
 	public Type visit(UnaryOpExpr expr){
@@ -272,7 +271,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	}
 
 //Main for test class function
-	public static void main(String[] args){
+/*	public static void main(String[] args){
 		Expression e= new BinOpExpr(new IntLiteral("4"),BinOpType.DIVIDE,new IntLiteral("3"));
 		VarLocation var=new VarLocation("ab",0,0,-1);
 		var.setType(Type.FLOAT);
@@ -283,5 +282,5 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		TypeCheckVisitor v= new TypeCheckVisitor();
 		System.out.println(e.accept(v).toString());
 
-	}
+	}*/
 }

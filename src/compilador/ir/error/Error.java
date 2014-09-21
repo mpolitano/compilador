@@ -6,13 +6,13 @@ public class Error{
 	private String description;
 
 	public Error(int my_line, int my_column, String my_description){
-		line=my_line;
-		column=my_column;
+		line=my_line+1; //For fix wrong line number
+		column=my_column+1;//For fix wrong line number
 		description= my_description;
 	}
 
 	public String toString(){
-		return "Line: "+ line + " Column: "+ column+" "+description;
+		return "Line: "+ line + " Column: "+ column +" "+description;
 	}
 	
 

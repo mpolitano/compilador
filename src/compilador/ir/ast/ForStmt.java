@@ -8,11 +8,13 @@ public class ForStmt extends Statement {
 	private Expression finalValue;
 	private Block block;
 	
-	public ForStmt(Location i, Expression init, Expression fin, Block bl) {
+	public ForStmt(Location i, Expression init, Expression fin, Block bl,int my_line,int my_column) {
 		this.id = i;
 		this.initialValue = init;
 		this.finalValue = fin;
 		this.block = bl;
+		lineNumber=my_line;
+		colNumber=my_column;
 	}
 
 	public Location getId() {
