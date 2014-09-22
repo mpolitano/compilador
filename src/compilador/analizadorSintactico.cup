@@ -15,6 +15,7 @@ action code {:
     
     public boolean inMethodDecl;
     public int cantMain;
+    public int paramaterMain;
 
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
@@ -60,19 +61,21 @@ parser code{:
             result.accept(breakCheckVisitor);
             int sizeErrorType = typeCheckVisitor.getErrors().size();
             int sizeErrorBreak= breakCheckVisitor.getErrors().size();
-            switch(sizeErrorType){
-              case 0:
-                switch(sizeErrorBreak){
-                  case 0:  System.out.println("---- PARSER COMPLETADO!! ------");
-                  default: System.out.println(breakCheckVisitor.getErrors().toString());
-             }
-              default: if (sizeErrorBreak!=0){
-                System.out.println(typeCheckVisitor.getErrors().toString());
+            if (sizeErrorType==0 && sizeErrorBreak==0) {
+                System.out.println("---- PARSER COMPLETADO!! ------");
+            }else{
+              if (sizeErrorBreak!=0){
                 System.out.println(breakCheckVisitor.getErrors().toString());
               }else{
+                if (sizeErrorType!=0){
                 System.out.println(typeCheckVisitor.getErrors().toString());
-                } 
-            } 
+              }else{
+                System.out.println(breakCheckVisitor.getErrors().toString());
+                System.out.println(typeCheckVisitor.getErrors().toString());
+              }
+            }
+          }
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -153,13 +156,13 @@ PRUEBA ::=     {:symTable= new SymbolTable();
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){
-                                    report_error("Missing Main ", ide);          
+                                    report_error("Problem Main ", ide);          
                                   }
                                   RESULT= new Program(ide.getId(),listFiel, listMehod);
                                 :}
               					| CLASS ID:ide LLAB METHOD_DECL_STAR:listMehod LLCER{: 
-                                  if(cantMain==0){
-                                    report_error("Missing Main ", ide);          
+                                  if(cantMain==0 ){
+                                    report_error("Prom Main ", ide);          
                                   }
                                   RESULT= new Program(ide.getId(),new LinkedList<Location>(), listMehod);
                                 :};
@@ -197,12 +200,7 @@ METHOD_DECL_STAR  ::=   METHOD_DECL:m METHOD_DECL_STAR:listMehod {: listMehod.ad
 
 METHOD_DECL ::= 	       TYPE:t ID:ide 
                          {:
-                          if (ide.getId().equals("main")){
-                            cantMain++;
-                          }
-                          if (ide.getId().equals("main")){
-                            cantMain++;
-                          }
+                       
                           inMethodDecl=true; //Set true flag inMethodDecl for drive levels
                           MethodLocation newMethod= new MethodLocation(ide.getId());
                           newMethod.setType(t);//Set return type to method identifier
@@ -215,15 +213,19 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                         :} 
                         PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
                         {:
+                        if (ide.getId().equals("main")){
+                            cantMain++;
+                            if (listParameters.size()!=0){
+                              report_error("Parameter in main :" ,ide);
+                            }
+                          }
                           MethodLocation newMethod=(MethodLocation) symTable.getByIde(ide.getId());
                           newMethod.setParameters(listParameters);
                           newMethod.setBody(body);                            
                           RESULT= newMethod; 
                         :}
                         | VOID:t ID:ide {:
-                                        if (ide.getId().equals("main")){
-                                          cantMain++;
-                                        }
+                                        
                                         inMethodDecl=true; //Set true flag inMethodDecl for drive levels
                                         MethodLocation newMethod= new MethodLocation(ide.getId());
                                         newMethod.setType(t);//Set return type to method identifier
@@ -237,6 +239,12 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                       :} 
                                       PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
                                                                         {: 
+                                                                          if (ide.getId().equals("main")){
+                                                                             cantMain++;
+                                                                               if (listParameters.size()!=0){
+                                                                                report_error("Parameter in main : " ,ide);
+                                                                              }
+                                                                         }   
                                                                           MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
                                                                           newMethod.setBody(body);                                                                          
