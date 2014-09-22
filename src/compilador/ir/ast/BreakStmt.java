@@ -3,7 +3,10 @@ package ir.ast;
 import ir.ASTVisitor;
 
 public class BreakStmt extends Statement {
-	public BreakStmt() { }
+	public BreakStmt(int my_line, int my_col) {
+		lineNumber= my_line;
+		colNumber=my_col;
+ }
 	
 	@Override
 	public String toString() {

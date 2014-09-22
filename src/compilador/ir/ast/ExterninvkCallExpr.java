@@ -10,10 +10,12 @@ public class ExterninvkCallExpr extends CallExpr {
 	private List<Expression> args;
 	
 
-	public ExterninvkCallExpr(String my_method, List<Expression> a, Type my_returnType) {
+	public ExterninvkCallExpr(String my_method, List<Expression> a, Type my_returnType,int my_line, int my_column) {
 		this.method=my_method;
 		this.args = a;
 		this.returnType=my_returnType;
+		lineNumber=my_line;
+		colNumber= my_column;
 	}
 	
 	public String getMethod() {

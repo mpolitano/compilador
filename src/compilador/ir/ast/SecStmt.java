@@ -4,7 +4,10 @@ import ir.ASTVisitor;
 
 public class SecStmt extends Statement {
 
-	public SecStmt(){};
+	public SecStmt(int my_line,int my_column){
+		lineNumber=my_line;
+		colNumber=my_column;
+	};
 
 	public String toString(){
 		return ";";		

@@ -10,9 +10,11 @@ public class FloatLiteral extends Literal {
 	 * Constructor for int literal that takes a string as an input
 	 * @param: String integer
 	 */
-	public FloatLiteral(String val){
+	public FloatLiteral(String val,int my_line, int my_column){
 		rawValue = val; // Will convert to int value in semantic check
 		value = Float.parseFloat(val);//Returns a new float with value represented by the String val
+		lineNumber= my_line;
+		colNumber=my_column;
 	}
 
 	@Override

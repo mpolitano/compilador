@@ -96,7 +96,7 @@ init with {:
    
 // Terminales (tokens obtenidos por el analizador lexico).  
 
-terminal  BREAK, CLASS, CONTINUE, ELSE,FOR, IF, RETURN,WHILE,
+terminal  CLASS,ELSE,FOR, IF, RETURN,WHILE,
           PARENIZQ, PARENDER, COMA,LLAB, LLCER, CORAB, CORCER,EXTERNINVK;
 
 terminal Location ID;
@@ -109,6 +109,8 @@ terminal FloatLiteral FLOAT;
 terminal BooleanLiteral TRUE,FALSE;
 terminal BinOpType  LOWEREQUAL,HIGHEREQUAL, HIGHER,LOWER,PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, OR, AND;
 terminal UnaryOpType NEG;
+terminal BreakStmt BREAK;
+terminal ContinueStmt CONTINUE;
 
 // No Terminales (producciones).  
                         
@@ -171,7 +173,6 @@ FIELD_DECL_STAR ::=     FIELD_DECL_STAR:fieldList FIELD_DECL:f {:fieldList.addAl
                         | FIELD_DECL:f{:RESULT= new LinkedList<Location>(f); :};
 
 FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
-
                                                 for (Location id:decl){
                                                   if(id instanceof VarLocation){ 
                                                     id.setType(t);                       
@@ -295,16 +296,16 @@ TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:
 BOOLEAN  ::=            TRUE:t{:RESULT= t;:} | FALSE:f{:RESULT= f;:} ;
 
 
-STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr);:}
+STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr,expr.getLineNumber(),expr.getColumnNumber());:}
                 				| METHOD_CALL:method PUNTOCOMA{:if (method instanceof MethodCallExpr){ RESULT= new  MethodCallStmt(((MethodCallExpr)method).getMethod(), ((MethodCallExpr)method).getArguments());}
                                                         else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
                         :}
-                				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional);:}
-                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body);:}
-              			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body);:}
-              			    | RETURN EXPR_OPTIONAL:expr PUNTOCOMA{: RESULT= new ReturnStmt(expr);:} 
-              			    | BREAK PUNTOCOMA{:RESULT= new BreakStmt();:}
-              			    | CONTINUE PUNTOCOMA{:RESULT= new ContinueStmt();:}
+                				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
+              			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
+              			    | RETURN EXPR_OPTIONAL:expr PUNTOCOMA{: RESULT= new ReturnStmt(expr,expr.getLineNumber(),expr.getColumnNumber());:} 
+              			    | BREAK:br PUNTOCOMA{:RESULT= br;:}
+              			    | CONTINUE:cnt PUNTOCOMA{:RESULT= cnt;:}
               			    | PUNTOCOMA:s{:RESULT=s;;:}
               			    | BLOCK:b {:RESULT=b;:};
 
@@ -325,11 +326,11 @@ METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PA
                         if (m==null || !(m instanceof MethodLocation)){
                           report_error("Method not defined: ",id);    
                         }else{
-                          RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList);
+                          RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList,id.getLineNumber(),id.getColumnNumber());
                         }
                       :}                          
-              				|EXTERNINVK PARENIZQ STRING:name COMA VOID:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t);:} 
-              				|EXTERNINVK PARENIZQ STRING:name COMA TYPE:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t);:};
+              				|EXTERNINVK PARENIZQ STRING:name COMA VOID:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:} 
+              				|EXTERNINVK PARENIZQ STRING:name COMA TYPE:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:};
 
 
 EXPR_COMA_OPTIONAL  ::= EXPR_PLUS:listExpr{:RESULT=listExpr;:} 
@@ -353,6 +354,8 @@ LOCATION  ::=           ID:id
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
+                                l.setLineNumber(id.getLineNumber());
+                                l.setColumnNumber(id.getColumnNumber());
                                 RESULT=l;                                
                               }                          
                             :} 
@@ -362,7 +365,7 @@ LOCATION  ::=           ID:id
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
-                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr); RESULT=l;}
+                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr);l.setLineNumber(id.getLineNumber());l.setColumnNumber(id.getColumnNumber()); RESULT=l;}
                                 else{report_error("Simbol isn't an Array Location  :",id);};                               
                               }                          
                           :};
@@ -371,9 +374,9 @@ LOCATION  ::=           ID:id
 EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
                 				| METHOD_CALL:m{:RESULT= m;:}
                 				| LITERAL:l{:RESULT= l;:}
-                				| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr);:}
-              			    | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr);:}//Here use a unary minus operator
-              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr);:}
+                				| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+              			    | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}//Here use a unary minus operator
+              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}
               			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
 
 

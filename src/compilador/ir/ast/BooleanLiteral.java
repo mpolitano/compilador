@@ -9,8 +9,10 @@ public class BooleanLiteral extends Literal {
 	 * Constructor for int literal that takes a string as an input
 	 * @param: String integer
 	 */
-	public BooleanLiteral(boolean val){
+	public BooleanLiteral(boolean val,int my_line,int my_column){
 		value=val;
+		lineNumber=my_line;
+		colNumber= my_column;
 	}
 
 	@Override

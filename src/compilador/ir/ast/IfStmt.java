@@ -7,10 +7,12 @@ public class IfStmt extends Statement {
 	private Block ifBlock;
 	private Block elseBlock;
 	
-	public IfStmt(Expression cond, Block ifBl, Block elseBl) {
+	public IfStmt(Expression cond, Block ifBl, Block elseBl,int my_line, int my_column) {
 		this.condition = cond;
 		this.ifBlock = ifBl;
 		this.elseBlock = elseBl;
+		lineNumber= my_line;
+		colNumber= my_column;
 	}
 
 	public Expression getCondition() {

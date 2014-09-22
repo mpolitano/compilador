@@ -6,9 +6,11 @@ public class WhileStmt extends Statement {
 	private Expression condition;
 	private Block whileBlock;
 	
-	public WhileStmt(Expression cond, Block ifBl) {
+	public WhileStmt(Expression cond, Block whileBl, int my_line, int my_column) {
 		this.condition = cond;
-		this.whileBlock = ifBl;
+		this.whileBlock = whileBl;
+		lineNumber= my_line;
+		colNumber= my_column;
 	}
 
 	public Expression getCondition() {

@@ -9,9 +9,11 @@ public class MethodCallExpr extends CallExpr {
 	private List<Expression> args;
 	
 
-	public MethodCallExpr(MethodLocation my_method, List<Expression> a) {
+	public MethodCallExpr(MethodLocation my_method, List<Expression> a, int my_line, int my_col) {
 		this.method=my_method;
 		this.args = a;
+		lineNumber=my_line;
+		colNumber=my_col;
 	}
 	
 	public MethodLocation getMethod() {
