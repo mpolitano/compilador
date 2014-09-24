@@ -10,13 +10,13 @@ import ir.semcheck.BreakContinueCheckVisitor;
     Agregamos el manejo de errores. */
 
 action code {:
-    // Symbol table
-    public SymbolTable symTable= new SymbolTable();
-    
-    public boolean inMethodDecl;
-    public int cantMain;
-    public int paramaterMain;
+//Global variables   
+    public SymbolTable symTable= new SymbolTable(); //Symbol Table for check location(variables, methods) definition(not redefinition), invocation and referencing    
+    public boolean inMethodDecl;//Flag for drive Symbol Table level 
+    public int cantMain; //Amount of mehods with "Main" label for check that there is a only definition. 
+    public int paramaterMain; //Amount of parameters that has a method with label "Main"
 
+//Method for report error and information about this
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
         if (info instanceof Location) {
@@ -29,9 +29,9 @@ action code {:
     }
 :}
 
-parser code{:
-    
-    /* Reporte de error encontrado. Modificamos */
+parser code{:    
+
+    //Method for report sintax error and information about this
     public void report_error(String message, Object info) {
         StringBuilder m = new StringBuilder("Error");
         if (info instanceof java_cup.runtime.Symbol) {
@@ -48,9 +48,7 @@ parser code{:
     }
   
 
-    /* Metodo main para garantizar la ejecucion del analizador
-       lexico y sintactico, ademas que se pase como parametro la tabla
-       de simbolos correspondiente. */
+    //Metodo main para ejecutar el analizador lexico sintactico y semantico
     public static void main(String[] args){
         try {
             parser a = new parser(new AnalizadorLexico( new FileReader(args[0])));
@@ -83,13 +81,8 @@ parser code{:
 
 :}
 
-init with {: 
-/*
-               symTable= new SymbolTable();
-               symTable.pushLevel(); 
-               inMethodDecl= false;
-*/               
-             
+init with {:               
+             //We Can't use this block for parser variables inicialization, we should do this in a extra-rule called "begin"
           :}
 
   
@@ -116,7 +109,7 @@ terminal ReturnStmt RETURN;
 
 // No Terminales (producciones).  
                         
-non terminal Program PRUEBA, PROGRAM;
+non terminal Program BEGIN, PROGRAM;
 non terminal Type TYPE;
 non terminal List<Location> FIELD_PLUS;   
 non terminal Location FIELD,LOCATION; 
@@ -148,29 +141,29 @@ precedence right UMINUS;
 // La gramatica 
 
 
-start with PRUEBA ;
+start with BEGIN;
 
-PRUEBA ::=     {:symTable= new SymbolTable();
-               symTable.pushLevel(); 
-               inMethodDecl= false;
+BEGIN ::=     {:symTable= new SymbolTable();
+               symTable.pushLevel(); //Push "global" level 
+               inMethodDecl= false; //set flag inMethodDecl 
                cantMain=0;
               :} PROGRAM:p{:RESULT=p;:} ;
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){
-                                    report_error("Problem Main ", ide);          
+                                    report_error("Problem Main ", ide);//Program must has a Mehod declaration          
                                   }
                                   RESULT= new Program(ide.getId(),listFiel, listMehod);
                                 :}
               					| CLASS ID:ide LLAB METHOD_DECL_STAR:listMehod LLCER{: 
                                   if(cantMain==0 ){
-                                    report_error("Prom Main ", ide);          
+                                    report_error("Prom Main ", ide);//Program must has a Mehod declaration                    
                                   }
                                   RESULT= new Program(ide.getId(),new LinkedList<Location>(), listMehod);
                                 :};
 
 FIELD_DECL_STAR ::=     FIELD_DECL_STAR:fieldList FIELD_DECL:f {:fieldList.addAll(f); RESULT=fieldList;:}
-                        | FIELD_DECL:f{:RESULT= new LinkedList<Location>(f); :};
+                        |FIELD_DECL:f{:RESULT= new LinkedList<Location>(f);:};
 
 FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
                                                 for (Location id:decl){
@@ -324,7 +317,7 @@ METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PA
                       {: 
                         Location m=symTable.getByIde(id.getId());
                         if (m==null || !(m instanceof MethodLocation)){
-                          report_error("Method not defined: ",id);    
+                          report_error("Method not defined: ",id);//If methods could't be find in this level or upper level, it can't be invoke     
                         }else{
                           RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList,id.getLineNumber(),id.getColumnNumber());
                         }
@@ -352,7 +345,7 @@ LOCATION  ::=           ID:id
                             {:
                               Location l= symTable.getByIde(id.getId()); 
                               if (l==null){
-                                report_error("Symbol not defined :",id);
+                                report_error("Symbol not defined :",id);//If location could't be find in this level or upper level, it can't be refering     
                               }else{
                                 l.setLineNumber(id.getLineNumber());
                                 l.setColumnNumber(id.getColumnNumber());
