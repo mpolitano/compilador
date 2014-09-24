@@ -96,7 +96,7 @@ init with {:
    
 // Terminales (tokens obtenidos por el analizador lexico).  
 
-terminal  CLASS,ELSE,FOR, IF, RETURN,WHILE,
+terminal  CLASS,ELSE,FOR, IF,WHILE, UMINUS,
           PARENIZQ, PARENDER, COMA,LLAB, LLCER, CORAB, CORCER,EXTERNINVK;
 
 terminal Location ID;
@@ -111,6 +111,8 @@ terminal BinOpType  LOWEREQUAL,HIGHEREQUAL, HIGHER,LOWER,PLUS,SUB,MULT,DIVI,MOD,
 terminal UnaryOpType NEG;
 terminal BreakStmt BREAK;
 terminal ContinueStmt CONTINUE;
+terminal ReturnStmt RETURN;
+
 
 // No Terminales (producciones).  
                         
@@ -133,15 +135,13 @@ non terminal CallExpr METHOD_CALL;
 non terminal List<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
 non terminal Literal LITERAL;
 non terminal BooleanLiteral BOOLEAN;
-non terminal BinOpType BIN_OP, ARITH_OP, REL_OP, EQ_OP, COND_OP;
 // -------------Seccion de predencia y asociacion de los terminales----------- 
-  
-precedence left EQUAL, AND, NEG, DIFFERENT;
-precedence left OR;
-precedence left HIGHER, LOWER, LOWEREQUAL, HIGHEREQUAL;
+
+precedence left AND, OR;
+precedence nonassoc EQUAL,DIFFERENT,HIGHER, LOWER, LOWEREQUAL, HIGHEREQUAL;
 precedence left PLUS, SUB;             
 precedence left MULT, DIVI, MOD;      
-precedence left TRUE, FALSE;   
+precedence right UMINUS;   
 
 // ------------------- Seccion de la gramatica ------------------------ 
    
@@ -303,7 +303,7 @@ STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
                 				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
               			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
-              			    | RETURN EXPR_OPTIONAL:expr PUNTOCOMA{: RESULT= new ReturnStmt(expr,expr.getLineNumber(),expr.getColumnNumber());:} 
+              			    | RETURN:rt EXPR_OPTIONAL:expr PUNTOCOMA{:rt.setExpression(expr); RESULT=rt ;:} 
               			    | BREAK:br PUNTOCOMA{:RESULT= br;:}
               			    | CONTINUE:cnt PUNTOCOMA{:RESULT= cnt;:}
               			    | PUNTOCOMA:s{:RESULT=s;;:}
@@ -359,13 +359,13 @@ LOCATION  ::=           ID:id
                                 RESULT=l;                                
                               }                          
                             :} 
-                        | ID:id CORAB EXPR:expr CORCER //ERROR, HACER ALGO CON EXPR
+                        | ID:id CORAB EXPR:expr CORCER
                           {:
                               Location l= symTable.getByIde(id.getId()); 
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
-                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr);l.setLineNumber(id.getLineNumber());l.setColumnNumber(id.getColumnNumber()); RESULT=l;}
+                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr);l.setLineNumber(id.getLineNumber());l.setColumnNumber(id.getColumnNumber());RESULT=l;}
                                 else{report_error("Simbol isn't an Array Location  :",id);};                               
                               }                          
                           :};
@@ -374,20 +374,28 @@ LOCATION  ::=           ID:id
 EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
                 				| METHOD_CALL:m{:RESULT= m;:}
                 				| LITERAL:l{:RESULT= l;:}
-                				| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
-              			    | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}//Here use a unary minus operator
-              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}
+                				//| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Bin logical opertors
+                        | EXPR:lexpr OR:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+              			    | EXPR:lexpr AND:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Bin Relational Operator  
+                        | EXPR:lexpr HIGHER:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr HIGHEREQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr LOWER:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr LOWEREQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}  
+                        //Bin arithmetical operator  
+                        | EXPR:lexpr PLUS:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:} 
+                        | EXPR:lexpr SUB:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr MULT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr DIVI:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr MOD:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Equal op
+                        | EXPR:lexpr EQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        |EXPR:lexpr DIFFERENT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+
+                        | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
+              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS
               			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
 
-
-BIN_OP  ::=             ARITH_OP:s{:RESULT=s;:} | REL_OP:s{:RESULT=s;:} | EQ_OP:s{:RESULT=s;:} | COND_OP:s{:RESULT=s;:} ; 
-
-ARITH_OP  ::=           PLUS:s{:RESULT=s;:}|SUB:s{:RESULT=s;:}|MULT:s{:RESULT=s;:}|DIVI:s{:RESULT=s;:}|MOD:s{:RESULT=s;:} ;
-
-REL_OP  ::=             HIGHER:s{:RESULT=s;:}|HIGHEREQUAL:s{:RESULT=s;:}|LOWER:s{:RESULT=s;:}|LOWEREQUAL:s{:RESULT=s;:};
-
-EQ_OP  ::=              EQUAL:s{:RESULT=s;:} | DIFFERENT:s{:RESULT=s;:} ;
-
-COND_OP  ::=            AND:s{:RESULT=s;:}|OR:s{:RESULT=s;:} ;
 
 LITERAL  ::=            INT:i {:RESULT=i;:}|BOOLEAN:b {:RESULT=b;:}|FLOAT:f {:RESULT=f;:} ; 

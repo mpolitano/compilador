@@ -39,7 +39,10 @@ public class ArrayLocation extends Location {
 	
 	@Override
 	public String toString() {
-		return type.toString()+" "+id+"["+ size +"]";
+		if (expr!=null){
+			return type.toString()+" "+id+"["+ size +"] " + expr.toString() ;
+		}else{return type.toString()+" "+id+"["+ size +"] ";}	
+		
 	}
 
 

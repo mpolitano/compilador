@@ -30,6 +30,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 // visit statements
 	public Type visit(AssignStmt stmt){
 		Type locationType= stmt.getLocation().getType();
+		if (stmt.getLocation() instanceof ArrayLocation){locationType=locationType.fromArray();}
 		Type exprType=stmt.getExpression().accept(this);
 		switch(stmt.getOperator()){
 			case ASSIGN: if (locationType==exprType){return Type.UNDEFINED;}//There isn't an error
@@ -48,7 +49,9 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
    	};
 
 	public Type visit(ReturnStmt stmt){
-		return stmt.getExpression().accept(this); //return expresion type
+		if (stmt.getExpression()!= null){
+			return stmt.getExpression().accept(this); //return expresion type
+		}else{return Type.VOID;}
 	};
 
 	public Type visit(IfStmt stmt){
@@ -140,11 +143,11 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	
 	public Type visit(ArrayLocation loc){
 		if (loc.getExpression()!=null){
-			if (loc.accept(this)!=Type.INT){
+			if (loc.getExpression().accept(this)!=Type.INT){
 				addError(loc, "Type error in Array index Expressio:[expr],expr must be an Int expression ");		
 			}
 		}
-		return loc.getType();
+		return loc.getType().fromArray();//return base array type
 	};
 	
 

@@ -58,7 +58,7 @@ ComentarioLinea= "//".*\n
     "false" {  return  symbol(sym.FALSE, new BooleanLiteral(false,yyline,yycolumn));   }
     "for" {  return  symbol(sym.FOR); }
     "if" {  return  symbol(sym.IF);   }
-    "return" {  return  symbol(sym.RETURN);   }
+    "return" {  return  symbol(sym.RETURN,new ReturnStmt(yyline,yycolumn));   }
     "true" {  return  symbol(sym.TRUE,new BooleanLiteral(true,yyline,yycolumn));   }
     "while" {  return  symbol(sym.WHILE);   }
     "externinvk" {  return  symbol(sym.EXTERNINVK);   }

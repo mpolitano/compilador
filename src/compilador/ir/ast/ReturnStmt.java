@@ -5,8 +5,7 @@ import ir.ASTVisitor;
 public class ReturnStmt extends Statement {
 	private Expression expression; // the return expression
 	
-	public ReturnStmt(Expression e,int my_line,int my_column) {
-		this.expression = e;
+	public ReturnStmt(int my_line,int my_column) {
 		lineNumber= my_line;
 		colNumber=my_column;
 	}
