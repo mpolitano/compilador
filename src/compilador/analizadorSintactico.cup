@@ -5,6 +5,7 @@ import java.util.*;
 import ir.ASTVisitor;
 import ir.semcheck.TypeCheckVisitor;
 import ir.semcheck.BreakContinueCheckVisitor;
+import ir.intermediateCode.TACVisitor;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -73,7 +74,9 @@ parser code{:
               }
             }
           }
-            
+          TACVisitor coding= new TACVisitor();
+          result.accept(coding);
+          System.out.println("TAC: "+coding.getTAC().toString());  
         } catch (Exception ex) {
             ex.printStackTrace();
         }

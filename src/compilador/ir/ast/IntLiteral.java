@@ -2,9 +2,8 @@ package ir.ast;
 
 import ir.ASTVisitor;
 
-public class IntLiteral extends Literal {
+public class IntLiteral extends Literal<Integer> {
 	private String rawValue;
-	private Integer value;
 	
 	/*
 	 * Constructor for int literal that takes a string as an input

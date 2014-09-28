@@ -2,9 +2,7 @@ package ir.ast;
 
 import ir.ASTVisitor;
 
-public class BooleanLiteral extends Literal {
-	private boolean value;	
-
+public class BooleanLiteral extends Literal<Boolean> {
 	/*
 	 * Constructor for int literal that takes a string as an input
 	 * @param: String integer
@@ -18,10 +16,6 @@ public class BooleanLiteral extends Literal {
 	@Override
 	public Type getType() {
 		return Type.BOOLEAN;
-	}
-
-	public boolean getValue() {
-		return value;
 	}
 
 	public void setValue(boolean value) {

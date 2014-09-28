@@ -155,33 +155,34 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(BinOpExpr expr){
 		Type lExprType= expr.getLeftOperand().accept(this);
 		Type rExprType= expr.getRightOperand().accept(this);
+		Type t;
 		switch (expr.getOperator()){
-			case MINUS:case PLUS: case MULTIPLY: return getTypeArithBinOp(lExprType,rExprType);
+			case MINUS:case PLUS: case MULTIPLY: t=getTypeArithBinOp(lExprType,rExprType);expr.setType(t);return t;
 			case DIVIDE: 		
-						if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){return Type.FLOAT;} //VER, QUIZAS CONVENGA SI LOS DOS TIPOS SON INT DARLE SEMANTICA COMO DIVISION ENTERA
+						if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){expr.setType(Type.FLOAT);return Type.FLOAT;} //VER, QUIZAS CONVENGA SI LOS DOS TIPOS SON INT DARLE SEMANTICA COMO DIVISION ENTERA
 						else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}	
-			case MOD: if (lExprType==Type.INT && rExprType==Type.INT){return Type.INT;}
+			case MOD: if (lExprType==Type.INT && rExprType==Type.INT){expr.setType(Type.INT);return Type.INT;}
 					  else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}//Bin Operator MOD is available for int only.
-			case LE:case LEQ: case GE: case GEQ: if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){return Type.BOOLEAN;}//Dice que comparo si son del mismo tipo unicamente, VER 
+			case LE:case LEQ: case GE: case GEQ: if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){expr.setType(Type.BOOLEAN);return Type.BOOLEAN;}//Dice que comparo si son del mismo tipo unicamente, VER 
 					 							else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}	
 			case CEQ: case NEQ:
 								switch (lExprType){
 									case INT: case FLOAT:
 														switch(rExprType){
-															case INT: case FLOAT: return Type.BOOLEAN;
+															case INT: case FLOAT: expr.setType(Type.BOOLEAN);return Type.BOOLEAN;
 															default:addError(expr,"Type operator not support: "); 
 																	return Type.UNDEFINED;
 														}
 									case BOOLEAN:
 												switch(rExprType){
-													case BOOLEAN: return Type.BOOLEAN;
+													case BOOLEAN: expr.setType(Type.BOOLEAN);return Type.BOOLEAN;
 													default:addError(expr,"Type operator not support: ");
 															return Type.UNDEFINED;
 												}									
 									default: return Type.UNDEFINED;	
 								}
 			case AND: case OR: 
-								if(lExprType==Type.BOOLEAN && rExprType==Type.BOOLEAN){return Type.BOOLEAN;}
+								if(lExprType==Type.BOOLEAN && rExprType==Type.BOOLEAN){expr.setType(Type.BOOLEAN);return Type.BOOLEAN;}
 								else{return Type.UNDEFINED;}
 		}
 		return Type.UNDEFINED;  
@@ -191,6 +192,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		for (Expression e:expr.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
+		expr.setType(expr.getReturnType());
 		return expr.getReturnType();//return the method's return type
 	};
 	
@@ -206,6 +208,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 					}
 				}
 		}
+		expr.setType(expr.getMethod().getType());
 		return expr.getMethod().getType(); //Return method's return type.	
 	};	
 	
@@ -214,15 +217,15 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		switch (expr.getOperator()){
 			case MINUS:
 				switch (t){	
-					case INT: return t;
-					case FLOAT: return t; 
+					case INT: expr.setType(t);return t;
+					case FLOAT:expr.setType(t); return t; 
 					default: 
 							addError(expr, "Type operator not support");
 							return Type.UNDEFINED;
 				}
 			case NOT: 
 				switch (t){
-					case BOOLEAN: return t;	
+					case BOOLEAN: expr.setType(t);return t;	
 					default: 
 							addError(expr, "Type operator not support");
 							return Type.UNDEFINED;

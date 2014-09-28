@@ -1,8 +1,7 @@
 package ir.ast;
 import ir.ASTVisitor;
 
-public class StringLiteral extends Literal {
-	protected String value;
+public class StringLiteral extends Literal<String> {
 	
 	public StringLiteral(String my_value,int my_line, int my_column){
 		this.value = my_value;

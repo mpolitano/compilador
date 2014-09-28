@@ -2,7 +2,7 @@ package ir.ast;
 
 import ir.ASTVisitor;
 
-public class FloatLiteral extends Literal {
+public class FloatLiteral extends Literal<Float> {
 	private String rawValue;
 	private Float value;
 	
