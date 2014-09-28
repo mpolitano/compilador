@@ -114,21 +114,21 @@ terminal ReturnStmt RETURN;
                         
 non terminal Program BEGIN, PROGRAM;
 non terminal Type TYPE;
-non terminal List<Location> FIELD_PLUS;   
+non terminal LinkedList<Location> FIELD_PLUS;   
 non terminal Location FIELD,LOCATION; 
-non terminal List<Location> FIELD_DECL_STAR, FIELD_DECL;
-non terminal List<MethodLocation> METHOD_DECL_STAR;
+non terminal LinkedList<Location> FIELD_DECL_STAR, FIELD_DECL;
+non terminal LinkedList<MethodLocation> METHOD_DECL_STAR;
 non terminal MethodLocation METHOD_DECL;
 non terminal Block BLOCK;
-non terminal List<Location> PARAMETERS, PARAMETER_PLUS;
+non terminal LinkedList<Location> PARAMETERS, PARAMETER_PLUS;
 non terminal Location PARAMETER;
-non terminal List<Statement> STATAMENT_STAR;
+non terminal LinkedList<Statement> STATAMENT_STAR;
 non terminal Statement STATAMENT;
 non terminal Block ELSE_OPTIONAL;
 non terminal AssignOpType ASSING_OP;
 non terminal Expression EXPR, EXPR_OPTIONAL,EXTERNINVK_ARG;
 non terminal CallExpr METHOD_CALL;
-non terminal List<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
+non terminal LinkedList<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
 non terminal Literal LITERAL;
 non terminal BooleanLiteral BOOLEAN;
 // -------------Seccion de predencia y asociacion de los terminales----------- 
@@ -186,13 +186,13 @@ FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
                                                :};
 
 FIELD_PLUS ::=	        FIELD:f COMA  FIELD_PLUS:listId {:listId.add(f); RESULT=listId; :} 
-                        | FIELD:f PUNTOCOMA {: List<Location> listId=new LinkedList<Location>();listId.add(f);RESULT=listId;:};
+                        | FIELD:f PUNTOCOMA {: LinkedList<Location> listId=new LinkedList<Location>();listId.add(f);RESULT=listId;:};
 
 FIELD ::=               ID:ide CORAB INT:i CORCER {:RESULT= new ArrayLocation(ide.getId(),ide.getLineNumber(),ide.getColumnNumber(),-1,i);:} //define a array's identifier
 					              |ID:ide {: RESULT=ide; :};
 
 
-METHOD_DECL_STAR  ::=   METHOD_DECL:m METHOD_DECL_STAR:listMehod {: listMehod.add(m); RESULT=listMehod;:}
+METHOD_DECL_STAR  ::=   METHOD_DECL:m METHOD_DECL_STAR:listMehod {: listMehod.addFirst(m); RESULT=listMehod;:}
                         | {:RESULT= new LinkedList<MethodLocation>();:};
 
 METHOD_DECL ::= 	       TYPE:t ID:ide 
@@ -253,8 +253,8 @@ PARAMETERS ::=          PARAMETER_PLUS:parametersList {:RESULT=parametersList;:}
                         | {:RESULT=new LinkedList<Location>();:};
 					
 
-PARAMETER_PLUS  ::=     PARAMETER:p COMA PARAMETER_PLUS:parametersList {:parametersList.add(p);RESULT=parametersList;:} 
-                        | PARAMETER:p {:List<Location> parametersList= new LinkedList<Location>(); parametersList.add(p); RESULT=parametersList;:} ;
+PARAMETER_PLUS  ::=     PARAMETER:p COMA PARAMETER_PLUS:parametersList {:parametersList.addFirst(p);RESULT=parametersList;:} 
+                        | PARAMETER:p {:LinkedList<Location> parametersList= new LinkedList<Location>(); parametersList.add(p); RESULT=parametersList;:} ;
 
 
 PARAMETER ::=	          TYPE:t ID:ide {:symTable.addSymbolToLevel(ide); ide.setType(t);RESULT=ide;:};
@@ -282,7 +282,7 @@ BLOCK  ::=              LLAB
                                                  :};
 
 
-STATAMENT_STAR  ::=     STATAMENT:s STATAMENT_STAR:listStatament {: listStatament.add(s); RESULT=listStatament;:} 
+STATAMENT_STAR  ::=     STATAMENT:s STATAMENT_STAR:listStatament {: listStatament.addFirst(s); RESULT=listStatament;:} 
             						| {:RESULT=new LinkedList<Statement>(); :};
 
 
@@ -319,11 +319,15 @@ ASSING_OP  ::=         ASSIG:asign{: RESULT=asign;:} | ASSIGPLUS:asign {: RESULT
 METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PARENDER
                       {: 
                         Location m=symTable.getByIde(id.getId());
-                        if (m==null || !(m instanceof MethodLocation)){
+                        if (m==null){
                           report_error("Method not defined: ",id);//If methods could't be find in this level or upper level, it can't be invoke     
                         }else{
-                          RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList,id.getLineNumber(),id.getColumnNumber());
-                        }
+                              if (!(m instanceof MethodLocation)){
+                                report_error("Label isn't a method in this scope:",id);
+                              }else{
+                                    RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList,id.getLineNumber(),id.getColumnNumber());
+                                  }
+                              }    
                       :}                          
               				|EXTERNINVK PARENIZQ STRING:name COMA VOID:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:} 
               				|EXTERNINVK PARENIZQ STRING:name COMA TYPE:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:};
@@ -332,14 +336,14 @@ METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PA
 EXPR_COMA_OPTIONAL  ::= EXPR_PLUS:listExpr{:RESULT=listExpr;:} 
                         |{:RESULT= new LinkedList<Expression>();:};
 
-EXPR_PLUS  ::=          EXPR:expr COMA EXPR_PLUS:listExpr{:listExpr.add(expr);RESULT=listExpr;:} 
-                        | EXPR:expr{:List<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:} ;
+EXPR_PLUS  ::=          EXPR:expr COMA EXPR_PLUS:listExpr{:listExpr.addFirst(expr);RESULT=listExpr;:} 
+                        | EXPR:expr{:LinkedList<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:} ;
 
 EXTERNINVK_OPTIONAL ::= COMA EXTERNINVK_PLUS:listExpr{:RESULT= listExpr;:}
                         |{: RESULT= new LinkedList<Expression>();:} ;
 
-EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG:expr COMA EXTERNINVK_PLUS:listExpr{:listExpr.add(expr);RESULT=listExpr;:} 
-                        | EXTERNINVK_ARG:expr{:List<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:};
+EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG:expr COMA EXTERNINVK_PLUS:listExpr{:listExpr.addFirst(expr);RESULT=listExpr;:} 
+                        | EXTERNINVK_ARG:expr{:LinkedList<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:};
 
 
 EXTERNINVK_ARG ::=       EXPR:expr{:RESULT=expr;:} | STRING:str {:RESULT=str;:} ;

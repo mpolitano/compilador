@@ -64,7 +64,7 @@ public TACVisitor(){
 		Expression lo= (Expression) expr.getLeftOperand().accept(this);
 		Expression ro= (Expression) expr.getRightOperand().accept(this);
 		BinOpType op= expr.getOperator();
-		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);
+		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result
 		switch(op){
 			case PLUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							TAC.add(line, new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));line++;
