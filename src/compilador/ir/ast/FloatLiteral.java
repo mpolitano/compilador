@@ -17,6 +17,12 @@ public class FloatLiteral extends Literal<Float> {
 		colNumber=my_column;
 	}
 
+	public FloatLiteral(float val,int my_line, int my_column){
+		rawValue = Float.toString(val); // Will convert to int value in semantic check
+		value = val;//Returns a new float with value represented by the String val
+		lineNumber= my_line;
+		colNumber=my_column;
+	}
 	@Override
 	public Type getType() {
 		return Type.FLOAT;

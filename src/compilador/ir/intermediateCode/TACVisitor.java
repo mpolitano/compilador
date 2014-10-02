@@ -8,7 +8,7 @@ import ir.ASTVisitor;
 import ir.ast.*;
 import java.util.*;
 
-public class TACVisitor implements ASTVisitor<Object>{
+public class TACVisitor implements ASTVisitor<Expression>{
 
 List<TAInstructions> TAC;
 int line;
@@ -19,7 +19,7 @@ public TACVisitor(){
 }
 
 //visit program
-	public Object visit(Program prog){
+	public Expression visit(Program prog){
 		for(MethodLocation m : prog.getMethods()){
 			m.accept(this);
 		}
@@ -27,59 +27,103 @@ public TACVisitor(){
 	}
 	
 // visit statements
-	public Object visit(AssignStmt stmt){
-		Object expr= stmt.getExpression().accept(this);
+	public Expression visit(AssignStmt stmt){
+		Expression expr= stmt.getExpression().accept(this);
 		//Aca podria tener una expresion compuesta o un literal
-		TAC.add(line, new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
-		line++;	
+		addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
 		return null;
 	}
 
-	public Object visit(ReturnStmt stmt){return new String() ;}
-	public Object visit(IfStmt stmt){return new String() ;}
-	public Object visit(Block stmt){
+	public Expression visit(ReturnStmt stmt){return new LabelExpr("borrar") ;}
+	
+//This visitor generate TAC for if-else statement, if if's condition is a boolean literal only generate code for if or else block  	
+	public Expression visit(IfStmt stmt){
+			LabelExpr lif= new LabelExpr("if "+ Integer.toString(line));
+			LabelExpr endif= new LabelExpr("endif "+ Integer.toString(line));
+			Expression expr=stmt.getCondition().accept(this); //Generate TAC for evaluate if condition
+			if (expr instanceof Location){
+				if (stmt.getElseBlock()==null){
+					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
+					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,endif));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
+					stmt.getIfBlock().accept(this);
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
+				}else{
+					LabelExpr endElse= new LabelExpr("endElse "+ Integer.toString(line));
+					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
+					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,expr,endif));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
+					stmt.getIfBlock().accept(this);
+					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endElse));//if condition=false jump to if block's end 
+					stmt.getElseBlock().accept(this);
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endElse));					
+				}
+		}else{//intanceof literal
+			if (((Literal)expr).getValue()== true){
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
+					stmt.getIfBlock().accept(this);
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
+			}else{
+					if ((((Literal)expr).getValue()== true) && (stmt.getElseBlock()!=null)){
+						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
+						stmt.getElseBlock().accept(this);
+						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
+					}
+			}
+
+		}		
+		return null;
+	}
+	
+	//Generate TAC for a block
+	public Expression visit(Block stmt){
 		for (Statement s: stmt.getStatements()){
 			s.accept(this);
 		}
 		return null;
 	}
-	public Object visit(BreakStmt stmt){return new String() ;}
-	public Object visit(ContinueStmt stmt){return new String() ;}
-	public Object visit(ForStmt stmt){return new String() ;}
-	public Object visit(SecStmt stmt){return new String() ;}
-	public Object visit(WhileStmt stmt){return new String() ;}
-	public Object visit(MethodCallStmt stmt){return new String() ;}
-	public Object visit(ExterninvkCallStmt stmt){return new String() ;}
+	public Expression visit(BreakStmt stmt){return new LabelExpr("borrar") ;}
+	public Expression visit(ContinueStmt stmt){return new LabelExpr("borrar");}
+	public Expression visit(ForStmt stmt){return new LabelExpr("borrar");}
+	public Expression visit(SecStmt stmt){return new LabelExpr("borrar");}
+	public Expression visit(WhileStmt stmt){return new LabelExpr("borrar");}
+	public Expression visit(MethodCallStmt stmt){return new LabelExpr("borrar");}
+	public Expression visit(ExterninvkCallStmt stmt){return new LabelExpr("borrar");}
 
 //Visit Location
-	public Object visit(VarLocation var){return var;}
-	public Object visit(MethodLocation method){
+	public Expression visit(VarLocation var){return var;}
+	
+	public Expression visit(MethodLocation method){
+		addInstr(new TAInstructions(TAInstructions.Instr.MethodDecl,new LabelExpr(method.getId())));//Start method declaration
 		method.getBody().accept(this);
+		addInstr(new TAInstructions(TAInstructions.Instr.MethodDeclEnd,new LabelExpr(method.getId())));//end Method declaration
 		return null;
 	}
-	public Object visit(ArrayLocation array){return array;}
+
+	//Asumiendo que las arrayLocation las visito unicamente en expresiones, accedemos a la posicion y la almacenamos en un teporal
+	public Expression visit(ArrayLocation array){return array;}
 	
 // visit expressions
-	public Object visit(BinOpExpr expr){
+	public Expression visit(BinOpExpr expr){
 		Expression lo= (Expression) expr.getLeftOperand().accept(this);
 		Expression ro= (Expression) expr.getRightOperand().accept(this);
 		BinOpType op= expr.getOperator();
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result
 		switch(op){
 			case PLUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
-							TAC.add(line, new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));line++;
+							addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
 						}else{//stmt.getExpression()
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));line++;//convert lo to float
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.AddF,floatLo,ro,result));line++; //calc add	
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+								addInstr(new TAInstructions(TAInstructions.Instr.AddF,floatLo,ro,result)); //calc add	
 							}else{
 									if (ro.getType()==Type.INT){//ro is int
 										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
-										TAC.add(line, new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));line++;//convert ro to float
-								 		TAC.add(line, new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result));line++; //calc add	
+										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
+								 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
 								 	}else{//ninguno es int
-								 			TAC.add(line, new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result));line++; //calc add	
+								 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
 								 	}
 								 }
 							
@@ -87,80 +131,90 @@ public TACVisitor(){
 						return result;
 		
 			case MINUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
-							TAC.add(line, new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));line++;
+							addInstr(new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));
 						}else{ //(expr.getType==Type.FLOAT)
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));line++;//convert lo to float
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));line++; //calc add	
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+								addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc add	
 							}else{
 									if (ro.getType()==Type.INT){//ro is int
 										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
-										TAC.add(line, new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));line++;//convert ro to float
-								 		TAC.add(line, new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result));line++; //calc add	
+										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
+								 		addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result)); //calc add	
 								 	}else{//ninguno es int
-								 			TAC.add(line, new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));line++; //calc add	
+								 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc add	
 								 	}
 								 }
 							
 						}
 						return result;
+			case MULTIPLY: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+							addInstr(new TAInstructions(TAInstructions.Instr.MultI,lo,ro,result));
+						}else{ //(expr.getType==Type.FLOAT)
+							if (lo.getType()==Type.INT){//lo is int
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+								addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc add	
+							}else{
+									if (ro.getType()==Type.INT){//ro is int
+										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
+								 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc add	
+								 	}else{//ninguno es int
+								 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc add	
+								 	}
+								 }
+							
+						}
+						return result;
+			case DIVIDE: break;
+
 						
 		}
 		return result;
-
 	}
 	
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
-	public Object visit(ExterninvkCallExpr expr){
+	public Expression visit(ExterninvkCallExpr expr){
 		for(Expression e: expr.getArguments()){//Loop for push parameters
-			Object value= e.accept(this);
+			Expression value= e.accept(this);
 			if (value instanceof Literal){
-				TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPush,((Literal)value).getValue()));//Parameter's value Push 
-				line++;
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
 			}else{//value intance of location
-					TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-					line++;
-				}				 
+					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
+     			 }				 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
-		TAC.add(line,new TAInstructions(TAInstructions.Instr.CallExtern,expr.getMethod(),result));//Call sub-rutina 	
-		line++;
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(expr.getMethod()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
-			Object value= e.accept(this);
+			Expression value= e.accept(this);
 			if (value instanceof Literal){
-				TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPop,((Literal)value).getValue()));//Parameter's value Pop
-				line++;
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
 			}else{//value intance of location
-					TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-					line++;
+					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
 				}	
 		}
 		return result;
 	}
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
-	public Object visit(MethodCallExpr expr){
+	public Expression visit(MethodCallExpr expr){
 		for(Expression e: expr.getArguments()){//Loop for push parameters
-			Object value= e.accept(this);
+			Expression value= e.accept(this);
 			if (value instanceof Literal){
-				TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPush,((Literal)value).getValue()));//Parameter's value Push 
-				line++;
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
 			}else{//value intance of location
-					TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-					line++;
+					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
 				}				 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
-		TAC.add(line,new TAInstructions(TAInstructions.Instr.Call,expr.getMethod().getId(),result));//Call sub-rutina 	
-		line++;
+		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
-			Object value= e.accept(this);
+			Expression value= e.accept(this);
 			if (value instanceof Literal){
-				TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPop,((Literal)value).getValue()));//Parameter's value Pop
-				line++;
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
 			}else{//value intance of location
-					TAC.add(line,new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-					line++;
+					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
 				}	
 			
 		}
@@ -168,26 +222,24 @@ public TACVisitor(){
 	}
 
 //Aplicar el operador unario a la expresion
-	public Object visit(UnaryOpExpr expr){//return literal or location where will be the value
-		Object value=expr.getExpression().accept(this);//Obtengo la expresion		
+	public Expression visit(UnaryOpExpr expr){//return literal or location where will be the value
+		Expression value=expr.getExpression().accept(this);//Obtengo la expresion		
 		UnaryOpType operator= expr.getOperator();
 		if (value instanceof Literal){
 			switch (operator){
-				case MINUS: if (((Literal)value).getValue() instanceof Integer){
-								return -((Integer)(((Literal)value).getValue()));
-							}else{return -((Float)(((Literal)value).getValue()));}		
-				case NOT:	return  !((Boolean)((Literal)value).getValue());
+				case MINUS: if (value instanceof IntLiteral){
+								return new IntLiteral(-((Integer)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber()); // debo retornar otro literal
+							}else{return new FloatLiteral(-((Float)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber());} //debo retornar otro literal 		
+				case NOT:	return  new BooleanLiteral(!((Boolean)((Literal)value).getValue()),value.getLineNumber(),value.getColumnNumber());
 			}		
 		}else{
 				Location temp= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//place for current calculus
 				switch (operator){
 					case MINUS: 
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
-								line++;
+								addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
 								break; 		
 					case NOT:
-								TAC.add(line, new TAInstructions(TAInstructions.Instr.Not,value,temp));//save sentence for calc this value
-								line++;
+								addInstr(new TAInstructions(TAInstructions.Instr.Not,value,temp));//save sentence for calc this value								
 								break; 							
 				}
 				return temp;//return the temp place where will be the value of this aplication					
@@ -195,15 +247,26 @@ public TACVisitor(){
 		return null;	
 	}
 
+	public Expression visit(LabelExpr expr){
+		return expr;
+	}
+
 // visit literals	
-	public Object visit(IntLiteral lit){return lit;}
-	public Object visit(FloatLiteral lit){return lit;}
-	public Object visit(BooleanLiteral lit){return lit;}
-	public Object visit(StringLiteral lit){	return lit;}
+	public Expression visit(IntLiteral lit){return lit;}
+	public Expression visit(FloatLiteral lit){return lit;}
+	public Expression visit(BooleanLiteral lit){return lit;}
+	public Expression visit(StringLiteral lit){	return lit;}
 
 
 	public List<TAInstructions> getTAC(){
 		return TAC;
 	}
+
+//Auxiliar methods
+
+	private void addInstr(TAInstructions inst){
+		TAC.add(line, inst);
+		line++;
+	}	
 
 }

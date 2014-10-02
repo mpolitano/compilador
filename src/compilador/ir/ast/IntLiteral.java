@@ -16,6 +16,14 @@ public class IntLiteral extends Literal<Integer> {
 		colNumber=my_column;
 	}
 
+
+	public IntLiteral(int val, int my_line,int my_column){
+		rawValue = Integer.toString(val); // Will convert to int value in semantic check
+		value = new Integer(val);//Parses the string argument as a signed decimal integer.
+		lineNumber= my_line;
+		colNumber=my_column;
+	}
+
 	@Override
 	public Type getType() {
 		return Type.INT;

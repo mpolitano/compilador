@@ -65,7 +65,10 @@ private List<Error> errors;
 	public Boolean visit(BinOpExpr expr){return false;}
 	public Boolean visit(ExterninvkCallExpr expr){return false;}
 	public Boolean visit(MethodCallExpr expr){return false;}	
-	public Boolean visit(UnaryOpExpr expr){return false;}
+	public Boolean visit(UnaryOpExpr expr){return false;}	
+	public Boolean visit(LabelExpr expr){//Nunca voy a entrar a este metodo, mi lenguaje no tiene labels
+		return false;
+	}
 
 // visit literals	
 	public Boolean visit(IntLiteral lit){return false;}

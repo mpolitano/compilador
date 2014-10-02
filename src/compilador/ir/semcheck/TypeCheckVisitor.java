@@ -236,6 +236,10 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 
 	};
 
+	public Type visit(LabelExpr expr){//Nunca voy a entrar a este metodo, mi lenguaje no tiene labels
+		return Type.UNDEFINED;
+	}
+
 // visit literals	
 	public Type visit(IntLiteral lit){return lit.getType();};
 	public Type visit(FloatLiteral lit){return lit.getType();};

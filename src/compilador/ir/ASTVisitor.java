@@ -31,6 +31,7 @@ public interface ASTVisitor<T> {
 	public T visit(ExterninvkCallExpr expr);
 	public T visit(MethodCallExpr expr);	
 	public T visit(UnaryOpExpr expr);
+	public T visit(LabelExpr expr);
 
 // visit literals	
 	public T visit(IntLiteral lit);
