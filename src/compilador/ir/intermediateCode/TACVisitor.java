@@ -85,7 +85,9 @@ public TACVisitor(){
 	public Expression visit(BreakStmt stmt){return new LabelExpr("borrar") ;}
 	public Expression visit(ContinueStmt stmt){return new LabelExpr("borrar");}
 	public Expression visit(ForStmt stmt){return new LabelExpr("borrar");}
-	public Expression visit(SecStmt stmt){return new LabelExpr("borrar");}
+	
+	public Expression visit(SecStmt stmt){return null;}
+	
 	public Expression visit(WhileStmt stmt){return new LabelExpr("borrar");}
 	public Expression visit(MethodCallStmt stmt){return new LabelExpr("borrar");}
 	public Expression visit(ExterninvkCallStmt stmt){return new LabelExpr("borrar");}
@@ -105,14 +107,14 @@ public TACVisitor(){
 	
 // visit expressions
 	public Expression visit(BinOpExpr expr){
-		Expression lo= (Expression) expr.getLeftOperand().accept(this);
+		Expression lo= (Expression) expr.getLeftOperand().accept(this);//literal or location
 		Expression ro= (Expression) expr.getRightOperand().accept(this);
 		BinOpType op= expr.getOperator();
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result
 		switch(op){
 			case PLUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
-						}else{//stmt.getExpression()
+						}else{//expe.type=float
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
@@ -168,9 +170,134 @@ public TACVisitor(){
 							
 						}
 						return result;
-			case DIVIDE: break;
-
-						
+			case DIVIDE:
+						if(expr.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));}//Both type operators are float
+								}
+							}
+							return result;
+			case MOD: 
+						addInstr(new TAInstructions(TAInstructions.Instr.Mod,lo,ro,result));
+						return result;
+			case LE: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.LesI,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.LesF,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;						
+			case LEQ: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.LEI,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.LEF,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;											
+			case GE: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.GrtI,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.GrtF,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;						
+			case GEQ: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.GEI,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.GEF,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;						
+			case NEQ: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.Dif,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;						
+			case CEQ: 
+					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+						addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));	
+					}else{//expr.getType()==Type.FLOAT	 
+					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+								addInstr(new TAInstructions(TAInstructions.Instr.Equal,floatLo,ro,result));	
+							}else{
+									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+											Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+											addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));}//Both type operators are float
+							}
+						}
+						return result;						
+			case AND: 
+						addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result));
+						return result;						
+			case OR: 
+						addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result));
+						return result;						
 		}
 		return result;
 	}

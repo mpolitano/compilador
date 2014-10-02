@@ -158,9 +158,11 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Type t;
 		switch (expr.getOperator()){
 			case MINUS:case PLUS: case MULTIPLY: t=getTypeArithBinOp(lExprType,rExprType);expr.setType(t);return t;
-			case DIVIDE: 		
-						if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){expr.setType(Type.FLOAT);return Type.FLOAT;} //VER, QUIZAS CONVENGA SI LOS DOS TIPOS SON INT DARLE SEMANTICA COMO DIVISION ENTERA
-						else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}	
+			case DIVIDE://Semantica de la divison entera para 2 enteros, division entre reales para float,int o float,float 		
+						if (lExprType==Type.INT && rExprType==Type.INT){expr.setType(Type.INT);return Type.INT;}//Semantica de la division entera
+						else{if ((lExprType==Type.INT || lExprType==Type.FLOAT) && (rExprType==Type.INT || rExprType==Type.FLOAT)){expr.setType(Type.FLOAT);return Type.FLOAT;}
+								else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}										
+   							}
 			case MOD: if (lExprType==Type.INT && rExprType==Type.INT){expr.setType(Type.INT);return Type.INT;}
 					  else{addError(expr,"Type operator not support: ");return Type.UNDEFINED;}//Bin Operator MOD is available for int only.
 			case LE:case LEQ: case GE: case GEQ: if ((lExprType==Type.INT || lExprType==Type.FLOAT)&&  (rExprType==Type.INT || rExprType==Type.FLOAT)){expr.setType(Type.BOOLEAN);return Type.BOOLEAN;}//Dice que comparo si son del mismo tipo unicamente, VER 

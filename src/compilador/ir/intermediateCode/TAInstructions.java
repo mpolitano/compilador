@@ -10,13 +10,13 @@ public class TAInstructions{
 	//Arithmetical binary Instructions
 	AddF, AddI, SubF, SubI,
 	//Aritmetical unary instructions
-	MinusI, MinusF,MultI, MultF,DivF, Resto,
+	MinusI, MinusF,MultI, MultF,DivI,DivF, Mod,
 	//Logical binary Instuctions
 	And, Or,
 	//Logical unary Instuctions
 	Not,
 	//relational binary instructions
-	Equal, Dif, GE,LE,Grt,Les,
+	Equal, Dif, GEI,GEF,LEI,LEF,GrtI,GrtF,LesI,LesF,
 	//Jump Instructions
 	Jmp, JTrue,
 	//Instructions for call procedure
@@ -72,16 +72,18 @@ public class TAInstructions{
 			case MultF: labelOp= "MultF";break;
 			case MultI: labelOp= "MultI";break;
 			case DivF: labelOp= "DivF";break;
-			case Resto: labelOp= "Resto";break;
+			case Mod: labelOp= "Resto";break;
 			case And: labelOp= "And";break;
 			case Or: labelOp="Or";break;
 			case Not: labelOp="Not";break;
 			case Equal: labelOp="Equal";break;
 			case Dif: labelOp= "Dif";break;
-			case GE: labelOp= "GE";break;
-			case LE: labelOp="LE";break;
-			case Grt: labelOp= "Grt"; break;
-			case Les: labelOp= "Les";break;
+			case GEI: labelOp= "GE";break;
+			case LEF: labelOp="LE";break;
+			case GrtI: labelOp= "Grt"; break;
+			case LesI: labelOp= "Les";break;
+			case GrtF: labelOp= "GrtF"; break;
+			case LesF: labelOp= "LesF";break;
 			case Jmp: labelOp= "Jmp";break;
 			case JTrue: labelOp= "JTrue";break;
 			case Call: labelOp= "Call";break;
@@ -99,7 +101,34 @@ public class TAInstructions{
 		return aux;
 	}
 }
-
+/*
+//Instructions for define label and methods
+	MethodDecl Label 
+	MethodDeclEnd Label 
+	LocationDecl 	
+	//Statement instructios
+	Assign,
+	//Arithmetical binary Instructions
+	AddF, AddI, SubF, SubI,
+	//Aritmetical unary instructions
+	AddI|AddF|...|Divf Expr Expr Location
+	//Logical binary Instuctions
+	And, Or,
+	//Logical unary Instuctions
+	Not,
+	//relational binary instructions
+	Equal, Dif, GE,LE,Grt,Les,
+	//Jump Instructions
+	Jmp, JTrue,
+	//Instructions for call procedure
+	Call, ParamPush, ParamPop, CallExtern,
+	//Conversion instruction
+	ToFloat,
+	//Array drive instructions
+	ReadArray, WriteArray,
+	//Gerate label
+	PutLabel
+*/
 //Assign Expression Location
 //JTrue Location Label 
 //putLabel Label
