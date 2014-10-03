@@ -18,9 +18,9 @@ public class TAInstructions{
 	//relational binary instructions
 	Equal, Dif, GEI,GEF,LEI,LEF,GrtI,GrtF,LesI,LesF,
 	//Jump Instructions
-	Jmp, JTrue,
+	Jmp, JTrue, JFalse,
 	//Instructions for call procedure
-	Call, ParamPush, ParamPop, CallExtern,
+	Call, ParamPush, ParamPop, CallExtern, Ret,
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
@@ -86,10 +86,12 @@ public class TAInstructions{
 			case LesF: labelOp= "LesF";break;
 			case Jmp: labelOp= "Jmp";break;
 			case JTrue: labelOp= "JTrue";break;
+			case JFalse: labelOp= "JFalse";break;
 			case Call: labelOp= "Call";break;
 			case ParamPush: labelOp= "ParamPush";break;
 			case ParamPop: labelOp= "ParamPop";break;
 			case CallExtern: labelOp= "CallExtern";break;
+			case Ret: labelOp= "Ret";break;
 			case ToFloat: labelOp= "ToFloat";break;
 			case PutLabel: labelOp= "PutLabel";break;
 			default: labelOp="toString error"; break;	
@@ -107,7 +109,7 @@ public class TAInstructions{
 	MethodDeclEnd Label 
 	LocationDecl 	
 	//Statement instructios
-	Assign,
+	Assign expr location
 	//Arithmetical binary Instructions
 	AddF, AddI, SubF, SubI,
 	//Aritmetical unary instructions
@@ -119,7 +121,8 @@ public class TAInstructions{
 	//relational binary instructions
 	Equal, Dif, GE,LE,Grt,Les,
 	//Jump Instructions
-	Jmp, JTrue,
+	Jmp|JTrue|JFalse Expression Label
+
 	//Instructions for call procedure
 	Call, ParamPush, ParamPop, CallExtern,
 	//Conversion instruction
