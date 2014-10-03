@@ -6,6 +6,7 @@ import ir.ASTVisitor;
 
 public class Block extends Statement {
 	private List<Statement> statements;
+	private List<Location> field;
 	private int blockId;
 	
 	public Block(int bId) {
@@ -18,6 +19,11 @@ public class Block extends Statement {
 		statements = s;
 	}
 	
+	public Block(int bId,  List<Location> f,List<Statement> s) {
+		blockId = bId;
+		statements = s;
+		field= f;
+	}
 	public void addStatement(Statement s) {
 		this.statements.add(s);
 	}
@@ -47,6 +53,9 @@ public class Block extends Statement {
 		return rtn; 
 	}
 
+	public List<Location> getFields(){
+		return field;	
+	}
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);

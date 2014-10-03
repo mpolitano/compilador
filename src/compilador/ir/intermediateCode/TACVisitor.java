@@ -25,6 +25,9 @@ public TACVisitor(){
 
 //visit program
 	public Expression visit(Program prog){
+		for (Location l: prog.getFields()){
+			addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
+		}
 		for(MethodLocation m : prog.getMethods()){
 			m.accept(this);
 		}
@@ -112,6 +115,9 @@ public TACVisitor(){
 	
 	//Generate TAC for a block
 	public Expression visit(Block stmt){
+		for (Location l: stmt.getFields()){
+			addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
+		}
 		for (Statement s: stmt.getStatements()){
 			s.accept(this);
 		}

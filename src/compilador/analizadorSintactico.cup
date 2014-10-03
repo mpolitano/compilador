@@ -268,7 +268,7 @@ BLOCK  ::=              LLAB
                             FIELD_DECL_STAR:listField STATAMENT_STAR:listStatament LLCER
                             {:
                                symTable.popLevel();
-                               RESULT= new Block(-1,listStatament); 
+                               RESULT= new Block(-1,listField,listStatament); 
                             :}
                         
                        |LLAB {:

@@ -72,17 +72,20 @@ public class TAInstructions{
 			case MultF: labelOp= "MultF";break;
 			case MultI: labelOp= "MultI";break;
 			case DivF: labelOp= "DivF";break;
+			case DivI: labelOp="DivI";break;
 			case Mod: labelOp= "Resto";break;
 			case And: labelOp= "And";break;
 			case Or: labelOp="Or";break;
 			case Not: labelOp="Not";break;
 			case Equal: labelOp="Equal";break;
 			case Dif: labelOp= "Dif";break;
-			case GEI: labelOp= "GE";break;
-			case LEF: labelOp="LE";break;
-			case GrtI: labelOp= "Grt"; break;
-			case LesI: labelOp= "Les";break;
+			case GEI: labelOp= "GEI";break;
+			case GEF: labelOp= "GEF";break;
+			case LEF: labelOp="LEF";break;
+			case LEI: labelOp="LEI";break;
 			case GrtF: labelOp= "GrtF"; break;
+			case GrtI: labelOp= "GrtI"; break;
+			case LesI: labelOp= "LesI";break;
 			case LesF: labelOp= "LesF";break;
 			case Jmp: labelOp= "Jmp";break;
 			case JTrue: labelOp= "JTrue";break;
@@ -92,6 +95,8 @@ public class TAInstructions{
 			case ParamPop: labelOp= "ParamPop";break;
 			case CallExtern: labelOp= "CallExtern";break;
 			case Ret: labelOp= "Ret";break;
+			case ReadArray: labelOp= "ReadArray";break;
+			case WriteArray: labelOp="WriteArray";break;
 			case ToFloat: labelOp= "ToFloat";break;
 			case PutLabel: labelOp= "PutLabel";break;
 			default: labelOp="toString error"; break;	
@@ -107,31 +112,29 @@ public class TAInstructions{
 //Instructions for define label and methods
 	MethodDecl Label 
 	MethodDeclEnd Label 
-	LocationDecl 	
+	LocationDecl Location	
 	//Statement instructios
-	Assign expr location
+	Assign expr location (location:=expr)
 	//Arithmetical binary Instructions
-	AddF, AddI, SubF, SubI,
+		AddI|AddF|...|Divf| Expr Expr Location
 	//Aritmetical unary instructions
-	AddI|AddF|...|Divf Expr Expr Location
+		MinusF|...|MinusI Expr, Location (location is a place temporal)
 	//Logical binary Instuctions
-	And, Or,
+	Or|And Expr Expr Location
 	//Logical unary Instuctions
-	Not,
+	Not Expr, Location (location is a place temporal)
 	//relational binary instructions
-	Equal, Dif, GE,LE,Grt,Les,
+	Equal|Dif| GE|LE|Grt|Les Expr, Location (location is a place temporal)
 	//Jump Instructions
-	Jmp|JTrue|JFalse Expression Label
-
+	|JTrue|JFalse Expression Label
+	jmp Label
 	//Instructions for call procedure
-	Call, ParamPush, ParamPop, CallExtern,
+	Call|CallExtern Label
+	ParamPush|ParamPop Expression
 	//Conversion instruction
-	ToFloat,
+	ToFloat Expresion Location (location is a place temporal)
 	//Array drive instructions
 	ReadArray, WriteArray,
 	//Gerate label
-	PutLabel
+	PutLabel Label 
 */
-//Assign Expression Location
-//JTrue Location Label 
-//putLabel Label
