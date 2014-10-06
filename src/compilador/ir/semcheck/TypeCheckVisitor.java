@@ -194,8 +194,8 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		for (Expression e:expr.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
-		expr.setType(expr.getReturnType());
-		return expr.getReturnType();//return the method's return type
+		expr.setType(expr.getType());
+		return expr.getType();//return the method's return type
 	};
 	
 	//This method Should check if actual parameters's type and formal parameter's type are equal and return method's return type

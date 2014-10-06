@@ -25,12 +25,15 @@ public TACVisitor(){
 
 //visit program
 	public Expression visit(Program prog){
-		for (Location l: prog.getFields()){
-			addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
-		}
-		for(MethodLocation m : prog.getMethods()){
-			m.accept(this);
-		}
+		addInstr(new TAInstructions(TAInstructions.Instr.ProgramDecl,new LabelExpr(prog.getId())));//declare a program
+		if (prog.getFields()!=null)
+			for (Location l: prog.getFields()){
+				addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
+			}
+		if (prog.getMethods()!=null)	
+			for(MethodLocation m : prog.getMethods()){
+				m.accept(this);
+			}
 		return null;
 	}
 	
@@ -42,35 +45,50 @@ public TACVisitor(){
 			case INCREMENT: 
 							switch(expr.getType()){
 								case INT:aux= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Variable auxiliar para decrementar la expresion
-										addInstr(new TAInstructions(TAInstructions.Instr.AddI,expr,new IntLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+									addInstr(new TAInstructions(TAInstructions.Instr.AddI,expr,new IntLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+									if (stmt.getLocation() instanceof ArrayLocation)
+										addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,stmt.getLocation()));
+									else
 										addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
-										return null;
+									return null;
 								case FLOAT:aux= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Variable auxiliar para decrementar la expresion
-										addInstr(new TAInstructions(TAInstructions.Instr.AddF,expr,new FloatLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
-										addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
-										return null;
+											addInstr(new TAInstructions(TAInstructions.Instr.AddF,expr,new FloatLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+											if (stmt.getLocation() instanceof ArrayLocation)
+												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,stmt.getLocation()));
+											else
+												addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+											return null;
 							}
 			case DECREMENT: 								
 							switch(expr.getType()){
 								case INT:aux= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Variable auxiliar para decrementar la expresion
 										addInstr(new TAInstructions(TAInstructions.Instr.SubI,expr,new IntLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
-										addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
-										return null;
+												if (stmt.getLocation() instanceof ArrayLocation)
+													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,stmt.getLocation()));
+												else
+													addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+												return null;
 								case FLOAT:aux= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Variable auxiliar para decrementar la expresion
 										addInstr(new TAInstructions(TAInstructions.Instr.SubF,expr,new FloatLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
-										addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+										if (stmt.getLocation() instanceof ArrayLocation)
+											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,stmt.getLocation()));
+										else
+											addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
 										return null;
 							}
 			case ASSIGN: 					
 							addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
+							return null;
 		}
 		return null;
 	}
 
 //This method generate return expresion TAC
 	public Expression visit(ReturnStmt stmt){
-		Expression retExpr= stmt.getExpression().accept(this);
-		addInstr(new TAInstructions(TAInstructions.Instr.Ret, retExpr));
+		if (stmt.getExpression()!=null){
+			Expression retExpr= stmt.getExpression().accept(this);
+			addInstr(new TAInstructions(TAInstructions.Instr.Ret, retExpr));
+		}
 		return null;
 	}
 	
@@ -115,14 +133,17 @@ public TACVisitor(){
 	
 	//Generate TAC for a block
 	public Expression visit(Block stmt){
-		for (Location l: stmt.getFields()){
-			addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
-		}
-		for (Statement s: stmt.getStatements()){
-			s.accept(this);
-		}
+		if (stmt.getFields()!=null)
+			for (Location l: stmt.getFields()){
+				addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,l));
+			}
+		if (stmt.getStatements()!=null)
+			for (Statement s: stmt.getStatements()){
+				s.accept(this);
+			}		
 		return null;
 	}
+
 	public Expression visit(BreakStmt stmt){
 		addInstr(new TAInstructions(TAInstructions.Instr.Jmp,loopsEndLabel.peek()));//add intruction for jump to end of loop
 		return null;
@@ -141,8 +162,8 @@ public TACVisitor(){
 	
 	public Expression visit(ForStmt stmt){
 		Location forVar=stmt.getId();
-		Location initialValue= (Location)stmt.getInitialValue();
-		Location finalValue= (Location)stmt.getFinalValue();
+		Expression initialValue= stmt.getInitialValue().accept(this);
+		Expression finalValue= stmt.getFinalValue().accept(this);
 		Location conditionValue= new VarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),-1);
 		LabelExpr for_loop= new LabelExpr("For_Loop_"+ line,forVar);
 		LabelExpr end_for= new LabelExpr("End_For_"+ line,forVar);
@@ -238,7 +259,12 @@ public TACVisitor(){
 	}
 
 	//Asumiendo que las arrayLocation las visito unicamente en expresiones, accedemos a la posicion y la almacenamos en un teporal
-	public Expression visit(ArrayLocation array){return array;}
+	public Expression visit(ArrayLocation array){
+		VarLocation varArray= new VarLocation(Integer.toString(line),array.getLineNumber(),array.getColumnNumber(),-1);
+		addInstr(new TAInstructions(TAInstructions.Instr.ReadArray,array,varArray)); //ReadArray from destination
+		varArray.setType(array.getType().fromArray());//set new label with type
+		return varArray;
+	}	
 	
 // visit expressions
 	public Expression visit(BinOpExpr expr){
@@ -249,18 +275,24 @@ public TACVisitor(){
 		switch(op){
 			case PLUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
+							result.setType(Type.INT);
 						}else{//expe.type=float
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								floatLo.setType(Type.FLOAT);
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
 								addInstr(new TAInstructions(TAInstructions.Instr.AddF,floatLo,ro,result)); //calc add	
+								result.setType(Type.FLOAT);
 							}else{
 									if (ro.getType()==Type.INT){//ro is int
 										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+										floatRo.setType(Type.FLOAT);
 										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
 								 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
+								 		result.setType(Type.FLOAT);
 								 	}else{//ninguno es int
 								 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
+								 			result.setType(Type.FLOAT);
 								 	}
 								 }
 							
@@ -269,18 +301,24 @@ public TACVisitor(){
 		
 			case MINUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));
+							result.setType(Type.INT);
 						}else{ //(expr.getType==Type.FLOAT)
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								floatLo.setType(Type.FLOAT);
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
 								addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc add	
+								result.setType(Type.FLOAT);
 							}else{
 									if (ro.getType()==Type.INT){//ro is int
 										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+										floatRo.setType(Type.FLOAT);
 										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
 								 		addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result)); //calc add	
+								 		result.setType(Type.FLOAT);
 								 	}else{//ninguno es int
 								 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc add	
+								 			result.setType(Type.FLOAT);
 								 	}
 								 }
 							
@@ -288,42 +326,54 @@ public TACVisitor(){
 						return result;
 			case MULTIPLY: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.MultI,lo,ro,result));
+							result.setType(Type.INT);
 						}else{ //(expr.getType==Type.FLOAT)
 							if (lo.getType()==Type.INT){//lo is int
 								Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+								floatLo.setType(Type.FLOAT);
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
 								addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc add	
+								result.setType(Type.FLOAT);
 							}else{
 									if (ro.getType()==Type.INT){//ro is int
 										Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+										floatRo.setType(Type.FLOAT);
 										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatRo));//convert ro to float
 								 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc add	
+								 		result.setType(Type.FLOAT);
 								 	}else{//ninguno es int
 								 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc add	
+								 			result.setType(Type.FLOAT);
 								 	}
 								 }
 							
 						}
 						return result;
 			case DIVIDE:
-						if(expr.getType()==Type.INT ){
+						if(expr.getType()==Type.INT ){//semantica de la division entera
 							addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
+							result.setType(Type.INT);
 						}else{//expr.getType()==Type.FLOAT	 
 						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
 									Location floatLo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
-									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									floatLo.setType(Type.FLOAT);
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float										
 									addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	
+									result.setType(Type.FLOAT);
 								}else{
 										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 												Location floatRo= new VarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),-1);
+												floatRo.setType(Type.FLOAT);
 												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
 												addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));					
-										}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));}//Both type operators are float
+												result.setType(Type.FLOAT);
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));result.setType(Type.FLOAT);}//Both type operators are float
 								}
 							}
 							return result;
 			case MOD: 
 						addInstr(new TAInstructions(TAInstructions.Instr.Mod,lo,ro,result));
+						result.setType(Type.INT);
 						return result;
 			case LE: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -341,6 +391,7 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case LEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -358,6 +409,7 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;											
 			case GE: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -375,6 +427,7 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case GEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -392,6 +445,7 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case NEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -409,6 +463,7 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case CEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
@@ -426,12 +481,15 @@ public TACVisitor(){
 									}else{addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));}//Both type operators are float
 							}
 						}
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case AND: 
 						addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result));
+						result.setType(Type.BOOLEAN);
 						return result;						
 			case OR: 
 						addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result));
+						result.setType(Type.BOOLEAN);
 						return result;						
 		}
 		return result;
@@ -448,6 +506,7 @@ public TACVisitor(){
      			 }				 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
+		result.setType(expr.getType());
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(expr.getMethod()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
 			Expression value= e.accept(this);
@@ -470,6 +529,7 @@ public TACVisitor(){
 				}				 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
+		result.setType(expr.getType());
 		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
 			Expression value= e.accept(this);
@@ -496,6 +556,7 @@ public TACVisitor(){
 			}		
 		}else{
 				Location temp= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//place for current calculus
+				temp.setType(value.getType());//new value will have same value that before
 				switch (operator){
 					case MINUS: 
 								addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value

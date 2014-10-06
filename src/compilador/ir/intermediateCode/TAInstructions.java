@@ -3,6 +3,8 @@ import ir.ast.*;
 public class TAInstructions{
 	
 	public enum Instr {
+	//Instruction for define a program
+	ProgramDecl,
 	//Instructions for define label and methods
 	MethodDecl, MethodDeclEnd,LocationDecl,	
 	//Statement instructios
@@ -110,6 +112,8 @@ public class TAInstructions{
 }
 /*
 //Instructions for define label and methods
+	//Instruction for define a program
+	ProgramDecl Label
 	MethodDecl Label 
 	MethodDeclEnd Label 
 	LocationDecl Location	
@@ -134,7 +138,8 @@ public class TAInstructions{
 	//Conversion instruction
 	ToFloat Expresion Location (location is a place temporal)
 	//Array drive instructions
-	ReadArray, WriteArray,
+		ReadArray ArrayLocation Location 
+		WriteArray Expr ArrayLocation -- WriteArrat valor destino
 	//Gerate label
-	PutLabel Label 
+		PutLabel Label 
 */

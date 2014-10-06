@@ -6,14 +6,13 @@ import java.util.List;
 
 public class ExterninvkCallExpr extends CallExpr {
 	private String method;
-	private Type returnType;
 	private List<Expression> args;
 	
 
 	public ExterninvkCallExpr(String my_method, List<Expression> a, Type my_returnType,int my_line, int my_column) {
 		this.method=my_method;
 		this.args = a;
-		this.returnType=my_returnType;
+		this.type=my_returnType;
 		lineNumber=my_line;
 		colNumber= my_column;
 	}
@@ -32,10 +31,6 @@ public class ExterninvkCallExpr extends CallExpr {
 
 	public void setArgs(List<Expression> args) {
 		this.args = args;
-	}
-
-	public Type getReturnType(){
-		return this.returnType;
 	}
 	
 	@Override

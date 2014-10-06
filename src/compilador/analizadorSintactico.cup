@@ -62,6 +62,9 @@ parser code{:
             int sizeErrorBreak= breakCheckVisitor.getErrors().size();
             if (sizeErrorType==0 && sizeErrorBreak==0) {
                 System.out.println("---- PARSER COMPLETADO!! ------");
+                TACVisitor coding= new TACVisitor();
+                result.accept(coding);
+                System.out.println("TAC: "+coding.getTAC().toString());  
             }else{
               if (sizeErrorBreak!=0){
                 System.out.println(breakCheckVisitor.getErrors().toString());
@@ -74,9 +77,6 @@ parser code{:
               }
             }
           }
-          TACVisitor coding= new TACVisitor();
-          result.accept(coding);
-          System.out.println("TAC: "+coding.getTAC().toString());  
         } catch (Exception ex) {
             ex.printStackTrace();
         }
