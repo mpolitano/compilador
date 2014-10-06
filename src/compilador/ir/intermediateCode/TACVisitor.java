@@ -115,12 +115,12 @@ public TACVisitor(){
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endElse));					
 				}
 		}else{//intanceof literal
-			if (((Literal)expr).getValue()== true){
+			if (((BooleanLiteral)expr).getValue()== true){
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 			}else{
-					if ((((Literal)expr).getValue()== true) && (stmt.getElseBlock()!=null)){
+					if ((((BooleanLiteral)expr).getValue()== true) && (stmt.getElseBlock()!=null)){
 						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
 						stmt.getElseBlock().accept(this);
 						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
