@@ -187,18 +187,27 @@ public TACVisitor(){
 	
 	public Expression visit(WhileStmt stmt){
 		Expression cond= stmt.getCondition();		
-		LabelExpr while_condition=new LabelExpr("While_condition"+line);
-		LabelExpr end_while= new LabelExpr("End_While"+line);
-		loopsLabel.add(while_condition);
-		loopsEndLabel.add(end_while);
-		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
-		Location condEval=(Location)cond.accept(this);		
-		addInstr(new TAInstructions(TAInstructions.Instr.JFalse,condEval,end_while));
-		stmt.getBlock().accept(this);//generate TAC for body while
-		addInstr(new TAInstructions(TAInstructions.Instr.Jmp,while_condition));
-		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_while));
-		loopsLabel.remove();
-		loopsEndLabel.remove();
+		LabelExpr while_condition=new LabelExpr("While_condition "+line);
+		LabelExpr end_while= new LabelExpr("End_While "+line);
+		if (cond instanceof Location){
+			loopsLabel.add(while_condition);
+			loopsEndLabel.add(end_while);
+			addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
+			Location condEval=(Location)cond.accept(this);		
+			addInstr(new TAInstructions(TAInstructions.Instr.JFalse,condEval,end_while));
+			stmt.getBlock().accept(this);//generate TAC for body while
+			addInstr(new TAInstructions(TAInstructions.Instr.JTrue, cond,while_condition));
+			addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_while));
+			loopsLabel.remove();
+			loopsEndLabel.remove();
+		}else{
+			if (((BooleanLiteral)cond).getValue()== true){
+		 		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
+				stmt.getBlock().accept(this);
+				addInstr(new TAInstructions(TAInstructions.Instr.Jmp,while_condition));
+			}
+		}
+	
 		return null;
 	}
 

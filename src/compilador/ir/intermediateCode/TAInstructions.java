@@ -61,6 +61,7 @@ public class TAInstructions{
 	public String toString(){
 		String labelOp;
 		switch (inst){
+			case ProgramDecl: labelOp= "ProgramDecl"; break;
 			case MethodDecl: labelOp= "MethodDecl";break;
 			case MethodDeclEnd:labelOp= "MethodDeclEnd";break;
 			case LocationDecl: labelOp= "LocationDecl";break;
