@@ -165,7 +165,7 @@ public TACVisitor(){
 	}
 	
 	public Expression visit(ForStmt stmt){
-		Expression forVar=stmt.getId();
+		Location forVar=stmt.getId();
 		Expression initialValue= stmt.getInitialValue().accept(this);
 		Expression finalValue= stmt.getFinalValue().accept(this);
 		Location conditionValue= new VarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),-1);
