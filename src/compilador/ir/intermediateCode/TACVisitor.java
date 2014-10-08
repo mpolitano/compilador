@@ -12,8 +12,8 @@ public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
 private int line;
-private Queue<LabelExpr> loopsEndLabel;
-private Queue<LabelExpr> loopsLabel;
+private Queue<LabelExpr> loopsEndLabel; //for drive break statement
+private Queue<LabelExpr> loopsLabel;//for drive continue statement
 
 
 public TACVisitor(){
@@ -77,7 +77,10 @@ public TACVisitor(){
 										return null;
 							}
 			case ASSIGN: 					
-							addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
+							if (stmt.getLocation() instanceof ArrayLocation)
+								addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,expr,stmt.getLocation()));
+							else
+								addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
 							return null;
 		}
 		return null;
@@ -94,23 +97,24 @@ public TACVisitor(){
 	
 //This visitor generate TAC for if-else statement, if if's condition is a boolean literal only generate code for if or else block  	
 	public Expression visit(IfStmt stmt){
-			LabelExpr lif= new LabelExpr("if "+ Integer.toString(line));
-			LabelExpr endif= new LabelExpr("endif "+ Integer.toString(line));
+			LabelExpr lif= new LabelExpr("if_"+ Integer.toString(line));
+			LabelExpr endif= new LabelExpr("endif_"+ Integer.toString(line));
 			Expression expr=stmt.getCondition().accept(this); //Generate TAC for evaluate if condition
 			if (expr instanceof Location){
 				if (stmt.getElseBlock()==null){
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
-					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,endif));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,expr,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 				}else{
-					LabelExpr endElse= new LabelExpr("endElse "+ Integer.toString(line));
+					LabelExpr endElse= new LabelExpr("endElse_"+ Integer.toString(line));
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,expr,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endElse));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));					
 					stmt.getElseBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endElse));					
 				}
@@ -161,10 +165,11 @@ public TACVisitor(){
 	}
 	
 	public Expression visit(ForStmt stmt){
-		Location forVar=stmt.getId();
+		Expression forVar=stmt.getId();
 		Expression initialValue= stmt.getInitialValue().accept(this);
 		Expression finalValue= stmt.getFinalValue().accept(this);
 		Location conditionValue= new VarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),-1);
+		conditionValue.setType(Type.BOOLEAN);
 		LabelExpr for_loop= new LabelExpr("For_Loop_"+ line,forVar);
 		LabelExpr end_for= new LabelExpr("End_For_"+ line,forVar);
 		loopsLabel.add(for_loop);
@@ -172,11 +177,11 @@ public TACVisitor(){
 		addInstr(new TAInstructions(TAInstructions.Instr.Assign,initialValue,forVar)); //Set variable for with initial value 
 		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,for_loop));
 		addInstr(new TAInstructions(TAInstructions.Instr.LesI, forVar, finalValue,conditionValue));	
-		addInstr(new TAInstructions(TAInstructions.Instr.JFalse, end_for));	
+		addInstr(new TAInstructions(TAInstructions.Instr.JFalse,conditionValue, end_for));	
 		stmt.getBlock().accept(this);//generate for block TAC
 		addInstr(new TAInstructions(TAInstructions.Instr.AddI,forVar,new IntLiteral(1,stmt.getLineNumber(),stmt.getColumnNumber()),forVar));	
 		addInstr(new TAInstructions(TAInstructions.Instr.Jmp,for_loop));		
-		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_for));	
+		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_for));
 		loopsLabel.remove();
 		loopsEndLabel.remove();
 		return null;
@@ -187,27 +192,31 @@ public TACVisitor(){
 	
 	public Expression visit(WhileStmt stmt){
 		Expression cond= stmt.getCondition();		
-		LabelExpr while_condition=new LabelExpr("While_condition "+line);
-		LabelExpr end_while= new LabelExpr("End_While "+line);
-		if (cond instanceof Location){
-			loopsLabel.add(while_condition);
+		LabelExpr while_condition=new LabelExpr("While_condition_"+line);
+		LabelExpr end_while= new LabelExpr("End_While_"+line);			
+		if (cond instanceof BooleanLiteral){
+			if (((BooleanLiteral)cond).getValue()== true){
+		 		loopsLabel.add(while_condition);
+				loopsEndLabel.add(end_while);
+		 		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
+				stmt.getBlock().accept(this);
+				addInstr(new TAInstructions(TAInstructions.Instr.Jmp,while_condition));
+				addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_while));//put end while condition for break jump
+				loopsLabel.remove();
+				loopsEndLabel.remove();
+			}
+		}else{//instance of Expression so cond.accept(this) return a VarLocation
+	 		loopsLabel.add(while_condition);
 			loopsEndLabel.add(end_while);
 			addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
 			Location condEval=(Location)cond.accept(this);		
 			addInstr(new TAInstructions(TAInstructions.Instr.JFalse,condEval,end_while));
 			stmt.getBlock().accept(this);//generate TAC for body while
-			addInstr(new TAInstructions(TAInstructions.Instr.JTrue, cond,while_condition));
+			addInstr(new TAInstructions(TAInstructions.Instr.Jmp,while_condition));
 			addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,end_while));
 			loopsLabel.remove();
 			loopsEndLabel.remove();
-		}else{
-			if (((BooleanLiteral)cond).getValue()== true){
-		 		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,while_condition));
-				stmt.getBlock().accept(this);
-				addInstr(new TAInstructions(TAInstructions.Instr.Jmp,while_condition));
-			}
 		}
-	
 		return null;
 	}
 
@@ -215,21 +224,11 @@ public TACVisitor(){
 	public Expression visit(MethodCallStmt stmt){
 		for(Expression e: stmt.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-				}				 
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 		 
 		}
-		Location result= new VarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),-1);//Location for save procedure's result
-		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(stmt.getMethod().getId()),result));//Call sub-rutina 	
+		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(stmt.getMethod().getId())));//Call sub-rutina 	
 		for(Expression e: stmt.getArguments()){//Loop for pop parameters
-			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-				}		
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop));//Parameter's Pop				
 		}
 		return null;
 	}
@@ -238,21 +237,11 @@ public TACVisitor(){
 	public Expression visit(ExterninvkCallStmt stmt){
 		for(Expression e: stmt.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-     			 }				 
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 		 
 		}
-		Location result= new VarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),-1);//Location for save procedure's result
-		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(stmt.getMethod()),result));//Call sub-rutina 	
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(stmt.getMethod())));//Call sub-rutina 	
 		for(Expression e: stmt.getArguments()){//Loop for pop parameters
-			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-				}	
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop));//Parameter's  Pop
 		}
 		return null;
 	}
@@ -508,22 +497,13 @@ public TACVisitor(){
 	public Expression visit(ExterninvkCallExpr expr){
 		for(Expression e: expr.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-     			 }				 
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 	 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
 		result.setType(expr.getType());
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(expr.getMethod()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
-			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-				}	
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop));//Parameter's value Pop
 		}
 		return result;
 	}
@@ -531,22 +511,13 @@ public TACVisitor(){
 	public Expression visit(MethodCallExpr expr){
 		for(Expression e: expr.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's location Push 	
-				}				 
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 		 
 		}
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Location for save procedure's result
 		result.setType(expr.getType());
 		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
 		for(Expression e: expr.getArguments()){//Loop for pop parameters
-			Expression value= e.accept(this);
-			if (value instanceof Literal){
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's value Pop
-			}else{//value intance of location
-					addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,value));//Parameter's location Pop 	
-				}	
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop));//Parameter's Pop
 			
 		}
 		return result;//return method's result 

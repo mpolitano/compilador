@@ -41,6 +41,9 @@ public class TAInstructions{
 		destination=my_destination;
 	}
 
+	public TAInstructions(Instr myInst){
+		inst=myInst;
+	}
 	public TAInstructions(Instr myInst, Expression my_op1, Expression my_op2, Location my_destination){
 		inst=myInst;
 		op1=my_op1;
@@ -135,7 +138,8 @@ public class TAInstructions{
 	jmp Label
 	//Instructions for call procedure
 	Call|CallExtern Label
-	ParamPush|ParamPop Expression
+	ParamPush Expression
+	ParamPop
 	//Conversion instruction
 	ToFloat Expresion Location (location is a place temporal)
 	//Array drive instructions
