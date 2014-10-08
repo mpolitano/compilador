@@ -271,7 +271,7 @@ public TACVisitor(){
 		BinOpType op= expr.getOperator();
 		Location result= new VarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),-1);//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result
 		switch(op){
-			case PLUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+			case PLUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
 							result.setType(Type.INT);
 						}else{//expe.type=float
@@ -297,7 +297,7 @@ public TACVisitor(){
 						}
 						return result;
 		
-			case MINUS: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+			case MINUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));
 							result.setType(Type.INT);
 						}else{ //(expr.getType==Type.FLOAT)
@@ -322,7 +322,7 @@ public TACVisitor(){
 							
 						}
 						return result;
-			case MULTIPLY: if (expr.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+			case MULTIPLY: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
 							addInstr(new TAInstructions(TAInstructions.Instr.MultI,lo,ro,result));
 							result.setType(Type.INT);
 						}else{ //(expr.getType==Type.FLOAT)
@@ -348,7 +348,7 @@ public TACVisitor(){
 						}
 						return result;
 			case DIVIDE:
-						if(expr.getType()==Type.INT ){//semantica de la division entera
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT){//semantica de la division entera
 							addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
 							result.setType(Type.INT);
 						}else{//expr.getType()==Type.FLOAT	 
