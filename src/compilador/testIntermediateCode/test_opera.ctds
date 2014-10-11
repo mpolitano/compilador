@@ -1,0 +1,64 @@
+class test_ope{
+
+int main(){
+	int i,j;
+	float a, b,c;
+boolean z, x;
+	i=i+j;
+	a=a+i;
+	a=i+a;
+	a=a/i;
+	a=a*b;
+	a=a*i;
+	a=c*j;
+
+	z=z&&x;
+	x=x||z;
+	
+
+}
+}
+/*
+CORRECTO 11/10. 
+
+TAC: [ProgramDecl Op1: test_ope , 
+MethodDecl Op1: main , 
+LocationDecl int Op1: j , 
+LocationDecl int Op1: i , 
+LocationDecl float Op1: c ,
+ LocationDecl float Op1: b , 
+LocationDecl float Op1: a , 
+LocationDecl boolean Op1: x , 
+LocationDecl boolean Op1: z , 
+AddI Op1: i Op2: j Destination: 9 , 
+Assign Op1: 9 Destination: i , 
+ToFloat Op1: i Destination: 11 ,
+ AddF Op1: a Op2: 11 Destination: 11 , 
+Assign Op1: 11 Destination: a , 
+ToFloat Op1: i Destination: 14 , 
+AddF Op1: 14 Op2: a Destination: 14 , 
+Assign Op1: 14 Destination: a , 
+ToFloat Op1: i Destination: 17 , 
+DivF Op1: a Op2: 17 Destination: 17 , 
+Assign Op1: 17 Destination: a , 
+MultF Op1: a Op2: b Destination: 20 , 
+Assign Op1: 20 Destination: a , 
+ToFloat Op1: i Destination: 22 , 
+MultF Op1: a Op2: 22 Destination: 22 , 
+Assign Op1: 22 Destination: a , 
+ToFloat Op1: j Destination: 25 ,
+ MultF Op1: c Op2: 25 Destination: 25 , 
+Assign Op1: 25 Destination: a , 
+And Op1: z Op2: x Destination: 28 , 
+Assign Op1: 28 Destination: z , 
+Or Op1: x Op2: z Destination: 30 , 
+Assign Op1: 30 Destination: x ,
+ MethodDeclEnd Op1: main ]
+
+
+
+
+
+
+*/
+
