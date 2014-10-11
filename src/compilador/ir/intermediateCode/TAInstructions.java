@@ -32,10 +32,10 @@ public class TAInstructions{
 	};
 
 	public Expression op1,op2;
-	public Location destination;
+	public RefLocation destination;
 	public Instr inst;
 
-	public TAInstructions(Instr myInst, Expression my_op1, Location my_destination){
+	public TAInstructions(Instr myInst, Expression my_op1, RefLocation my_destination){
 		inst=myInst;
 		op1=my_op1;
 		destination=my_destination;
@@ -44,7 +44,7 @@ public class TAInstructions{
 	public TAInstructions(Instr myInst){
 		inst=myInst;
 	}
-	public TAInstructions(Instr myInst, Expression my_op1, Expression my_op2, Location my_destination){
+	public TAInstructions(Instr myInst, Expression my_op1, Expression my_op2, RefLocation my_destination){
 		inst=myInst;
 		op1=my_op1;
 		op2=my_op2;
@@ -67,7 +67,7 @@ public class TAInstructions{
 			case ProgramDecl: labelOp= "ProgramDecl"; break;
 			case MethodDecl: labelOp= "MethodDecl";break;
 			case MethodDeclEnd:labelOp= "MethodDeclEnd";break;
-			case LocationDecl: labelOp= "LocationDecl";break;
+			case LocationDecl: labelOp= "LocationDecl " + op1.getType();break;
 			case Assign: labelOp= "Assign";break;
 			case AddF: labelOp= "AddF";break;
 			case AddI: labelOp= "AddI";break;
@@ -143,8 +143,8 @@ public class TAInstructions{
 	//Conversion instruction
 	ToFloat Expresion Location (location is a place temporal)
 	//Array drive instructions
-		ReadArray ArrayLocation Location 
-		WriteArray Expr ArrayLocation -- WriteArrat valor destino
+		ReadArray ArrayLocation dir Location 
+		WriteArray Expr dir ArrayLocation -- WriteArrat valor destino
 	//Gerate label
 		PutLabel Label 
 */

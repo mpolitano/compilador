@@ -3,12 +3,12 @@ package ir.ast;
 import ir.ASTVisitor;
 
 public class ForStmt extends Statement {
-	private Location id;
+	private RefLocation id;
 	private Expression initialValue;
 	private Expression finalValue;
 	private Block block;
 	
-	public ForStmt(Location i, Expression init, Expression fin, Block bl,int my_line,int my_column) {
+	public ForStmt(RefLocation i, Expression init, Expression fin, Block bl,int my_line,int my_column) {
 		this.id = i;
 		this.initialValue = init;
 		this.finalValue = fin;
@@ -17,11 +17,11 @@ public class ForStmt extends Statement {
 		colNumber=my_column;
 	}
 
-	public Location getId() {
+	public RefLocation getId() {
 		return id;
 	}
 
-	public void setId(Location id) {
+	public void setId(RefLocation id) {
 		this.id = id;
 	}
 

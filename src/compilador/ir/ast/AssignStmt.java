@@ -3,11 +3,11 @@ package ir.ast;
 import ir.ASTVisitor;
 
 public class AssignStmt extends Statement {
-	private Location location;
+	private RefLocation location;
 	private Expression expr;
 	private AssignOpType operator;
 
-	public AssignStmt(Location loc, AssignOpType op, Expression e, int my_line, int my_col) {
+	public AssignStmt(RefLocation loc, AssignOpType op, Expression e, int my_line, int my_col) {
 		this.location = loc;
 		this.expr = e;
 		this.operator = op;
@@ -15,11 +15,11 @@ public class AssignStmt extends Statement {
 		colNumber= my_col;
 	}
 	
-	public void setLocation(Location loc) {
+	public void setLocation(RefLocation loc) {
 		this.location = loc;
 	}
 	
-	public Location getLocation() {
+	public RefLocation getLocation() {
 		return this.location;
 	}
 	

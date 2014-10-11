@@ -116,7 +116,7 @@ ComentarioLinea= "//".*\n
     "]" {  return  symbol(sym.CORCER);   }
 
     //Identificador  
-    {Alpha} ({Alpha}|{Digit})* {VarLocation value= new VarLocation(yytext(),yyline,yycolumn,-1);
+    {Alpha} ({Alpha}|{Digit})* {VarLocation value= new VarLocation(yytext(),yyline,yycolumn);
                                 return symbol(sym.ID,value);   
                                 }
 

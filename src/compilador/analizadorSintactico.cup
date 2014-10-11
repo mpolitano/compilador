@@ -115,7 +115,8 @@ terminal ReturnStmt RETURN;
 non terminal Program BEGIN, PROGRAM;
 non terminal Type TYPE;
 non terminal LinkedList<Location> FIELD_PLUS;   
-non terminal Location FIELD,LOCATION; 
+non terminal Location FIELD;
+non terminal RefLocation LOCATION; 
 non terminal LinkedList<Location> FIELD_DECL_STAR, FIELD_DECL;
 non terminal LinkedList<MethodLocation> METHOD_DECL_STAR;
 non terminal MethodLocation METHOD_DECL;
@@ -293,11 +294,11 @@ BOOLEAN  ::=            TRUE:t{:RESULT= t;:} | FALSE:f{:RESULT= f;:} ;
 
 
 STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr,expr.getLineNumber(),expr.getColumnNumber());:}
-                				| METHOD_CALL:method PUNTOCOMA{:if (method instanceof MethodCallExpr){ RESULT= new  MethodCallStmt(((MethodCallExpr)method).getMethod(), ((MethodCallExpr)method).getArguments());}
+                				| METHOD_CALL:method PUNTOCOMA{:if (method instanceof MethodCallExpr){ RESULT= new  MethodCallStmt(((MethodCallExpr)method).getMethod(), ((MethodCallExpr)method).getArguments()); RESULT.setLineNumber(method.getLineNumber());RESULT.setLineNumber(method.getLineNumber());}
                                                         else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
                         :}
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
-                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(id,iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
               			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
               			    | RETURN:rt EXPR_OPTIONAL:expr PUNTOCOMA{:rt.setExpression(expr); RESULT=rt ;:} 
               			    | BREAK:br PUNTOCOMA{:RESULT= br;:}
@@ -354,10 +355,11 @@ LOCATION  ::=           ID:id
                               if (l==null){
                                 report_error("Symbol not defined :",id);//If location could't be find in this level or upper level, it can't be refering     
                               }else{
-                                l.setLineNumber(id.getLineNumber());
-                                l.setColumnNumber(id.getColumnNumber());
-                                RESULT=l;                                
-                              }                          
+                                if (l instanceof VarLocation)
+                                  RESULT=new RefVarLocation(((VarLocation)l),id.getLineNumber(),id.getColumnNumber());
+                                else report_error("Simbol isn't an Array Location  :",id);
+
+                              }                                                      
                             :} 
                         | ID:id CORAB EXPR:expr CORCER
                           {:
@@ -365,7 +367,7 @@ LOCATION  ::=           ID:id
                               if (l==null){
                                 report_error("Symbol not defined :",id);
                               }else{
-                                if(l instanceof ArrayLocation){((ArrayLocation)l).setExpression(expr);l.setLineNumber(id.getLineNumber());l.setColumnNumber(id.getColumnNumber());RESULT=l;}
+                                if(l instanceof ArrayLocation){RESULT= new RefArrayLocation(((ArrayLocation)l),id.getLineNumber(),id.getColumnNumber(),expr);}
                                 else{report_error("Simbol isn't an Array Location  :",id);};                               
                               }                          
                           :};

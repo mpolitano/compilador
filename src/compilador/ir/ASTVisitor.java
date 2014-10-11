@@ -25,6 +25,8 @@ public interface ASTVisitor<T> {
 	public T visit(VarLocation var);
 	public T visit(MethodLocation method);
 	public T visit(ArrayLocation array);
+	public T visit(RefVarLocation var);
+	public T visit(RefArrayLocation array);
 	
 // visit expressions
 	public T visit(BinOpExpr expr);

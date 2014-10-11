@@ -60,6 +60,8 @@ private List<Error> errors;
 	public Boolean visit(VarLocation var){return false;}
 	public Boolean visit(MethodLocation method){return method.getBody().accept(this);}
 	public Boolean visit(ArrayLocation array){return false;}
+	public Boolean visit(RefVarLocation array){return false;}
+	public Boolean visit(RefArrayLocation array){return false;}
 	
 // visit expressions
 	public Boolean visit(BinOpExpr expr){return false;}

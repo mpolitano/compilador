@@ -4,13 +4,13 @@ import ir.ASTVisitor;
 
 public class LabelExpr extends Expression{
 	private String label;
-	private Location info;
+	private RefLocation info;
 
 	public LabelExpr(String my_label){
 		label= my_label;
 	}
 
-	public LabelExpr(String my_label,Location my_info){
+	public LabelExpr(String my_label,RefLocation my_info){
 		label= my_label;
 		info=my_info;
 	}
@@ -19,7 +19,7 @@ public class LabelExpr extends Expression{
 		return label;
 	}
 
-	public Location getInfo(){
+	public RefLocation getInfo(){
 		return info;
 	}
 
