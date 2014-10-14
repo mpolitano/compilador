@@ -58,6 +58,10 @@ public class IntLiteral extends Literal<Integer> {
 		return rawValue;
 	}
 
+	public String toAsmCode(){
+		return "$"+value.toString();
+	}
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);

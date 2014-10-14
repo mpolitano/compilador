@@ -11,4 +11,8 @@ public abstract class Expression extends AST {
 	public void setType(Type t) {
 		this.type = t;
 	}
+
+	public String toAsmCode(){
+		return this.getClass()+ " Undefined";
+	}
 }

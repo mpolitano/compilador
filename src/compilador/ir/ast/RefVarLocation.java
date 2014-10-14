@@ -25,6 +25,11 @@ public class RefVarLocation extends RefLocation {
 		return ref.getId();
 	}
 
+	public String toAsmCode(){
+		if (ref.getOffset()==0) return ref.getId() + "(%rip)";
+		else return ref.getOffset() + "(%rbp)";
+	}
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);

@@ -2,7 +2,8 @@ package ir.ast;
 
 public abstract class Location extends Expression {
 	protected String id;
-	
+	protected int offset=999999;	
+
 	public void setId(String ide) {
 		this.id = ide;
 	}
@@ -11,5 +12,12 @@ public abstract class Location extends Expression {
 		return id;
 	}
 
+	public void setOffset(int my_offset){
+		offset=my_offset;	
+	}
+
+	public int getOffset(){
+		return offset;
+	}
 
 }

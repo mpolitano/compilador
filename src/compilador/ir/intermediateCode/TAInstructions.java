@@ -61,6 +61,23 @@ public class TAInstructions{
 		op1=my_op1;
 		op2= my_op2;
 	}
+
+	public TAInstructions.Instr getInstruction(){
+		return this.inst;
+	}
+
+	public Expression getOp1(){
+		return op1;
+	}
+
+	public Expression getOp2(){
+		return op2;
+	}
+
+	public RefLocation getDestination(){
+		return destination;
+	}
+
 	public String toString(){
 		String labelOp;
 		switch (inst){
@@ -118,8 +135,8 @@ public class TAInstructions{
 //Instructions for define label and methods
 	//Instruction for define a program
 	ProgramDecl Label
-	MethodDecl Label 
-	MethodDeclEnd Label 
+	MethodDecl MethodLocation 
+	MethodDeclEnd MethodLocation 
 	LocationDecl Location	
 	//Statement instructios
 	Assign expr location (location:=expr)
@@ -138,8 +155,8 @@ public class TAInstructions{
 	jmp Label
 	//Instructions for call procedure
 	Call|CallExtern Label
-	ParamPush Expression
-	ParamPop
+	ParamPush Expression Location(register or ebp+12...)
+	ParamPop IntLiteral
 	//Conversion instruction
 	ToFloat Expresion Location (location is a place temporal)
 	//Array drive instructions

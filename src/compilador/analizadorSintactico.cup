@@ -6,16 +6,18 @@ import ir.ASTVisitor;
 import ir.semcheck.TypeCheckVisitor;
 import ir.semcheck.BreakContinueCheckVisitor;
 import ir.intermediateCode.TACVisitor;
+import ir.codeGeneration.*;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
 
 action code {:
 //Global variables   
-    public SymbolTable symTable= new SymbolTable(); //Symbol Table for check location(variables, methods) definition(not redefinition), invocation and referencing    
-    public boolean inMethodDecl;//Flag for drive Symbol Table level 
-    public int cantMain; //Amount of mehods with "Main" label for check that there is a only definition. 
-    public int paramaterMain; //Amount of parameters that has a method with label "Main"
+    private SymbolTable symTable= new SymbolTable(); //Symbol Table for check location(variables, methods) definition(not redefinition), invocation and referencing    
+    private boolean inMethodDecl;//Flag for drive Symbol Table level 
+    private int cantMain; //Amount of mehods with "Main" label for check that there is a only definition. 
+    private int paramaterMain; //Amount of parameters that has a method with label "Main"
+    private int methodOffset;
 
 //Method for report error and information about this
     public void report_error(String message, Object info) {
@@ -27,6 +29,33 @@ action code {:
         m.append(" : "+message);
         System.out.println(m + " " + ((Location)info).toString());
         System.exit(1); //Interrumpo la ejecucion
+    }
+
+    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
+the followings will be in the stack*/
+    private void setParametersOffset(List<Location> listParameters){
+      /*
+      STACK representation
+
+      Local Var= rbp+4
+      rbp= rbp
+      dir retorno =rbp+8
+      Arguments= rpb+12
+      
+      */
+      int register=1; //Each register has a numer since 1 to 6
+      int i=0;
+      while (i<6 && listParameters.size()>i){
+        listParameters.get(i).setOffset(register);
+         register++;    
+         i++; 
+      }
+      int offset=12;//since 7 parameter to the last, put these in stack. 
+      while(listParameters.size()>i){
+           listParameters.get(i).setOffset(offset);
+           offset= offset+4;
+      }
+          
     }
 :}
 
@@ -65,6 +94,7 @@ parser code{:
                 TACVisitor coding= new TACVisitor();
                 result.accept(coding);
                 System.out.println("TAC: "+coding.getTAC().toString());  
+                CodeGenerator.generateCode(coding.getTAC());
             }else{
               if (sizeErrorBreak!=0){
                 System.out.println(breakCheckVisitor.getErrors().toString());
@@ -151,13 +181,17 @@ BEGIN ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); //Push "global" level 
                inMethodDecl= false; //set flag inMethodDecl 
                cantMain=0;
+               methodOffset=-4;
               :} PROGRAM:p{:RESULT=p;:} ;
 
-PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listFiel METHOD_DECL_STAR:listMehod LLCER {: 
+PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listField METHOD_DECL_STAR:listMehod LLCER {: 
                                   if(cantMain==0){
                                     report_error("Problem Main ", ide);//Program must has a Mehod declaration          
                                   }
-                                  RESULT= new Program(ide.getId(),listFiel, listMehod);
+                                  for(Location l: listField){//Set offset to global location 
+                                    l.setOffset(0);//0 mean that location l has a global scope, it won't be in stack
+                                  }
+                                  RESULT= new Program(ide.getId(),listField, listMehod);
                                 :}
               					| CLASS ID:ide LLAB METHOD_DECL_STAR:listMehod LLCER{: 
                                   if(cantMain==0 ){
@@ -179,9 +213,9 @@ FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
                                                       report_error("Wrong number for Array Size: ", id);                      
                                                     }
                                                   } 
-                                                  if(!symTable.addSymbolToLevel(id)){
+                                                  if(!symTable.addSymbolToLevel(id)){//add Location to SymbolTable
                                                     report_error("Symbol Redefine: ", id);          
-                                                  } 
+                                                  }
                                                 }                                              
                                                 RESULT=decl;
                                                :};
@@ -219,7 +253,10 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                           }
                           MethodLocation newMethod=(MethodLocation) symTable.getByIde(ide.getId());
                           newMethod.setParameters(listParameters);
-                          newMethod.setBody(body);                            
+                          setParametersOffset(listParameters);
+                          newMethod.setBody(body);
+                          newMethod.setOffset(methodOffset);//set method offset. -8->there ins't local location, -12-> 1 local location, -16->2 local location ...
+                          methodOffset=-4;//restart methodoffset for next method                            
                           RESULT= newMethod; 
                         :}
                         | VOID:t ID:ide {:
@@ -246,6 +283,8 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                                                           MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
                                                                           newMethod.setBody(body);                                                                          
+                                                                          newMethod.setOffset(methodOffset);//set method offset. -8->there ins't local location, -12-> 1 local location, -16->2 local location ...
+                                                                          methodOffset=-4;//restart methodoffset for next method                            
                                                                           RESULT= newMethod;
                                                                         :};
 
@@ -269,6 +308,10 @@ BLOCK  ::=              LLAB
                             FIELD_DECL_STAR:listField STATAMENT_STAR:listStatament LLCER
                             {:
                                symTable.popLevel();
+                               for(Location l: listField){//Set offset for local block labels
+                                  l.setOffset(methodOffset);
+                                  methodOffset= methodOffset-4;                                 
+                               }
                                RESULT= new Block(-1,listField,listStatament); 
                             :}
                         
