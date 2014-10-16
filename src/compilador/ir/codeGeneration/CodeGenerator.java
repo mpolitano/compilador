@@ -12,7 +12,7 @@ public class CodeGenerator{
 	public static void generateCode(List<TAInstructions> program){
     	try
     	{
-        	f = new FileWriter("/home/nando/Desktop/example1.s");
+        	f = new FileWriter("/home/cesar/Escritorio/example1.s");
         	pw = new PrintWriter(f);
         	for(TAInstructions instr: program){
         		generateAsmCode(instr);
@@ -36,9 +36,21 @@ public class CodeGenerator{
 			case Call: genCallAsmCode(instr);break;
 			case Assign: genAssignAsmCode(instr);break;
 			case AddI: genAddIAsmCode(instr);break;
+			case SubI: genSubIAsmCode(instr);break;
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
+			case MultI: genMultIAsmCode(instr);break;
+			//case DivI: genDivIAsmCode(instr); break;
+			case LesI: genLesIAsmCode(instr); break;
+			case GrtI: genGrtIAsmCode(instr); break;
+			case Equal: genEqualAsmCode(instr); break;
+			case Dif: genDifAsmCode(instr); break;
+			case GEI: genGEIAsmCode(instr); break;
+			case LEI: genLEIAsmCode(instr); break;
+			case And: genAndAsmCode(instr); break;
+			case Or: genOrAsmCode(instr); break;
+			case Not: genNotAsmCode(instr); break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -86,8 +98,134 @@ public class CodeGenerator{
 	}
 
 	private static void genAddIAsmCode(TAInstructions instr){
-
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax") ;
+			pw.println("addl "+expr2.toAsmCode()+", %eax");
+			pw.println("movl %eax, "+ l.toAsmCode());
 	}
+
+	private static void genSubIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("subl "+expr2.toAsmCode()+", %eax");
+			pw.println("movl %eax, "+ l.toAsmCode()) ;
+	}
+
+	private static void genMultIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("imull "+expr2.toAsmCode()+", %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
+
+	/*private static void genDivIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+
+	}*/
+
+	private static void genLesIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("setl %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genGrtIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("setg %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genEqualAsmCode(TAInstructions instr){
+		Expression expr1=instr.getOp1();
+		Expression expr2=instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("sete %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genDifAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("setne %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genGEIAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("setge %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genLEIAsmCode(TAInstructions instr){
+		Expression expr1 = instr.getOp1();
+		Expression expr2 = instr.getOp2();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("cmpl %eax, %edx");
+			pw.println("setle %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
+	private static void genAndAsmCode(TAInstructions instr){
+		Expression expr1 = instr.getOp1();
+		Expression expr2 = instr.getOp2();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("andl %edx, %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
+
+	private static void genOrAsmCode(TAInstructions instr){
+		Expression expr1 = instr.getOp1();
+		Expression expr2 = instr.getOp2();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");
+			pw.println("movl "+expr2.toAsmCode()+", %eax");
+			pw.println("orl %edx, %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
+
+	private static void genNotAsmCode(TAInstructions instr){
+		Expression expr = instr.getOp1();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr.toAsmCode()+", %eax");
+			pw.println("test %eax, %eax");
+			pw.println("sete %al");
+			pw.println("movzbl %al, "+l.toAsmCode());
+	}
+
 
 	private static void genRetAsmCode(TAInstructions instr){
 		Expression expr=instr.getOp1();
