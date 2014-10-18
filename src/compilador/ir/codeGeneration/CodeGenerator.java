@@ -41,7 +41,8 @@ public class CodeGenerator{
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
-			//case DivI: genDivIAsmCode(instr); break;
+			case DivI: genDivIAsmCode(instr); break;
+			case Mod: genModAsmCode(instr); break;
 			case LesI: genLesIAsmCode(instr); break;
 			case GrtI: genGrtIAsmCode(instr); break;
 			case Equal: genEqualAsmCode(instr); break;
@@ -51,6 +52,9 @@ public class CodeGenerator{
 			case And: genAndAsmCode(instr); break;
 			case Or: genOrAsmCode(instr); break;
 			case Not: genNotAsmCode(instr); break;
+			//case Jmp: genJmpAsmCode(instr); break;
+			//case JTrue: genJTrueAsmCode(instr); break;
+			//case JFalse: genJFalseAsmCode(instr); break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -124,12 +128,26 @@ public class CodeGenerator{
 			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
-	/*private static void genDivIAsmCode(TAInstructions instr){
+	
+	private static void genDivIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("cltd");
+			pw.println("idivl"+expr2.toAsmCode());
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
 
-	}*/
+	private static void genModAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("cltd");
+			pw.println("idivl "+expr2.toAsmCode());
+			pw.println("movl %edx"+l.toAsmCode());
+	}
 
 	private static void genLesIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
@@ -226,6 +244,20 @@ public class CodeGenerator{
 			pw.println("movzbl %al, "+l.toAsmCode());
 	}
 
+	/*private static void genJmpAsmCode(TAInstructions instr){
+		RefLocation l = instr.getDestination();
+			pw.println("jmp "+l.toAsmCode());
+	}
+
+	private static void genJTrueAsmCode(TAInstructions instr){
+		Location l = (Location)instr.getOp1();
+			pw.println("jtrue "+l.toAsmCode());
+	}
+
+	private static void genJFalseAsmCode(TAInstructions instr){
+		Location l = (Location)instr.getOp1();
+			pw.println("jfalse "+l.toAsmCode());
+	}*/
 
 	private static void genRetAsmCode(TAInstructions instr){
 		Expression expr=instr.getOp1();
