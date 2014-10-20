@@ -28,7 +28,9 @@ public class TAInstructions{
 	//Array drive instructions
 	ReadArray, WriteArray,
 	//Gerate label
-	PutLabel
+	PutLabel,
+	//Generate a String Literal
+	PutStringLiteral
 	};
 
 	public Expression op1,op2;
@@ -122,6 +124,7 @@ public class TAInstructions{
 			case WriteArray: labelOp="WriteArray";break;
 			case ToFloat: labelOp= "ToFloat";break;
 			case PutLabel: labelOp= "PutLabel";break;
+			case PutStringLiteral: labelOp="PutStringLiteral";break;
 			default: labelOp="toString error"; break;	
 		}
 		String aux= labelOp+" ";
@@ -164,4 +167,6 @@ public class TAInstructions{
 		WriteArray Expr dir ArrayLocation -- WriteArrat valor destino
 	//Gerate label
 		PutLabel Label 
+	//generate a StringLiteral
+	PutStringLiteral StringLiteral
 */

@@ -11,6 +11,8 @@ import java.util.*;
 public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
+private List<TAInstructions> listString; //List for save the string used as parameter in externivink calls.
+int stringLabel; 
 private int line;
 private Stack<LabelExpr> loopsEndLabel; //for drive break statement
 private Stack<LabelExpr> loopsLabel;//for drive continue statement
@@ -19,8 +21,10 @@ private MethodLocation currentMethod;
 public TACVisitor(){
 	TAC= new LinkedList();
 	line=0;
+	stringLabel=0;
 	loopsLabel= new Stack<LabelExpr>();
 	loopsEndLabel= new Stack<LabelExpr>();
+	listString= new LinkedList<TAInstructions>();
 }
 
 //visit program
@@ -34,6 +38,7 @@ public TACVisitor(){
 			for(MethodLocation m : prog.getMethods()){
 				m.accept(this);
 			}
+			TAC.addAll(listString);//Apend generate String Literal instructions to end of list.
 		return null;
 	}
 	
@@ -113,14 +118,14 @@ public TACVisitor(){
 			if (expr instanceof RefLocation){
 				if (stmt.getElseBlock()==null){
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
-					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,expr,endif));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 				}else{
 					LabelExpr endElse= new LabelExpr("endElse_"+ Integer.toString(line));
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
-					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,expr,endif));//if condition=false jump to if block's end 
+					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endElse));//if condition=false jump to if block's end 
@@ -236,6 +241,7 @@ public TACVisitor(){
 		for(Expression e: stmt.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,formalParameters.get(i)));//Parameter's value Push 		 
+			i++;
 		}
 		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(stmt.getMethod().getId())));//Call sub-rutina 	
 		if(formalParameters.size()>6){
@@ -247,14 +253,24 @@ public TACVisitor(){
 
 //Idem a ExterninvkCallStmt ver si no me trae probelmeas	
 	public Expression visit(ExterninvkCallStmt stmt){
+		List<Location> formalParameters= stmt.getFormalParameters();
+		int i=0;
 		for(Expression e: stmt.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			//addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 		 
+			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
+				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),formalParameters.get(i)));//Parameter's value Push 	 
+				((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
+				listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+				stringLabel++;	
+			}else	
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,formalParameters.get(i)));//Parameter's value Push 		 
+			i++;
 		}
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(stmt.getMethod())));//Call sub-rutina 	
 		if(stmt.getArguments().size()>6){
 			Expression bytesForPop=	new IntLiteral((stmt.getArguments().size()-6)*4,-1,-1);
-			//addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}
 		return null;
 	}
@@ -520,15 +536,25 @@ public TACVisitor(){
 	
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
 	public Expression visit(ExterninvkCallExpr expr){
+		List<Location> formalParameters= expr.getFormalParameters();
+		int i=0;
 		for(Expression e: expr.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			//addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value));//Parameter's value Push 	 
+			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
+				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),formalParameters.get(i)));//Parameter's value Push 	 
+				((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
+				listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+				stringLabel++;	
+			}else
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,formalParameters.get(i)));//Parameter's value Push 	 
+			i++;
 		}
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType());//Location for save procedure's result
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(expr.getMethod()),result));//Call sub-rutina 	
 		if(expr.getArguments().size()>6){
 			Expression bytesForPop=	new IntLiteral((expr.getArguments().size()-6)*4,-1,-1);
-			//addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}
 		return result;
 	}
@@ -584,7 +610,7 @@ public TACVisitor(){
 	public Expression visit(IntLiteral lit){return lit;}
 	public Expression visit(FloatLiteral lit){return lit;}
 	public Expression visit(BooleanLiteral lit){return lit;}
-	public Expression visit(StringLiteral lit){	return lit;}
+	public Expression visit(StringLiteral lit){return lit;}
 
 
 	public List<TAInstructions> getTAC(){

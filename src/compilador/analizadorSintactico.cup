@@ -94,7 +94,7 @@ parser code{:
                 TACVisitor coding= new TACVisitor();
                 result.accept(coding);
                 System.out.println("TAC: "+coding.getTAC().toString());  
-                CodeGenerator.generateCode(coding.getTAC());
+                CodeGenerator.generateCode(coding.getTAC(),args[1]);
             }else{
               if (sizeErrorBreak!=0){
                 System.out.println(breakCheckVisitor.getErrors().toString());
