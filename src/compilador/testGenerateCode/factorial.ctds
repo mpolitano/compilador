@@ -1,0 +1,18 @@
+class factorial{
+
+int main() 
+{ 
+	int fac;
+	int temp;
+	int r;
+	fac=5;  //FACTORIAL DE QUE NUMERO. 
+	temp=fac-1; 
+	r=fac; 
+	while (temp>=1) { 
+		r=r*temp; 
+		temp=temp-1; 
+	} 
+
+	externinvk("printf", int, r); 
+} 
+}
