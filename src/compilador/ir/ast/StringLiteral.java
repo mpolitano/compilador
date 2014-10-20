@@ -30,6 +30,10 @@ public class StringLiteral extends Literal<String> {
 		return v.visit(this);
 	}
 
+	public String toAsmCode(){
+		return "$"+value;	
+	}
+
 
 }
 
