@@ -1,0 +1,22 @@
+class maxComunDivisor{
+
+int maxComun(int a, int b){ // asumiendo que a es mayor que b --a>b 
+	int mcd; 
+	int i;
+	mcd=1;
+	for i=0, b { 
+		if ( a%i == 0 && b%i==0){
+			mcd=1; 
+		}
+	} 
+
+	return i; // retorna el maximos comun divisor 
+	} 
+	
+
+
+int main(){
+    externinvk("printf", int , maxComun(a,b));
+}
+
+}

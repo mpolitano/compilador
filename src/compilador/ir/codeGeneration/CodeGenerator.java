@@ -43,6 +43,7 @@ public class CodeGenerator{
 			case ParamPop: genPopAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
 			case DivI: genDivIAsmCode(instr); break;
+			case Mod: genModAsmCode(instr); break;
 			case LesI: genLesIAsmCode(instr); break;
 			case GrtI: genGrtIAsmCode(instr); break;
 			case Equal: genEqualAsmCode(instr); break;
@@ -53,6 +54,7 @@ public class CodeGenerator{
 			case Or: genOrAsmCode(instr); break;
 			case Not: genNotAsmCode(instr); break;
 			case JTrue: genJTrueAsmCode(instr);break;
+			case JFalse: genJFalseAsmCode(instr);break;
 			case Jmp: genJmpAsmCode(instr);break;
 			case PutLabel: genPutLabelAsmCode(instr);break; 
 			case PutStringLiteral: genPutStringLiteralCode(instr);break;
@@ -134,9 +136,19 @@ public class CodeGenerator{
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
 			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("cltd");
-			pw.println("idivl"+expr2.toAsmCode());
+			pw.println("cltd"); //Convert Signed Long to Signed Double Long. Sign-extend EAX -> EDX:EAX
+			pw.println("divl"+expr2.toAsmCode());
 			pw.println("movl %eax, "+l.toAsmCode());
+	}
+
+	private static void genModAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("cltd");
+			pw.println("divl"+expr2.toAsmCode());
+			pw.println("movl %edx, "+l.toAsmCode());
 	}
 
 	private static void genLesIAsmCode(TAInstructions instr){
@@ -259,6 +271,11 @@ public class CodeGenerator{
 	public static void genJTrueAsmCode(TAInstructions instr){
 		pw.println("testl $1, " +instr.getOp1().toAsmCode()); //and with 1 for check if expression=true.
 		pw.println("jnz "+ instr.getOp2().toString());//jump for not zero.
+	}
+
+	public static void genJFalseAsmCode(TAInstructions instr){
+		pw.println("testl $1, " +instr.getOp1().toAsmCode()); //and with 1 for check if expression=true.
+		pw.println("jz "+ instr.getOp2().toString());//jump for zero.
 	}
 
 	public static void genJmpAsmCode(TAInstructions instr){
