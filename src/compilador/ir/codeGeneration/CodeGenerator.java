@@ -41,9 +41,8 @@ public class CodeGenerator{
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
-			case ParamPop: genPopAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
-			//case DivI: genDivIAsmCode(instr); break;
+			case DivI: genDivIAsmCode(instr); break;
 			case LesI: genLesIAsmCode(instr); break;
 			case GrtI: genGrtIAsmCode(instr); break;
 			case Equal: genEqualAsmCode(instr); break;
@@ -130,12 +129,15 @@ public class CodeGenerator{
 			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
-	/*private static void genDivIAsmCode(TAInstructions instr){
+	private static void genDivIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-
-	}*/
+			pw.println("movl "+expr1.toAsmCode()+", %eax");
+			pw.println("cltd");
+			pw.println("idivl"+expr2.toAsmCode());
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
 
 	private static void genLesIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
@@ -277,10 +279,5 @@ public class CodeGenerator{
 
 	public static void genPutStringLiteralCode(TAInstructions instr){
 		pw.println(instr.getOp1().toString());
-	}
-
-	private static void genPopAsmCode(TAInstructions instr){
-		String value= ((IntLiteral) instr.getOp1()).toAsmCode();
-		pw.println("sub "+value+" , %rsp");
 	}
 }
