@@ -41,6 +41,7 @@ public class CodeGenerator{
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
+			case ParamPop: genPopAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
 			//case DivI: genDivIAsmCode(instr); break;
 			case LesI: genLesIAsmCode(instr); break;
@@ -276,5 +277,10 @@ public class CodeGenerator{
 
 	public static void genPutStringLiteralCode(TAInstructions instr){
 		pw.println(instr.getOp1().toString());
+	}
+
+	private static void genPopAsmCode(TAInstructions instr){
+		String value= ((IntLiteral) instr.getOp1()).toAsmCode();
+		pw.println("sub "+value+" , %rsp");
 	}
 }
