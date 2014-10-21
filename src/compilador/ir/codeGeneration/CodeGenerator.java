@@ -118,149 +118,149 @@ public class CodeGenerator{
 	private static void genMinusIAsmCode(TAInstructions instr){
 		Expression expr= instr.getOp1();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr.toAsmCode()+", %eax");
-			pw.println("negl %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr.toAsmCode()+", %eax"); //mov op1 to eax to do an arithmetic operation
+			pw.println("negl %eax"); //denies the number
+			pw.println("movl %eax, "+l.toAsmCode()); //mov the result to destination
 	}
 
 	private static void genAddIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %eax") ;
-			pw.println("addl "+expr2.toAsmCode()+", %eax");
-			pw.println("movl %eax, "+ l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %eax") ; //mov op1 to eax to do an arithmetic operation
+			pw.println("addl "+expr2.toAsmCode()+", %eax");	//op2 plus eax
+			pw.println("movl %eax, "+ l.toAsmCode());	//move the result to destination
 	}
 
 	private static void genSubIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("subl "+expr2.toAsmCode()+", %eax");
-			pw.println("movl %eax, "+ l.toAsmCode()) ;
+			pw.println("movl "+expr1.toAsmCode()+", %eax"); //mov op1 to eax to do an arithmetic operation
+			pw.println("subl "+expr2.toAsmCode()+", %eax");	//op2 - eax
+			pw.println("movl %eax, "+ l.toAsmCode()) ; //move the result to destination
 	}
 
 	private static void genMultIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("imull "+expr2.toAsmCode()+", %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+			pw.println("imull "+expr2.toAsmCode()+", %eax"); //op2 * eax
+			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
 	}
 
 	private static void genDivIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("idivl "+expr2.toAsmCode());
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+			pw.println("idivl "+expr2.toAsmCode());	//eax div op2
+			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
 	}
 
 	private static void genModAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-		pw.println("movl "+expr1.toAsmCode()+", %eax");
-		pw.println("idivl "+expr2.toAsmCode());
-		pw.println("movl %edx, "+l.toAsmCode());
+		pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+		pw.println("idivl "+expr2.toAsmCode());	//eax mod op2
+		pw.println("movl %edx, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genLesIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("setl %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx");	//mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx");	//compare eax and edx
+			pw.println("setl %eax"); //check if edx is less than eax, and move the result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genGrtIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("setg %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx"); //compare eax and edx
+			pw.println("setg %eax"); //check if edx is greater than eax and move result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genEqualAsmCode(TAInstructions instr){
 		Expression expr1=instr.getOp1();
 		Expression expr2=instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("sete %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx"); //compare eax and edx
+			pw.println("sete %eax");	//check if edx is equal to eax and move result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genDifAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("setne %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx"); //compare eax and edx
+			pw.println("setne %eax"); //check if edx is different to eax and move result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genGEIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("setge %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx"); //compare eax and edx
+			pw.println("setge %eax"); //check if edx is greater or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genLEIAsmCode(TAInstructions instr){
 		Expression expr1 = instr.getOp1();
 		Expression expr2 = instr.getOp2();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("cmpl %eax, %edx");
-			pw.println("setle %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx"); //compare eax and edx
+			pw.println("setle %eax"); //check if edx is less or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genAndAsmCode(TAInstructions instr){
 		Expression expr1 = instr.getOp1();
 		Expression expr2 = instr.getOp2();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("andl %edx, %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("andl %edx, %eax"); //chek the add condition between edx and eax, the result will be in eax
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genOrAsmCode(TAInstructions instr){
 		Expression expr1 = instr.getOp1();
 		Expression expr2 = instr.getOp2();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");
-			pw.println("movl "+expr2.toAsmCode()+", %eax");
-			pw.println("orl %edx, %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("orl %edx, %eax"); //chek the or condition between edx and eax, the result will be in eax
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 	private static void genNotAsmCode(TAInstructions instr){
 		Expression expr = instr.getOp1();
 		RefLocation l= instr.getDestination();
-			pw.println("movl "+expr.toAsmCode()+", %eax");
-			pw.println("test %eax, %eax");
-			pw.println("sete %eax");
-			pw.println("movl %eax, "+l.toAsmCode());
+			pw.println("movl "+expr.toAsmCode()+", %eax"); //mov op1 to eax 
+			pw.println("test %eax, %eax"); //do binary test
+			pw.println("sete %eax"); //ckecks for equal
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
 
