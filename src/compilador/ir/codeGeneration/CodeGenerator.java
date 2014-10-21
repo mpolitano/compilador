@@ -39,6 +39,7 @@ public class CodeGenerator{
 			case Assign: genAssignAsmCode(instr);break;
 			case AddI: genAddIAsmCode(instr);break;
 			case SubI: genSubIAsmCode(instr);break;
+			case MinusI: genMinusIAsmCode(instr); break;
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
@@ -114,6 +115,14 @@ public class CodeGenerator{
 		}
 	}
 
+	private static void genMinusIAsmCode(TAInstructions instr){
+		Expression expr= instr.getOp1();
+		RefLocation l= instr.getDestination();
+			pw.println("movl "+expr.toAsmCode()+", %eax");
+			pw.println("negl %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
+	}
+
 	private static void genAddIAsmCode(TAInstructions instr){
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
@@ -166,8 +175,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("setl %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("setl %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genGrtIAsmCode(TAInstructions instr){
@@ -177,8 +186,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("setg %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("setg %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genEqualAsmCode(TAInstructions instr){
@@ -188,8 +197,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("sete %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("sete %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genDifAsmCode(TAInstructions instr){
@@ -199,8 +208,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("setne %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("setne %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genGEIAsmCode(TAInstructions instr){
@@ -210,8 +219,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("setge %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("setge %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genLEIAsmCode(TAInstructions instr){
@@ -221,8 +230,8 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");
 			pw.println("movl "+expr2.toAsmCode()+", %eax");
 			pw.println("cmpl %eax, %edx");
-			pw.println("setle %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("setle %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 	private static void genAndAsmCode(TAInstructions instr){
@@ -250,8 +259,8 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination();
 			pw.println("movl "+expr.toAsmCode()+", %eax");
 			pw.println("test %eax, %eax");
-			pw.println("sete %al");
-			pw.println("movb %al, "+l.toAsmCode());
+			pw.println("sete %eax");
+			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
 
@@ -305,4 +314,5 @@ public class CodeGenerator{
 	public static void genPutStringLiteralCode(TAInstructions instr){
 		pw.println(instr.getOp1().toString());
 	}
+
 }
