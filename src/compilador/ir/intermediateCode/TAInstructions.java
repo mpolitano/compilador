@@ -22,7 +22,7 @@ public class TAInstructions{
 	//Jump Instructions
 	Jmp, JTrue, JFalse,
 	//Instructions for call procedure
-	Call, ParamPush, ParamPop, CallExtern, Ret,
+	Call,CallWithReturn, ParamPush, ParamPop, CallExtern, Ret,
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
@@ -125,6 +125,7 @@ public class TAInstructions{
 			case ToFloat: labelOp= "ToFloat";break;
 			case PutLabel: labelOp= "PutLabel";break;
 			case PutStringLiteral: labelOp="PutStringLiteral";break;
+			case CallWithReturn: labelOp= "CallWithReturn";break;
 			default: labelOp="toString error"; break;	
 		}
 		String aux= labelOp+" ";
@@ -158,6 +159,7 @@ public class TAInstructions{
 	jmp Label
 	//Instructions for call procedure
 	Call|CallExtern Label
+	CallWithReturn label location
 	ParamPush Expression Location(register or ebp+12...)
 	ParamPop IntLiteral
 	//Conversion instruction

@@ -34,6 +34,7 @@ public class CodeGenerator{
 			case MethodDecl: genMethodDeclAsmCode(instr); break;
 			case MethodDeclEnd: genMethodDeclEndAsmCode(instr); break;
 			case Call: genCallAsmCode(instr);break;
+			case CallWithReturn: genCallWithReturnAsmCode(instr);break;
 			case CallExtern: genCallExternCode(instr);break;
 			case Assign: genAssignAsmCode(instr);break;
 			case AddI: genAddIAsmCode(instr);break;
@@ -95,6 +96,15 @@ public class CodeGenerator{
 		pw.println("call "+ m.toString());
 	}
 
+	private static void genCallWithReturnAsmCode(TAInstructions instr){
+		LabelExpr m= (LabelExpr)instr.getOp1();
+		pw.println("call "+ m.toString());
+		RefLocation l= instr.getDestination(); 
+		//code for return in location
+		switch(l.getType()){//TODO defined the other cases
+			case INT: pw.println("movl %eax, "+l.toAsmCode()); 
+		}
+	}
 	
 	private static void genAssignAsmCode(TAInstructions instr){
 		Expression expr= instr.getOp1();
@@ -136,8 +146,7 @@ public class CodeGenerator{
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
 			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("cltd"); //Convert Signed Long to Signed Double Long. Sign-extend EAX -> EDX:EAX
-			pw.println("divl"+expr2.toAsmCode());
+			pw.println("idivl "+expr2.toAsmCode());
 			pw.println("movl %eax, "+l.toAsmCode());
 	}
 
@@ -145,10 +154,9 @@ public class CodeGenerator{
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %eax");
-			pw.println("cltd");
-			pw.println("divl"+expr2.toAsmCode());
-			pw.println("movl %edx, "+l.toAsmCode());
+		pw.println("movl "+expr1.toAsmCode()+", %eax");
+		pw.println("idivl "+expr2.toAsmCode());
+		pw.println("movl %edx, "+l.toAsmCode());
 	}
 
 	private static void genLesIAsmCode(TAInstructions instr){

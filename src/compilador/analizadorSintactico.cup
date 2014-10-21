@@ -341,7 +341,7 @@ STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new
                                                         else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
                         :}
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
-                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr BLOCK:body{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);inMethodDecl=true;RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);id.setOffset(methodOffset);methodOffset= methodOffset-4;inMethodDecl=true;:} BLOCK:body {:RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
               			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
               			    | RETURN:rt EXPR_OPTIONAL:expr PUNTOCOMA{:rt.setExpression(expr); RESULT=rt ;:} 
               			    | BREAK:br PUNTOCOMA{:RESULT= br;:}

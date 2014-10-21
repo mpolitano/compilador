@@ -2,7 +2,7 @@ package ir.ast;
 
 public abstract class Location extends Expression {
 	protected String id;
-	protected int offset=999999;	
+	protected int offset=999999;	//999999 means offset not seted
 
 	public void setId(String ide) {
 		this.id = ide;
