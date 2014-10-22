@@ -110,8 +110,8 @@ public TACVisitor(){
 	
 //This visitor generate TAC for if-else statement, if if's condition is a boolean literal only generate code for if or else block  	
 	public Expression visit(IfStmt stmt){
-			LabelExpr lif= new LabelExpr("if_"+ Integer.toString(line));
-			LabelExpr endif= new LabelExpr("endif_"+ Integer.toString(line));
+			LabelExpr lif= new LabelExpr(".if_"+ Integer.toString(line));
+			LabelExpr endif= new LabelExpr(".endif_"+ Integer.toString(line));
 			Expression expr=stmt.getCondition().accept(this); //Generate TAC for evaluate if condition
 			if (expr instanceof RefLocation){
 				if (stmt.getElseBlock()==null){
@@ -121,7 +121,7 @@ public TACVisitor(){
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 				}else{
-					LabelExpr endElse= new LabelExpr("endElse_"+ Integer.toString(line));
+					LabelExpr endElse= new LabelExpr(".endElse_"+ Integer.toString(line));
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
@@ -167,7 +167,7 @@ public TACVisitor(){
 	}
 	public Expression visit(ContinueStmt stmt){
 		LabelExpr loopLabel=loopsLabel.peek();
-		if (loopLabel.getLabel().contains("For_Loop")){
+		if (loopLabel.getLabel().contains(".For_Loop")){
 			RefLocation forVar= loopLabel.getInfo();
 			addInstr(new TAInstructions(TAInstructions.Instr.AddI, forVar,new IntLiteral(1,stmt.getLineNumber(),stmt.getColumnNumber()),forVar));//add 1 to for control variable
 			addInstr(new TAInstructions(TAInstructions.Instr.Jmp,loopLabel));//jump to for condition eval 		
@@ -182,8 +182,8 @@ public TACVisitor(){
 		Expression initialValue= stmt.getInitialValue().accept(this);
 		Expression finalValue= stmt.getFinalValue().accept(this);
 		RefLocation conditionValue= new RefVarLocation(Integer.toString(line),stmt.getLineNumber(),stmt.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
-		LabelExpr for_loop= new LabelExpr("For_Loop_"+ line,forVar);
-		LabelExpr end_for= new LabelExpr("End_For_"+ line,forVar);
+		LabelExpr for_loop= new LabelExpr(".For_Loop_"+ line,forVar);
+		LabelExpr end_for= new LabelExpr(".End_For_"+ line,forVar);
 		loopsLabel.push(for_loop);
 		loopsEndLabel.push(end_for);
 		addInstr(new TAInstructions(TAInstructions.Instr.Assign,initialValue,forVar)); //Set variable for with initial value 
@@ -204,8 +204,8 @@ public TACVisitor(){
 	
 	public Expression visit(WhileStmt stmt){
 		Expression cond= stmt.getCondition();		
-		LabelExpr while_condition=new LabelExpr("While_condition_"+line);
-		LabelExpr end_while= new LabelExpr("End_While_"+line);			
+		LabelExpr while_condition=new LabelExpr(".While_condition_"+line);
+		LabelExpr end_while= new LabelExpr(".End_While_"+line);			
 		if (cond instanceof BooleanLiteral){
 			if (((BooleanLiteral)cond).getValue()== true){
 		 		loopsLabel.push(while_condition);
