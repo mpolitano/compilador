@@ -8,6 +8,7 @@ import ir.intermediateCode.TAInstructions;
 public class CodeGenerator{
 	private static FileWriter f=null;
     private static PrintWriter pw=null;
+    private static int numberLabel=0;
 		
 	public static void generateCode(List<TAInstructions> program, String path){
     	try
@@ -175,8 +176,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx");	//mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx");	//compare eax and edx
-			pw.println("setl %eax"); //check if edx is less than eax, and move the result to eax (1 true, 0 false)
+			pw.println("jl .L"+numberLabel); //check if edx is less than eax, and move the result to eax (1 true, 0 false)
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genGrtIAsmCode(TAInstructions instr){
@@ -186,8 +193,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx"); //compare eax and edx
-			pw.println("setg %eax"); //check if edx is greater than eax and move result to eax (1 true, 0 false)
+			pw.println("jl .L"+numberLabel); //check if edx is greater than eax and move result to eax (1 true, 0 false)
+			pw.println("movl $0, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $1, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genEqualAsmCode(TAInstructions instr){
@@ -197,8 +210,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx"); //compare eax and edx
-			pw.println("sete %eax");	//check if edx is equal to eax and move result to eax (1 true, 0 false)
+			pw.println("je .L"+numberLabel);	//check if edx is equal to eax and move result to eax (1 true, 0 false)
+			pw.println("movl $0, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $1, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genDifAsmCode(TAInstructions instr){
@@ -208,8 +227,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx"); //compare eax and edx
-			pw.println("setne %eax"); //check if edx is different to eax and move result to eax (1 true, 0 false)
+			pw.println("jne .L"+numberLabel); //check if edx is different to eax and move result to eax (1 true, 0 false)
+			pw.println("movl $0, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $1, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genGEIAsmCode(TAInstructions instr){
@@ -219,8 +244,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx"); //compare eax and edx
-			pw.println("setge %eax"); //check if edx is greater or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("jle .L"+numberLabel); //check if edx is greater or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("movl $0, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $1, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genLEIAsmCode(TAInstructions instr){
@@ -230,8 +261,14 @@ public class CodeGenerator{
 			pw.println("movl "+expr1.toAsmCode()+", %edx"); //mov op1 to edx to compare
 			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
 			pw.println("cmpl %eax, %edx"); //compare eax and edx
-			pw.println("setle %eax"); //check if edx is less or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("jle .L"+numberLabel); //check if edx is less or equal than eax and move result to eax (1 true, 0 false)
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
 	}
 
 	private static void genAndAsmCode(TAInstructions instr){
@@ -258,8 +295,7 @@ public class CodeGenerator{
 		Expression expr = instr.getOp1();
 		RefLocation l= instr.getDestination();
 			pw.println("movl "+expr.toAsmCode()+", %eax"); //mov op1 to eax 
-			pw.println("test %eax, %eax"); //do binary test
-			pw.println("sete %eax"); //ckecks for equal
+			pw.println("xorl $1, %eax");
 			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
 	}
 
