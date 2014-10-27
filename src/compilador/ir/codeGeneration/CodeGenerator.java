@@ -61,6 +61,14 @@ public class CodeGenerator{
 			case Jmp: genJmpAsmCode(instr);break;
 			case PutLabel: genPutLabelAsmCode(instr);break; 
 			case PutStringLiteral: genPutStringLiteralCode(instr);break;
+			case AddF: genAddFAsmCode(instr); break;
+			case SubF: genSubFAsmCode(instr); break;
+			case MultF: genMultFAsmCode(instr); break;
+			case DivF: genDivFAsmCode(instr); break;
+			case LesF: genLesFAsmCode(instr); break;
+			case GrtF: genGrtFAsmCode(instr); break;
+			case LEF: genLEFAsmCode(instr); break;
+			case GEF: genGEFAsmCode(instr); break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -350,5 +358,124 @@ public class CodeGenerator{
 	public static void genPutStringLiteralCode(TAInstructions instr){
 		pw.println(instr.getOp1().toString());
 	}
+
+	public static void genAddFAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0") ; 
+			pw.println("addss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("movss %xmm0, "+ l.toAsmCode());	
+	}
+
+	public static void genSubFAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0") ; 
+			pw.println("subss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("movss %xmm0, "+ l.toAsmCode());	
+	}
+
+	public static void genMultFAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0") ; 
+			pw.println("mulss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("movss %xmm0, "+ l.toAsmCode());	
+	}
+
+	public static void genDivFAsmCode(TAInstructions instr){
+		Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0") ; 
+			pw.println("divss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("movss %xmm0, "+ l.toAsmCode());	
+	}
+
+	Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movl "+expr1.toAsmCode()+", %edx");	//mov op1 to edx to compare
+			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
+			pw.println("cmpl %eax, %edx");	//compare eax and edx
+			pw.println("jl .L"+numberLabel); //check if edx is less than eax, and move the result to eax (1 true, 0 false)
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
+			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
+			numberLabel++;
+
+    public static void genLesFAsmCode(TAInstructions instr){
+    	Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("jbe .L"+numberLabel);
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
+			pw.println("movl %eax, "+l.toAsmCode());// %xmm1<%xmm0
+			numberLabel++;
+    }
+
+    public static void genGrtFAsmCode(TAInstructions instr){
+    	Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("ucomiss %xmm0, %xmm1");
+			pw.println("jbe .L"+numberLabel);
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
+			pw.println("movl %eax, "+l.toAsmCode());// %xmm1>%xmm0
+			numberLabel++;
+    }
+
+    public static void genLEFAsmCode(TAInstructions instr){
+    	Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("jb .L"+numberLabel);
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
+			pw.println("movl %eax, "+l.toAsmCode());// %xmm1<%xmm0
+			numberLabel++;
+    }
+
+    public static void genGEFAsmCode(TAInstructions instr){
+    	Expression expr1= instr.getOp1();
+		Expression expr2= instr.getOp2();
+		RefLocation l=instr.getDestination();
+			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
+			pw.println("ucomiss %xmm0, %xmm1");
+			pw.println("jb .L"+numberLabel);
+			pw.println("movl $1, %eax");
+			pw.println("jmp .Continue"+numberLabel);
+			pw.println(".L"+numberLabel+":");
+			pw.println("movl $0, %eax");
+			pw.println(".Continue"+numberLabel+":");
+			pw.println("movl %eax, "+l.toAsmCode());// %xmm1<%xmm0
+			numberLabel++;
+    }
 
 }
