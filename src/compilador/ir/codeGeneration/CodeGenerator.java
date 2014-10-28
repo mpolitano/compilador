@@ -395,20 +395,7 @@ public class CodeGenerator{
 			pw.println("movss %xmm0, "+ l.toAsmCode());	
 	}
 
-	Expression expr1= instr.getOp1();
-		Expression expr2= instr.getOp2();
-		RefLocation l=instr.getDestination();
-			pw.println("movl "+expr1.toAsmCode()+", %edx");	//mov op1 to edx to compare
-			pw.println("movl "+expr2.toAsmCode()+", %eax"); //mov op2 to eax to compare
-			pw.println("cmpl %eax, %edx");	//compare eax and edx
-			pw.println("jl .L"+numberLabel); //check if edx is less than eax, and move the result to eax (1 true, 0 false)
-			pw.println("movl $1, %eax");
-			pw.println("jmp .Continue"+numberLabel);
-			pw.println(".L"+numberLabel+":");
-			pw.println("movl $0, %eax");
-			pw.println(".Continue"+numberLabel+":");
-			pw.println("movl %eax, "+l.toAsmCode()); //move the result to destination
-			numberLabel++;
+	
 
     public static void genLesFAsmCode(TAInstructions instr){
     	Expression expr1= instr.getOp1();
