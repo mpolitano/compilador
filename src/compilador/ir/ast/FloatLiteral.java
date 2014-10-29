@@ -56,7 +56,10 @@ public class FloatLiteral extends Literal<Float> {
 	public String toString() {
 		return rawValue;
 	}
-
+	
+	public String toAsmCode(){
+		return "$"+value.toString();
+	}
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);

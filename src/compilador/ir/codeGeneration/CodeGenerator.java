@@ -69,6 +69,7 @@ public class CodeGenerator{
 			case GrtF: genGrtFAsmCode(instr); break;
 			case LEF: genLEFAsmCode(instr); break;
 			case GEF: genGEFAsmCode(instr); break;
+			case ToFloat: genToFloatAsmCode(instr); break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -121,6 +122,9 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination();
 		if (expr instanceof IntLiteral){
 			pw.println("movl "+expr.toAsmCode()+", "+ l.toAsmCode());
+		}else{
+			pw.println("movl "+expr.toAsmCode()+", "+ "%ecx");
+			pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
 		}
 	}
 
@@ -331,12 +335,12 @@ public class CodeGenerator{
 
 	public static void genJTrueAsmCode(TAInstructions instr){
 		pw.println("testl $1, " +instr.getOp1().toAsmCode()); //and with 1 for check if expression=true.
-		pw.println("jnz "+ instr.getOp2().toString());//jump for not zero.
+		pw.println("jz "+ instr.getOp2().toString());//jump for not zero.
 	}
 
 	public static void genJFalseAsmCode(TAInstructions instr){
 		pw.println("testl $1, " +instr.getOp1().toAsmCode()); //and with 1 for check if expression=true.
-		pw.println("jz "+ instr.getOp2().toString());//jump for zero.
+		pw.println("jnz "+ instr.getOp2().toString());//jump for zero.
 	}
 
 	public static void genJmpAsmCode(TAInstructions instr){
@@ -459,10 +463,28 @@ public class CodeGenerator{
 			pw.println("movl $1, %eax");
 			pw.println("jmp .Continue"+numberLabel);
 			pw.println(".L"+numberLabel+":");
+		
 			pw.println("movl $0, %eax");
 			pw.println(".Continue"+numberLabel+":");
 			pw.println("movl %eax, "+l.toAsmCode());// %xmm1<%xmm0
 			numberLabel++;
+    }
+
+//No funciona.
+    public static void genToFloatAsmCode(TAInstructions instr){
+    	Expression expr1= instr.getOp1();
+		RefLocation l=instr.getDestination();
+		//pw.println("movss "+expr1.toAsmCode()+", %xmm0");
+		pw.println("movss "+expr1.toAsmCode()+", %xmm1");
+		pw.println("addss xmm3, xmm3");
+		pw.println("cvtss2si "+"eax"+", %xmm0");
+	//	pw.println("cvtsi2sd "+"%xmm0"+", %rax");
+		//pw.println("cvtss2si "+"%xmm0"+", %xmm0");
+
+
+
+
+
     }
 
 }

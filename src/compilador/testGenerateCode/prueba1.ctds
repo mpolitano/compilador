@@ -1,0 +1,10 @@
+class prueba {
+	
+	
+	void main(){
+	
+		x = 2.0;
+		z = x+2;
+	externinvk("printf", void, "%d\n",z);
+	}
+}
