@@ -558,10 +558,14 @@ public TACVisitor(){
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
 	public Expression visit(MethodCallExpr expr){
 		List<Location> formalParameters= expr.getMethod().getFormalParameters();
+		saveLocalParameters(expr.getArguments());
 		int i=0;
 		for(Expression e: expr.getArguments()){//Loop for push parameters
 			Expression value= e.accept(this);
-			addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,formalParameters.get(i)));//Parameter's value Push 		 
+			if (value instanceof Location && ((Location)value).getOffset()>0 && ((Location)value).getOffset()<=6){ 
+				value= ((Location)value).genLocationInStack(currentMethod.getOffset());//obtain parameter save location
+				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,formalParameters.get(i)));//Parameter's value Push 		 
+			}
 			i++;
 		}
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
@@ -570,6 +574,7 @@ public TACVisitor(){
 			Expression bytesForPop=	new IntLiteral((formalParameters.size()-6)*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}
+		loadLocalParameterFromStack(expr.getArguments());
 		return result;//return method's result 
 	}
 
@@ -615,6 +620,33 @@ public TACVisitor(){
 	}
 
 //Auxiliar methods
+
+
+	private void saveLocalParameters(List<Expression> formalParameters){
+		//Problemas con metodos con mas de 6 parametros.
+		Expression p=null;
+		int i=0;
+		while(i<6 && i<formalParameters.size()){
+			p= formalParameters.get(i);
+			if (p instanceof RefLocation)
+				if (((RefLocation) p).getLocation().getOffset()<=6 && ((RefLocation)p).getLocation().getOffset()>0)
+					addInstr(new TAInstructions(TAInstructions.Instr.SaveParam, p,new IntLiteral(4,-1,-1))); 	 
+			i++;
+		}
+	}
+
+	private void loadLocalParameterFromStack(List<Expression> formalParameters){
+		//Problemas con metodos con mas de 6 parametros.
+		Expression p=null;
+		int i=0;
+		while(i<6 && i<formalParameters.size()){
+			p= formalParameters.get(i);
+			if (p instanceof RefLocation)
+				if (((RefLocation) p).getLocation().getOffset()<=6 && ((RefLocation)p).getLocation().getOffset()>0)
+					addInstr(new TAInstructions(TAInstructions.Instr.LoadParam, p,new IntLiteral(4,-1,-1))); 	 
+			i++;
+		}
+	}
 
 	private void addInstr(TAInstructions inst){
 		TAC.add(line, inst);

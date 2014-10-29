@@ -44,6 +44,8 @@ public class CodeGenerator{
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
+			case SaveParam: genSaveParamAsmCode(instr);break;
+			case LoadParam: genLoadParamAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
 			case DivI: genDivIAsmCode(instr); break;
 			case Mod: genModAsmCode(instr); break;
@@ -328,6 +330,17 @@ public class CodeGenerator{
 			pw.println("pushl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
 	}
 
+	private static void genSaveParamAsmCode(TAInstructions instr){
+			pw.println("sub "+ instr.getOp2().toAsmCode()+" , %rsp");
+			pw.println("movl "+ instr.getOp1().toAsmCode()+" , (%rsp)");
+	}
+
+	private static void genLoadParamAsmCode(TAInstructions instr){
+			pw.println("movl (%rsp) , " +instr.getOp1().toAsmCode());
+			pw.println("add  $4 , %rsp");
+	}
+
+
 	private static void genPopAsmCode(TAInstructions instr){
 		String value= ((IntLiteral) instr.getOp1()).toAsmCode();
 		pw.println("sub "+value+" , %rsp");
@@ -355,7 +368,7 @@ public class CodeGenerator{
 	public static void  genCallExternCode(TAInstructions instr){
 		String m= instr.getOp1().toString();
 		m=m.substring(1,m.length()-1);//method name without "". pre= m="nameMethod" pos= m=nameMethod
-		pw.println("mov $0, %eax");//C convention
+		pw.println("movl $0, %eax");//C convention
 		pw.println("call "+ m.toString());	
 	}
 

@@ -22,7 +22,7 @@ public class TAInstructions{
 	//Jump Instructions
 	Jmp, JTrue, JFalse,
 	//Instructions for call procedure
-	Call,CallWithReturn, ParamPush, ParamPop, CallExtern, Ret,
+	Call,CallWithReturn, ParamPush, ParamPop, CallExtern, Ret, SaveParam, LoadParam,
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
@@ -63,6 +63,15 @@ public class TAInstructions{
 		op1=my_op1;
 		op2= my_op2;
 	}
+
+	public TAInstructions(Instr myInst, Location my_op1, IntLiteral my_op2){
+		inst=myInst;
+		op1=my_op1;
+		op2= my_op2;
+	}
+
+
+
 
 	public TAInstructions.Instr getInstruction(){
 		return this.inst;
