@@ -610,7 +610,16 @@ public TACVisitor(){
 
 // visit literals	
 	public Expression visit(IntLiteral lit){return lit;}
-	public Expression visit(FloatLiteral lit){return lit;}
+
+//agrego el label de float al final del programa.
+	public Expression visit(FloatLiteral lit){
+		StringLiteral value=new StringLiteral(lit.getValue().toString(),-1,-1);
+		String label=".FloatLiteral"+Integer.toString(stringLabel);//label for FloatLiteral
+		addInstr(new TAInstructions(TAInstructions.Instr.PushFloat,new StringLiteral(label,-1,-1)));	 
+		value.setValue(label+":\n \t"+".float "+lit.getValue().toString());
+		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+		stringLabel++;
+		return lit;}
 	public Expression visit(BooleanLiteral lit){return lit;}
 	public Expression visit(StringLiteral lit){return lit;}
 

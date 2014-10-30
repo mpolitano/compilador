@@ -72,6 +72,7 @@ public class CodeGenerator{
 			case LEF: genLEFAsmCode(instr); break;
 			case GEF: genGEFAsmCode(instr); break;
 			case ToFloat: genToFloatAsmCode(instr); break;
+			case PushFloat: genPushFloatAsmCode(instr); break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -124,9 +125,14 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination();
 		if (expr instanceof IntLiteral){
 			pw.println("movl "+expr.toAsmCode()+", "+ l.toAsmCode());
-		}else{
-			pw.println("movl "+expr.toAsmCode()+", "+ "%ecx");
+			System.out.println("1");
+		}else{if (expr instanceof FloatLiteral){
+			pw.println("movss "+"%xmm3"+", "+ l.toAsmCode());//by convention, save float in xmm3.
+			}else{
+				System.out.println("2");
+			pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
 			pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
+			}
 		}
 	}
 
@@ -321,6 +327,13 @@ public class CodeGenerator{
 		}
 	}
 
+	private static void genPushFloatAsmCode(TAInstructions instr){
+		Expression value= instr.getOp1();
+		String m= value.toAsmCode();
+		System.out.println(value.toAsmCode());	 //Remove $.
+		pw.println("movss "+ m.substring(1,m.length())+" , "+"%xmm3");//push to register xmm3, by Convention.
+	}
+
 	private static void genPushAsmCode(TAInstructions instr){
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
@@ -487,17 +500,8 @@ public class CodeGenerator{
     public static void genToFloatAsmCode(TAInstructions instr){
     	Expression expr1= instr.getOp1();
 		RefLocation l=instr.getDestination();
-		//pw.println("movss "+expr1.toAsmCode()+", %xmm0");
-		pw.println("movss "+expr1.toAsmCode()+", %xmm1");
-		pw.println("addss xmm3, xmm3");
-		pw.println("cvtss2si "+"eax"+", %xmm0");
-	//	pw.println("cvtsi2sd "+"%xmm0"+", %rax");
-		//pw.println("cvtss2si "+"%xmm0"+", %xmm0");
-
-
-
-
-
+		pw.println("movlps "+expr1.toAsmCode()+", %xmm0");
+		pw.println("cvtss2si "+"%xmm0"+ l.toAsmCode());
     }
 
 }
