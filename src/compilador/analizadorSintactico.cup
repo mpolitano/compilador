@@ -34,28 +34,31 @@ action code {:
     /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
 the followings will be in the stack*/
     private void setParametersOffset(List<Location> listParameters){
+
       /*
+      //Remember that address has 64 bits.
       STACK representation
 
-      Local Var= rbp+4
+      Local Var= rbp+4*(amount of parameters+1)
+      Firsts 1..6 Arguments
       rbp= rbp
       dir retorno =rbp+8
-      Arguments= rpb+12
+      7.. Arguments= rpb+12
       
       */
-      int register=1; //Each register has a numer since 1 to 6
       int i=0;
+      int offset=-4;
       while (i<6 && listParameters.size()>i){
-        listParameters.get(i).setOffset(register);
-         register++;    
+        listParameters.get(i).setOffset(offset);
+         offset=offset-4;    
          i++; 
       }
-      int offset=12;//since 7 parameter to the last, put these in stack. 
+      offset=12;//since 7 parameter to the last, put these in stack. 
       while(listParameters.size()>i){
            listParameters.get(i).setOffset(offset);
            offset= offset+4;
-      }
-          
+           i++;
+      }          
     }
 :}
 
@@ -181,7 +184,7 @@ BEGIN ::=     {:symTable= new SymbolTable();
                symTable.pushLevel(); //Push "global" level 
                inMethodDecl= false; //set flag inMethodDecl 
                cantMain=0;
-               methodOffset=-4;
+               methodOffset=0;
               :} PROGRAM:p{:RESULT=p;:} ;
 
 PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listField METHOD_DECL_STAR:listMehod LLCER {: 
@@ -243,7 +246,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                           symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                           symTable.pushLevel();
                         :} 
-                        PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
+                        PARENIZQ PARAMETERS:listParameters{:methodOffset=-(listParameters.size()*4);:}  PARENDER BLOCK:body
                         {:
                         if (ide.getId().equals("main")){
                             cantMain++;
@@ -255,8 +258,8 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                           newMethod.setParameters(listParameters);
                           setParametersOffset(listParameters);
                           newMethod.setBody(body);
-                          newMethod.setOffset(methodOffset);//set method offset. -8->there ins't local location, -12-> 1 local location, -16->2 local location ...
-                          methodOffset=-4;//restart methodoffset for next method                            
+                          newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
+                          methodOffset=0;//restart methodoffset for next method                            
                           RESULT= newMethod; 
                         :}
                         | VOID:t ID:ide {:
@@ -272,7 +275,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                         symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                                         symTable.pushLevel();
                                       :} 
-                                      PARENIZQ PARAMETERS:listParameters  PARENDER BLOCK:body
+                                      PARENIZQ PARAMETERS:listParameters{:methodOffset=-(listParameters.size()*4);:}  PARENDER BLOCK:body
                                                                         {: 
                                                                           if (ide.getId().equals("main")){
                                                                              cantMain++;
@@ -283,8 +286,8 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                                                           MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
                                                                           newMethod.setBody(body);                                                                          
-                                                                          newMethod.setOffset(methodOffset);//set method offset. -8->there ins't local location, -12-> 1 local location, -16->2 local location ...
-                                                                          methodOffset=-4;//restart methodoffset for next method                            
+                                                                          newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
+                                                                          methodOffset=0;//restart methodoffset for next method                            
                                                                           RESULT= newMethod;
                                                                         :};
 
@@ -309,8 +312,8 @@ BLOCK  ::=              LLAB
                             {:
                                symTable.popLevel();
                                for(Location l: listField){//Set offset for local block labels
-                                  l.setOffset(methodOffset);
-                                  methodOffset= methodOffset-4;                                 
+                                  methodOffset= methodOffset-4;
+                                  l.setOffset(methodOffset);                                                                   
                                }
                                RESULT= new Block(-1,listField,listStatament); 
                             :}
@@ -341,7 +344,7 @@ STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new
                                                         else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
                         :}
                 				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
-                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);id.setOffset(methodOffset);methodOffset= methodOffset-4;inMethodDecl=true;:} BLOCK:body {:RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);;methodOffset= methodOffset-4;id.setOffset(methodOffset);inMethodDecl=true;:} BLOCK:body {:RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
               			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
               			    | RETURN:rt EXPR_OPTIONAL:expr PUNTOCOMA{:rt.setExpression(expr); RESULT=rt ;:} 
               			    | BREAK:br PUNTOCOMA{:RESULT= br;:}

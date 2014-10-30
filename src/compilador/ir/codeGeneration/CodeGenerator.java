@@ -165,21 +165,23 @@ public class CodeGenerator{
 			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
 	}
 
-	private static void genDivIAsmCode(TAInstructions instr){
+	private static void genDivIAsmCode(TAInstructions instr){//TODO problem with intLiteral
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
 			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
-			pw.println("idivl "+expr2.toAsmCode());	//eax div op2
+			pw.println("movl $0,%edx");
+			pw.println("idivl "+expr2.toAsmCode());	//edx:eax div op2
 			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
 	}
 
-	private static void genModAsmCode(TAInstructions instr){
+	private static void genModAsmCode(TAInstructions instr){//TODO problem with intLiteral
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
 		pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
-		pw.println("idivl "+expr2.toAsmCode());	//eax mod op2
+		pw.println("movl $0,%edx");
+		pw.println("idivl "+expr2.toAsmCode());	//edx:eax mod op2
 		pw.println("movl %edx, "+l.toAsmCode()); //move the result to destination
 	}
 
@@ -326,13 +328,14 @@ public class CodeGenerator{
 		Location destination= (Location)instr.getOp2();
 		if (destination.getOffset()<=6)	
 			pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
-		else
-			pw.println("pushl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
+		else{
+				pw.println("sub $4, %rsp");//save place for push param
+				pw.println("movl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
+			}
 	}
 
-	private static void genSaveParamAsmCode(TAInstructions instr){
-			pw.println("sub "+ instr.getOp2().toAsmCode()+" , %rsp");
-			pw.println("movl "+ instr.getOp1().toAsmCode()+" , (%rsp)");
+	private static void genSaveParamAsmCode(TAInstructions instr){			
+			pw.println("movl "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());
 	}
 
 	private static void genLoadParamAsmCode(TAInstructions instr){

@@ -49,7 +49,7 @@ public class MethodLocation extends Location {
 
 //method for reports how many local location has this method	
 	public int amoutLocalLocation(){
-			return (-1 * ((localOffset+8)/4)); //Calc amount local location
+			return (-1 * (localOffset)/4); //Calc amount local location
 	}
 
 //Obtanin place in stack and return a offset value
