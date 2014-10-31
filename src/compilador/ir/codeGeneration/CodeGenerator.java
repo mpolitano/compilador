@@ -125,11 +125,9 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination();
 		if (expr instanceof IntLiteral){
 			pw.println("movl "+expr.toAsmCode()+", "+ l.toAsmCode());
-			System.out.println("1");
 		}else{if (expr instanceof FloatLiteral){
 			pw.println("movss "+"%xmm3"+", "+ l.toAsmCode());//by convention, save float in xmm3.
 			}else{
-				System.out.println("2");
 			pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
 			pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
 			}
@@ -332,8 +330,7 @@ public class CodeGenerator{
 	private static void genPushFloatAsmCode(TAInstructions instr){
 		Expression value= instr.getOp1();
 		String m= value.toAsmCode();
-		System.out.println(value.toAsmCode());	 //Remove $.
-		pw.println("movss "+ m.substring(1,m.length())+" , "+"%xmm3");//push to register xmm3, by Convention.
+		pw.println("movss "+ m.substring(1,m.length())+" , "+"%xmm3");//REMOVE $. push to register xmm3, by Convention.
 	}
 
 	private static void genPushAsmCode(TAInstructions instr){
@@ -503,8 +500,9 @@ public class CodeGenerator{
     public static void genToFloatAsmCode(TAInstructions instr){
     	Expression expr1= instr.getOp1();
 		RefLocation l=instr.getDestination();
-		pw.println("movlps "+expr1.toAsmCode()+", %xmm0");
-		pw.println("cvtss2si "+"%xmm0"+ l.toAsmCode());
+		pw.println("movl "+ expr1.toAsmCode()+","+  "%edx");// Muevo al edx, Lo uso como auxiliar, por los tipos que usa el convertor
+		pw.println("cvtsi2ss %edx , % xmm3 "); //Convetion xmm3 auxiliar 
+		pw.println("movss  %xmm3 , "+ l.toAsmCode());
     }
 
 }
