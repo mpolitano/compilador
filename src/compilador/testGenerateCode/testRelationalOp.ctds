@@ -1,0 +1,50 @@
+class maxComunDivisor{	
+int main(){
+		int a,b;
+		a=2;
+		b=3;
+		if(a<b){
+			externinvk("printf", void, "%d < %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d >= %d \n",a,b);
+		}
+
+		if(a<=b){
+			externinvk("printf", void, "%d <= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d > %d \n",a,b);
+		}   	
+
+		if(a>b){
+			externinvk("printf", void, "%d > %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d <= %d \n",a,b);
+		}
+
+		if(a>=b){
+			externinvk("printf", void, "%d >= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d < %d \n",a,b);
+		}
+
+		if(a==b){
+			externinvk("printf", void, "%d = %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d != %d \n",a,b);
+		}
+
+		if(a!=b){
+			externinvk("printf", void, "%d != %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d = %d \n",a,b);
+		}
+
+		a=3;
+		if(a==b){
+			externinvk("printf", void, "%d = %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d != %d \n",a,b);
+		}
+}
+
+}
