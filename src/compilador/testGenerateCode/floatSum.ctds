@@ -1,0 +1,11 @@
+class prueba1 {
+	void main(){
+		float z;
+		float x;
+		z=2.0;
+		x=504.21;
+			externinvk("printf",void, "%f\n",x+z);
+	
+	}
+}
+

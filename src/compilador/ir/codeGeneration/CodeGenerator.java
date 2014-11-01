@@ -115,9 +115,8 @@ public class CodeGenerator{
 		pw.println("call "+ m.toString());
 		RefLocation l= instr.getDestination(); 
 		//code for return in location
-		switch(l.getType()){//TODO defined the other cases
-			case INT: pw.println("movl %eax, "+l.toAsmCode()); 
-		}
+		pw.println("movl %eax, "+l.toAsmCode()); 
+		
 	}
 	
 	private static void genAssignAsmCode(TAInstructions instr){
@@ -351,9 +350,7 @@ public class CodeGenerator{
 
 	private static void genRetAsmCode(TAInstructions instr){
 		Expression expr=instr.getOp1();
-		switch(expr.getType()){
-			case INT: pw.println("movl "+ expr.toAsmCode() +", %eax" );//Int return in eax		
-		}
+		pw.println("movl "+ expr.toAsmCode() +", %eax" );//Int return in eax		
 	}
 
 	private static void genPushFloatAsmCode(TAInstructions instr){
@@ -366,7 +363,7 @@ public class CodeGenerator{
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
 		if (destination.getOffset()<=6)	
-			pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
+				 pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register				
 		else{
 				pw.println("sub $4, %rsp");//save place for push param
 				pw.println("movl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
