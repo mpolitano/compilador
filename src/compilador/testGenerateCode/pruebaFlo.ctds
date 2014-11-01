@@ -3,9 +3,9 @@ class prueba1 {
 	
 	void main(){
 		float z,x;
-		z=1.0;
+		z=2.0;
 		x=3.0;
-		if (z==1.0){
+		if (z&&x){
 			externinvk("printf", void, "%d\n",z);
 		}else{
 			externinvk("printf", void, "%d\n",x);

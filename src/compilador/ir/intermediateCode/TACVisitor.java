@@ -555,8 +555,9 @@ public TACVisitor(){
 									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));}//Both type operators are float
+											addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,floatRo,result));		
+									}else{
+									addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));}//Both type operators are float
 							}
 						}
 						result.setType(Type.BOOLEAN);
@@ -687,11 +688,10 @@ public TACVisitor(){
 //agrego el label de float al final del programa.
 	public Expression visit(FloatLiteral lit){
 		StringLiteral value=new StringLiteral(lit.getValue().toString(),-1,-1);
-		String label=".FloatLiteral"+Integer.toString(stringLabel);//label for FloatLiteral
+		String label=".FloatLiteral_"+lit.getStringValue();//label for FloatLiteral
 		addInstr(new TAInstructions(TAInstructions.Instr.PushFloat,new StringLiteral(label,-1,-1)));	 
-		value.setValue(label+":\n \t"+".float "+lit.getValue().toString());
+		value.setValue(label+":\n \t"+".float "+lit.getStringValue());
 		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-		stringLabel++;
 		return lit;}
 	public Expression visit(BooleanLiteral lit){return lit;}
 	public Expression visit(StringLiteral lit){return lit;}
