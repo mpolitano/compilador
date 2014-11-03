@@ -27,6 +27,10 @@ public class RefArrayLocation extends RefLocation {
 	}
 
 
+	public String toAsmCode(){
+		return ref.toAsmCode();
+	}
+
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);

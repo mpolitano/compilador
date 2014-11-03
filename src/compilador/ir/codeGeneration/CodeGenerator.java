@@ -73,6 +73,8 @@ public class CodeGenerator{
 			case GEF: genGEFAsmCode(instr); break;
 			case ToFloat: genToFloatAsmCode(instr); break;
 			case PushFloat: genPushFloatAsmCode(instr); break;
+			case ReadArray: genReadArrayAsmCode(instr);break;
+			case WriteArray: genWriteArrayAsmCode(instr);break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -84,7 +86,8 @@ public class CodeGenerator{
 	private static void genLocationDeclAsmCode(TAInstructions instr){
 		Location l= (Location) instr.getOp1();
 		switch (l.getOffset()){
-			case 0: pw.println(".comm " + l.getId() +" ,4,4");break;	
+			case 0: if (l instanceof VarLocation) {pw.println(".comm " + l.getId() +" ,4,4");break;}	
+					else{ int size= ((ArrayLocation) l).getSize().getValue() * 4; pw.println(".comm " + l.getId() +" ," + size +",32");break;} 
 		}	
 	}
 
@@ -533,5 +536,54 @@ public class CodeGenerator{
 		pw.println("cvtsi2ss %edx , % xmm3 "); //Convetion xmm3 auxiliar 
 		pw.println("movss  %xmm3 , "+ l.toAsmCode());
     }
+
+//ReadArray RefArrayLocation dir var
+/*
+(-sizeArray*4 +posArray) %ebp
+0 
+1
+2 
+3
+Last Pos array
+... arrayOffset (ebp-...)
+ebp 
+*/
+    public static void genReadArrayAsmCode(TAInstructions instr){//puedo hacerlo todo como C
+    	ArrayLocation from= (ArrayLocation) ((RefArrayLocation)instr.getOp1()).getLocation();
+    	int arraySize= from.getOffset()-(from.getSize().getValue()*4);//calc the end of array. a[i] is acces as end(a)+ i*4   				
+    	switch(from.getOffset()){ 
+    		case 0://array in static data segment		    			
+	    			pw.println("movl "+ instr.getOp2().toAsmCode()+ ", %eax");	    				
+					pw.println("cltq");//eax sign extend to rax
+					pw.println("movl " +from.getId()+"(,%rax,4), %eax ");
+					pw.println("movl %eax, "+instr.getDestination().toAsmCode());		    		 
+			    	break;	
+			default: //array in stack frame				    
+					pw.println("movl "+ instr.getOp2().toAsmCode()+ ", %eax");
+					pw.println("cltq");//eax sign extend to rax
+					pw.println("movl " +Integer.toString(arraySize) + "(%rbp,%rax,4), %eax ");    						
+					pw.println("movl %eax, "+instr.getDestination().toAsmCode());			    		 
+    				break;	
+    }
+}
+// WriteArray expr, dir, location deja expr en location
+    public static void genWriteArrayAsmCode(TAInstructions instr){
+    	ArrayLocation dest= (ArrayLocation) ((RefArrayLocation)instr.getDestination()).getLocation();
+    	int arraySize= dest.getOffset()-(dest.getSize().getValue()*4);//calc the end of array. a[i] is acces as end(a)+ i*4   				
+    	switch(dest.getOffset()){ 
+    		case 0://array in static data segment		    			
+	    			pw.println("movl "+ instr.getOp2().toAsmCode()+ ", %eax");	    				
+					pw.println("cltq");//eax sign extend to rax
+					pw.println("movl "+ instr.getOp1().toAsmCode()+ ", %ebx");//ebx has value for assign to array
+					pw.println("movl %ebx, " +dest.getId()+"(,%rax,4)");		    		 
+			    	break;	
+			default: //array in stack frame				    
+					pw.println("movl "+ instr.getOp2().toAsmCode()+ ", %eax");
+					pw.println("cltq");//eax sign extend to rax
+					pw.println("movl "+ instr.getOp1().toAsmCode()+ ", %ebx");//ebx has value for assign to array
+					pw.println("movl %ebx, " +Integer.toString(arraySize) + "(%rbp,%rax,4)");    									    		 
+    				break;	
+    	}    		
+	}
 
 }

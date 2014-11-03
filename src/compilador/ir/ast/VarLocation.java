@@ -29,8 +29,8 @@ public class VarLocation extends Location {
 							case 2: return "%esi";
 							case 3: return "%edx";
 							case 4: return "%ecx";
-							case 5: return "%r8";
-							case 6: return "%r9";						
+							case 5: return "%r8d";//referencing the lower r8 32 bits
+							case 6: return "%r9d";////referencing the lower r9 32 bits						
 						}
 					}else return offset + "(%rbp)";
 							
