@@ -312,8 +312,14 @@ BLOCK  ::=              LLAB
                             {:
                                symTable.popLevel();
                                for(Location l: listField){//Set offset for local block labels
-                                  methodOffset= methodOffset-4;
-                                  l.setOffset(methodOffset);                                                                   
+                                  if (l instanceof VarLocation){
+                                    methodOffset= methodOffset-4;
+                                    l.setOffset(methodOffset);
+                                  }else{//intanceof ArrayLocation
+                                          methodOffset= methodOffset-4;//save place for first position of array
+                                          l.setOffset(methodOffset);
+                                          methodOffset= methodOffset - ((4* ((ArrayLocation)l).getSize().getValue())) ; //save place for 2..n position of array
+                                       }                                                                   
                                }
                                RESULT= new Block(-1,listField,listStatament); 
                             :}

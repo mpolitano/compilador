@@ -580,7 +580,7 @@ public TACVisitor(){
 		List<Expression> actualParametersEval= new LinkedList<Expression>();
 		int i=0;		
 		Location dest;
-		for(Expression e: expr.getArguments()){//Loop for push parameters
+		for(Expression e: expr.getArguments()){//Loop for generate TAC instructions for calc parameters
 			Expression value= e.accept(this);
 			actualParametersEval.add(value);
 		}
