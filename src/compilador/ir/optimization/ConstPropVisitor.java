@@ -186,8 +186,8 @@ for's condition and then will generate code only for reachables sentences.
 						case LEQ:return new BooleanLiteral(((IntLiteral)lo).getValue() <= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 						case GE:return new BooleanLiteral(((IntLiteral)lo).getValue() > ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 						case GEQ:return new BooleanLiteral(((IntLiteral)lo).getValue() >= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
-//						case NEQ:return new BooleanLiteral(((IntLiteral)lo).getValue() != ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
-//						case CEQ: return new BooleanLiteral(((IntLiteral)lo).getValue() == ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
+						case NEQ:return new BooleanLiteral(!((FloatLiteral)ro).getValue().equals(((IntLiteral)lo).getValue().floatValue()),lo.getLineNumber(),lo.getColumnNumber());	
+						case CEQ: return new BooleanLiteral(((FloatLiteral)ro).getValue().equals(((IntLiteral)lo).getValue().floatValue()),lo.getLineNumber(),lo.getColumnNumber());	
 				}
 				else
 					if (lo instanceof FloatLiteral && ro instanceof IntLiteral)
@@ -200,8 +200,8 @@ for's condition and then will generate code only for reachables sentences.
 							case LEQ: return new BooleanLiteral(((FloatLiteral)lo).getValue() <= ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GE:return new BooleanLiteral(((FloatLiteral)lo).getValue() > ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GEQ:return new BooleanLiteral(((FloatLiteral)lo).getValue() >= ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
-//							case NEQ:
-//							case CEQ: 
+							case NEQ:return new BooleanLiteral(!((FloatLiteral)lo).getValue().equals(((IntLiteral)ro).getValue().floatValue()),lo.getLineNumber(),lo.getColumnNumber());	
+							case CEQ:return new BooleanLiteral(((FloatLiteral)lo).getValue().equals(((IntLiteral)ro).getValue().floatValue()),lo.getLineNumber(),lo.getColumnNumber());	 
 					}
 					else
 						if (lo instanceof FloatLiteral && ro instanceof FloatLiteral)
@@ -214,8 +214,8 @@ for's condition and then will generate code only for reachables sentences.
 							case LEQ:return new BooleanLiteral(((FloatLiteral)lo).getValue() <= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GE:return new BooleanLiteral(((FloatLiteral)lo).getValue() > ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GEQ:return new BooleanLiteral(((FloatLiteral)lo).getValue() >= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
-							//case NEQ:
-							//case CEQ: 
+							case NEQ:return new BooleanLiteral(!((FloatLiteral)lo).getValue().equals(((FloatLiteral)ro).getValue()) ,lo.getLineNumber(),lo.getColumnNumber());	
+							case CEQ: return new BooleanLiteral(((FloatLiteral)lo).getValue().equals(((FloatLiteral)ro).getValue()) ,lo.getLineNumber(),lo.getColumnNumber());	
 					}
 
 
@@ -308,6 +308,6 @@ for's condition and then will generate code only for reachables sentences.
 		Integer i= new Integer(2);
 		Float f= new Float(2.0);
 		System.out.println(e.accept(new ConstPropVisitor()).toString());
-		System.out.println(i.equals(f));
+		System.out.println(f.equals(i.floatValue()));
 	}
 }
