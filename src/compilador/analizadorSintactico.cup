@@ -7,6 +7,7 @@ import ir.semcheck.TypeCheckVisitor;
 import ir.semcheck.BreakContinueCheckVisitor;
 import ir.intermediateCode.TACVisitor;
 import ir.codeGeneration.*;
+import ir.optimization.ConstPropVisitor;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -94,6 +95,8 @@ parser code{:
             int sizeErrorBreak= breakCheckVisitor.getErrors().size();
             if (sizeErrorType==0 && sizeErrorBreak==0) {
                 System.out.println("---- PARSER COMPLETADO!! ------");
+                ConstPropVisitor constProp= new ConstPropVisitor();
+                result.accept(constProp);
                 TACVisitor coding= new TACVisitor();
                 result.accept(coding);
                 System.out.println("TAC: "+coding.getTAC().toString());  
