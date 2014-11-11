@@ -59,7 +59,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		if (conditionType!=Type.BOOLEAN){
 			addError(stmt, "If's condition must be a Boolean expression");
 		}
-		stmt.getBlock().accept(this); //Visit if block
+		stmt.getIfBlock().accept(this); //Visit if block
 		if (stmt.getElseBlock()!=null){
 			stmt.getElseBlock().accept(this);
 		}		
@@ -81,7 +81,8 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Expression finalValue= stmt.getFinalValue();
 		if(initialValue.accept(this)!=Type.INT || finalValue.accept(this)!=Type.INT){//check for integer expression in initial value and final value
 			addError(stmt,"For loop must have integer expressions: ");
-		}		
+		}
+		stmt.getBlock().accept(this);//visit ford block		
 		return Type.UNDEFINED;
 	};
 	public Type visit(SecStmt stmt){return Type.UNDEFINED;};//Should't do anything
@@ -113,10 +114,10 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(ExterninvkCallStmt stmt){
 		List<Expression> expressionExter= stmt.getArguments();
 
-		if (stmt.getMethod().toString().equals("\"printf\"") && expressionExter.get(1).getType()==Type.FLOAT){
-			addError(stmt,"printf type problem. Maybe he meant print_float");	//Para escribir float, problema de tipo.
+		//if (stmt.getMethod().toString().equals("\"printf\"") && expressionExter.get(1).getType()==Type.FLOAT){
+		//	addError(stmt,"printf type problem. Maybe he meant print_float");	//Para escribir float, problema de tipo.
 			
-		}
+		//}
 		for (Expression e:stmt.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
@@ -132,18 +133,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Block methodBody=loc.getBody();
 		methodBody.accept(this);
 		for (Statement s: methodBody.getStatements()){
-			if(s instanceof ExterninvkCallStmt){ //Si hay un print_float algun externinvk
-				System.out.println(((ExterninvkCallStmt)s).getMethod());
-				if (((ExterninvkCallStmt)s).getMethod().equals("\"print_float\""))
-					loc.setFloat(true);	
-			}
-			if ((s instanceof WhileStmt) || (s instanceof IfStmt) || (s instanceof ForStmt)) //Si hay un print_float en algun ciclo
-				for (Statement sta: ((WhileStmt)s).getBlock().getStatements()){
-					if(sta instanceof ExterninvkCallStmt){
-						if (((ExterninvkCallStmt)sta).getMethod().equals("\"print_float\""))
-							loc.setFloat(true);	
-					}
-			}if (s instanceof ReturnStmt){
+			if (s instanceof ReturnStmt){
 				if (loc.getType()==Type.VOID){//If method's return t(s.getBlock().getStatements()ype is void so return statement can't has a expression
 					if (((ReturnStmt)s).getExpression()!=null){
 						addError(s,"Void Method can't have a 'return <expr>' statement");	

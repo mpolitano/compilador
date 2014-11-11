@@ -28,7 +28,7 @@ private List<Error> errors;
 	public Boolean visit(AssignStmt stmt){return false;}
 	public Boolean visit(ReturnStmt stmt){return false;}
 	public Boolean visit(IfStmt stmt){
-		stmt.getBlock().accept(this);
+		stmt.getIfBlock().accept(this);
 		if(stmt.getElseBlock()!= null){
 			stmt.getElseBlock().accept(this);
 		}

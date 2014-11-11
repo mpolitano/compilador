@@ -5,14 +5,14 @@ int main()
 	int fac;
 	int temp;
 	int r;
-	fac=5;  //FACTORIAL DE QUE NUMERO. 
+	externinvk("printf", void, "Ingrese el numero que desea conocer el factorial:");
+	fac=externinvk("scan_int", int);
 	temp=fac-1; 
 	r=fac; 
 	while (temp>=1) { 
 		r=r*temp; 
 		temp=temp-1; 
 	} 
-
-	externinvk("printf", int, r); 
+	externinvk("printf", void,"El factorial del numero:%d es %d \n" ,fac,r); 
 } 
 }

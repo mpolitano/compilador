@@ -7,7 +7,7 @@ package ir.intermediateCode;
 import ir.ASTVisitor;
 import ir.ast.*;
 import java.util.*;
-
+import ir.codeGeneration.floatCheckVisitor;
 public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
@@ -29,6 +29,8 @@ public TACVisitor(){
 
 //visit program
 	public Expression visit(Program prog){
+		floatCheckVisitor floatVisitor= new floatCheckVisitor(); //Visit AST for detect externinvk call with float.
+		prog.accept(floatVisitor);
 		addInstr(new TAInstructions(TAInstructions.Instr.ProgramDecl,new LabelExpr(prog.getId())));//declare a program
 		if (prog.getFields()!=null)
 			for (Location l: prog.getFields()){
@@ -118,14 +120,14 @@ public TACVisitor(){
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
-					stmt.getBlock().accept(this);
+					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 				}else{
 					LabelExpr endElse= new LabelExpr(".endElse_"+ Integer.toString(line));
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
-					stmt.getBlock().accept(this);
+					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endElse));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));					
 					stmt.getElseBlock().accept(this);
@@ -134,7 +136,7 @@ public TACVisitor(){
 		}else{//intanceof literal
 			if (((BooleanLiteral)expr).getValue()== true){
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
-					stmt.getBlock().accept(this);
+					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 			}else{
 					if ((((BooleanLiteral)expr).getValue()== true) && (stmt.getElseBlock()!=null)){
@@ -527,37 +529,37 @@ public TACVisitor(){
 						return result;						
 			case NEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,ro,result));	
+						addInstr(new TAInstructions(TAInstructions.Instr.DifI,lo,ro,result));	
 					}else{//expr.getType()==Type.FLOAT	 
 					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
 								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.Dif,floatLo,ro,result));	
+								addInstr(new TAInstructions(TAInstructions.Instr.DifF,floatLo,ro,result));	
 							}else{
 									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.Dif,lo,ro,result));}//Both type operators are float
+											addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,floatRo,result));					
+									}else{addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,ro,result));}//Both type operators are float
 							}
 						}
 						result.setType(Type.BOOLEAN);
 						return result;						
 			case CEQ: 
 					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));	
+						addInstr(new TAInstructions(TAInstructions.Instr.EqualI,lo,ro,result));	
 					}else{//expr.getType()==Type.FLOAT	 
 					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
 								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.Equal,floatLo,ro,result));	
+								addInstr(new TAInstructions(TAInstructions.Instr.EqualF,floatLo,ro,result));	
 							}else{
 									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,floatRo,result));		
+											addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,floatRo,result));		
 									}else{
-									addInstr(new TAInstructions(TAInstructions.Instr.Equal,lo,ro,result));}//Both type operators are float
+									addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,ro,result));}//Both type operators are float
 							}
 						}
 						result.setType(Type.BOOLEAN);
@@ -613,7 +615,7 @@ public TACVisitor(){
 				i++;
 		}
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
-		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(expr.getMethod()),result));//Call sub-rutina 	
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExternWithReturn,new LabelExpr(expr.getMethod()),result));//Call sub-rutina with Return	
 		if(expr.getArguments().size()>6){
 			Expression bytesForPop=	new IntLiteral((expr.getArguments().size()-6)*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
@@ -691,6 +693,7 @@ public TACVisitor(){
 		String label=".FloatLiteral_"+lit.getStringValue();//label for FloatLiteral
 		addInstr(new TAInstructions(TAInstructions.Instr.PushFloat,new StringLiteral(label,-1,-1)));	 
 		value.setValue(label+":\n \t"+".float "+lit.getStringValue());
+
 		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
 		return lit;}
 	public Expression visit(BooleanLiteral lit){return lit;}
