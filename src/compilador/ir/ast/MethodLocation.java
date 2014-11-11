@@ -8,7 +8,8 @@ public class MethodLocation extends Location {
 	private List<Location> formalParameters;//List of formal parameters
 	private Block body;//Method's body
 	private int localOffset;
-
+	private boolean hayFloat;
+	
 	public MethodLocation(String my_name){
 		this.id=my_name;
 	}
@@ -58,4 +59,11 @@ public class MethodLocation extends Location {
 		return localOffset;
 	}
 				
+	public void setFloat(boolean a){
+		this.hayFloat=a;
+	}
+
+	public boolean getFloat(){
+		return this.hayFloat;
+	}			
 }

@@ -111,12 +111,18 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	};	
 	
 	public Type visit(ExterninvkCallStmt stmt){
+		List<Expression> expressionExter= stmt.getArguments();
+
+		if (stmt.getMethod().toString().equals("\"printf\"") && expressionExter.get(1).getType()==Type.FLOAT){
+			addError(stmt,"printf type problem. Maybe he meant print_float");	//Para escribir float, problema de tipo.
+			
+		}
 		for (Expression e:stmt.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
 		return Type.UNDEFINED;//return the method's return type
-
 	}
+
 
 
 //Visit Location
@@ -126,7 +132,11 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Block methodBody=loc.getBody();
 		methodBody.accept(this);
 		for (Statement s: methodBody.getStatements()){
-			if (s instanceof ReturnStmt){
+			if(s instanceof ExterninvkCallStmt){
+				System.out.println(((ExterninvkCallStmt)s).getMethod());
+				if (((ExterninvkCallStmt)s).getMethod().equals("\"print_float\""))
+					loc.setFloat(true);			
+			}if (s instanceof ReturnStmt){
 				if (loc.getType()==Type.VOID){//If method's return type is void so return statement can't has a expression
 					if (((ReturnStmt)s).getExpression()!=null){
 						addError(s,"Void Method can't have a 'return <expr>' statement");	
