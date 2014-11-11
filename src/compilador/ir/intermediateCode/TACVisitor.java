@@ -118,14 +118,14 @@ public TACVisitor(){
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
-					stmt.getIfBlock().accept(this);
+					stmt.getBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 				}else{
 					LabelExpr endElse= new LabelExpr(".endElse_"+ Integer.toString(line));
 					addInstr(new TAInstructions(TAInstructions.Instr.JTrue,expr,lif));//if condition=true jump to if's block
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endif));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif));
-					stmt.getIfBlock().accept(this);
+					stmt.getBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endElse));//if condition=false jump to if block's end 
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));					
 					stmt.getElseBlock().accept(this);
@@ -134,7 +134,7 @@ public TACVisitor(){
 		}else{//intanceof literal
 			if (((BooleanLiteral)expr).getValue()== true){
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
-					stmt.getIfBlock().accept(this);
+					stmt.getBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 			}else{
 					if ((((BooleanLiteral)expr).getValue()== true) && (stmt.getElseBlock()!=null)){

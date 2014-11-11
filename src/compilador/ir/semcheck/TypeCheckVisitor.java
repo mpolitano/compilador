@@ -59,7 +59,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		if (conditionType!=Type.BOOLEAN){
 			addError(stmt, "If's condition must be a Boolean expression");
 		}
-		stmt.getIfBlock().accept(this); //Visit if block
+		stmt.getBlock().accept(this); //Visit if block
 		if (stmt.getElseBlock()!=null){
 			stmt.getElseBlock().accept(this);
 		}		
@@ -132,12 +132,19 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Block methodBody=loc.getBody();
 		methodBody.accept(this);
 		for (Statement s: methodBody.getStatements()){
-			if(s instanceof ExterninvkCallStmt){
+			if(s instanceof ExterninvkCallStmt){ //Si hay un print_float algun externinvk
 				System.out.println(((ExterninvkCallStmt)s).getMethod());
 				if (((ExterninvkCallStmt)s).getMethod().equals("\"print_float\""))
-					loc.setFloat(true);			
+					loc.setFloat(true);	
+			}
+			if ((s instanceof WhileStmt) || (s instanceof IfStmt) || (s instanceof ForStmt)) //Si hay un print_float en algun ciclo
+				for (Statement sta: ((WhileStmt)s).getBlock().getStatements()){
+					if(sta instanceof ExterninvkCallStmt){
+						if (((ExterninvkCallStmt)sta).getMethod().equals("\"print_float\""))
+							loc.setFloat(true);	
+					}
 			}if (s instanceof ReturnStmt){
-				if (loc.getType()==Type.VOID){//If method's return type is void so return statement can't has a expression
+				if (loc.getType()==Type.VOID){//If method's return t(s.getBlock().getStatements()ype is void so return statement can't has a expression
 					if (((ReturnStmt)s).getExpression()!=null){
 						addError(s,"Void Method can't have a 'return <expr>' statement");	
 					}
@@ -148,6 +155,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 				}
 			}
 		}
+	
 		return loc.getType();
 	};
 	

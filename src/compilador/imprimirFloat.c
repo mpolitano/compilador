@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-int print_float(char nombre[20],float x)
+int print_float(char nombre[20],float x,float y,float p)
 {
-  printf (nombre, x);
+  printf (nombre, x,y,p);
 	return 0;
 }
 

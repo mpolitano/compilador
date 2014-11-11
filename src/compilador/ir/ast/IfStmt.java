@@ -23,7 +23,7 @@ public class IfStmt extends Statement {
 		this.condition = condition;
 	}
 
-	public Block getIfBlock() {
+	public Block getBlock() {
 		return ifBlock;
 	}
 
