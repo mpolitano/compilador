@@ -9,6 +9,7 @@ public class CodeGenerator{
 	private static FileWriter f=null;
     private static PrintWriter pw=null;
     private static int numberLabel=0;
+    private static	int pushFloat=0;
 		
 	public static void generateCode(List<TAInstructions> program, String path){
     	try
@@ -94,7 +95,25 @@ public class CodeGenerator{
 		pw.println(".text");
 		pw.println(".globl "+ m.getId());
 		pw.println(m.getId() + ":");
-		pw.println("enter $"+ m.amoutLocalLocation()*4+",$0"); //Maybe has a problem with array
+		System.out.println(m.getFloat());
+		int numEnter= m.amoutLocalLocation()*4;
+		int suma;
+		if (! m.getFloat())
+			pw.println("enter $"+ numEnter+",$0"); 
+		else{
+			if ((numEnter % 16)!=0){
+				switch(numEnter%16){
+					case 4: suma=numEnter+12;
+							pw.println("enter $"+ suma+",$0");break;
+					case 8: suma=numEnter+8; 
+							pw.println("enter $"+ suma+",$0");break;
+					case 12:suma=numEnter+4;
+							pw.println("enter $"+ suma+",$0");break;
+				}
+			} 
+			else{
+				pw.println("enter $"+ numEnter+",$0"); }
+		}
 	}
 
 	private static void genMethodDeclEndAsmCode(TAInstructions instr){
@@ -106,17 +125,21 @@ public class CodeGenerator{
 	}
 
 	private static void genCallAsmCode(TAInstructions instr){
+		pushFloat=0;
 		LabelExpr m= (LabelExpr)instr.getOp1();
 		pw.println("call "+ m.toString());
 	}
 
 	private static void genCallWithReturnAsmCode(TAInstructions instr){
+		pushFloat=0;
 		LabelExpr m= (LabelExpr)instr.getOp1();
 		pw.println("call "+ m.toString());
 		RefLocation l= instr.getDestination(); 
 		//code for return in location
 		switch(l.getType()){//TODO defined the other cases
-			case INT: pw.println("movl %eax, "+l.toAsmCode()); 
+			case INT: pw.println("movl %eax, "+l.toAsmCode()); break;
+			case FLOAT: pw.println("movss %xmm0, "+l.toAsmCode()); break;
+
 		}
 	}
 	
@@ -128,8 +151,8 @@ public class CodeGenerator{
 		}else{if (expr instanceof FloatLiteral){
 			pw.println("movss "+"%xmm3"+", "+ l.toAsmCode());//by convention, save float in xmm3.
 			}else{
-			pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
-			pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
+				pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
+				pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
 			}
 		}
 	}
@@ -242,7 +265,7 @@ public class CodeGenerator{
 		}else{
 			pw.println("movss "+expr1.toAsmCode()+", %xmm0"); //mov op1 to edx to compare
 			pw.println("movss "+expr2.toAsmCode()+", %xmm1"); //mov op2 to eax to compare
-			pw.println("ucomiss %xmm0, %xmm1"); //compare eax and edx
+			pw.println("ucomiss %xmm1, %xmm0"); //compare eax and edx
 			pw.println("je .L"+numberLabel);	//check if edx is equal to eax and move result to eax (1 true, 0 false)
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
@@ -273,7 +296,7 @@ public class CodeGenerator{
 		}else{
 			pw.println("movss "+expr1.toAsmCode()+", %xmm0"); //mov op1 to edx to compare
 			pw.println("movss "+expr2.toAsmCode()+", %xmm1"); //mov op2 to eax to compare
-			pw.println("ucomiss %xmm0, %xmm1"); //compare eax and edx
+			pw.println("ucomiss %xmm1, %xmm0"); //compare eax and edx
 			pw.println("je .L"+numberLabel);	//check if edx is equal to eax and move result to eax (1 true, 0 false)
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
@@ -352,7 +375,8 @@ public class CodeGenerator{
 	private static void genRetAsmCode(TAInstructions instr){
 		Expression expr=instr.getOp1();
 		switch(expr.getType()){
-			case INT: pw.println("movl "+ expr.toAsmCode() +", %eax" );//Int return in eax		
+			case INT: pw.println("movl "+ expr.toAsmCode() +", %eax" );//Int return in eax	
+			case FLOAT:pw.println("movss "+expr.toAsmCode() + ", %xmm0"); break;	
 		}
 	}
 
@@ -365,12 +389,16 @@ public class CodeGenerator{
 	private static void genPushAsmCode(TAInstructions instr){
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
-		if (destination.getOffset()<=6)	
-			pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
-		else{
-				pw.println("sub $4, %rsp");//save place for push param
-				pw.println("movl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
-			}
+		switch (value.getType()){
+			case FLOAT: pw.println("movss "+ value.toAsmCode() +", %xmm"+Integer.toString(pushFloat)); pushFloat++;break;//float save in xmm
+			default: if (destination.getOffset()<=6)	
+						pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
+					else{
+						pw.println("sub $4, %rsp");//save place for push param
+						pw.println("movl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
+					}
+					break;
+		}		
 	}
 
 	private static void genSaveParamAsmCode(TAInstructions instr){			
@@ -462,7 +490,7 @@ public class CodeGenerator{
 		RefLocation l=instr.getDestination();
 			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
 			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("ucomiss %xmm0, %xmm1");
 			pw.println("jl .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
@@ -496,7 +524,7 @@ public class CodeGenerator{
 		RefLocation l=instr.getDestination();
 			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
 			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("ucomiss %xmm0, %xmm1");
 			pw.println("jle .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
