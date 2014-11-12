@@ -76,7 +76,6 @@ public class CodeGenerator{
 			case LEF: genLEFAsmCode(instr); break;
 			case GEF: genGEFAsmCode(instr); break;
 			case ToFloat: genToFloatAsmCode(instr); break;
-			case PushFloat: genPushFloatAsmCode(instr); break;
 			case ReadArray: genReadArrayAsmCode(instr);break;
 			case WriteArray: genWriteArrayAsmCode(instr);break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
@@ -146,8 +145,6 @@ public class CodeGenerator{
 
 		}
 	}
-
-
 	
 	private static void genAssignAsmCode(TAInstructions instr){
 		Expression expr= instr.getOp1();
@@ -155,7 +152,8 @@ public class CodeGenerator{
 		if (expr instanceof IntLiteral){
 			pw.println("movl "+expr.toAsmCode()+", "+ l.toAsmCode());
 		}else{if (expr instanceof FloatLiteral){
-			pw.println("movss "+"%xmm3"+", "+ l.toAsmCode());//by convention, save float in xmm3.
+			pw.println("movss "+expr.toAsmCode()+", %xmm3" );//by convention nuestr, save float in xmm3.
+			pw.println("movss %xmm3 ," +l.toAsmCode());
 			}else{
 				pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
 				pw.println("movl "+"%ecx"+", "+ l.toAsmCode());
@@ -202,20 +200,36 @@ public class CodeGenerator{
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
+		if(expr2 instanceof IntLiteral){
+			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+			pw.println("movl $0,%edx");
+			pw.println("movl " + expr2.toAsmCode()+ ", %ecx ");
+			pw.println("idivl %ecx");	//edx:eax div op2
+			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
+		}else{
 			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
 			pw.println("movl $0,%edx");
 			pw.println("idivl "+expr2.toAsmCode());	//edx:eax div op2
 			pw.println("movl %eax, "+l.toAsmCode());	//move the result to destination
+		}
 	}
 
 	private static void genModAsmCode(TAInstructions instr){//TODO problem with intLiteral
 		Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-		pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
-		pw.println("movl $0,%edx");
-		pw.println("idivl "+expr2.toAsmCode());	//edx:eax mod op2
-		pw.println("movl %edx, "+l.toAsmCode()); //move the result to destination
+		if(expr2 instanceof IntLiteral){
+			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+			pw.println("movl $0,%edx");
+			pw.println("movl " + expr2.toAsmCode()+ ", %ecx ");
+			pw.println("idivl %ecx");	//edx:eax mod op2
+			pw.println("movl %edx, "+l.toAsmCode()); //move the result to destination
+		}else{
+			pw.println("movl "+expr1.toAsmCode()+", %eax");	//mov op1 to eax to do an arithmetic operation
+			pw.println("movl $0,%edx");
+			pw.println("idivl "+expr2.toAsmCode());	//edx:eax mod op2
+			pw.println("movl %edx, "+l.toAsmCode()); //move the result to destination
+		}
 	}
 
 	private static void genLesIAsmCode(TAInstructions instr){
@@ -311,7 +325,7 @@ public class CodeGenerator{
 		pw.println("movss "+expr1.toAsmCode()+", %xmm0"); //mov op1 to edx to compare
 		pw.println("movss "+expr2.toAsmCode()+", %xmm1"); //mov op2 to eax to compare
 		pw.println("ucomiss %xmm1, %xmm0"); //compare eax and edx
-		pw.println("je .L"+numberLabel);	//check if edx is equal to eax and move result to eax (1 true, 0 false)
+		pw.println("jne .L"+numberLabel);	//check if edx is equal to eax and move result to eax (1 true, 0 false)
 		pw.println("movl $0, %eax");
 		pw.println("jmp .Continue"+numberLabel);
 		pw.println(".L"+numberLabel+":");
@@ -394,12 +408,6 @@ public class CodeGenerator{
 		}
 	}
 
-	private static void genPushFloatAsmCode(TAInstructions instr){
-		Expression value= instr.getOp1();
-		String m= value.toAsmCode();
-		pw.println("movss "+ m.substring(1,m.length())+" , %xmm3");//REMOVE $. push to register xmm3, by Convention.
-	}
-
 	private static void genPushAsmCode(TAInstructions instr){
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
@@ -415,8 +423,17 @@ public class CodeGenerator{
 		}		
 	}
 
-	private static void genSaveParamAsmCode(TAInstructions instr){			
-			pw.println("movl "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());
+	//generate code for save param pass in register to method's frame.
+	private static void genSaveParamAsmCode(TAInstructions instr){		
+		/*when value is pass as 1-6 param, alwalls stay in register (see convection call's x86-64 processor). 
+		  but the set of register used depend of value's type. If float use xmm0, xmm1, xmm2, xmm3, xmm4,xmm5
+		  otherwise(in this language int or string) use esi,edi,edx,ecx,r8,r9 .
+		  So, select the correct assembly x86-64 intructions(movl or movss)
+		*/
+		switch(instr.getOp1().getType()){
+			case FLOAT:pw.println("movss "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());break;
+			default: pw.println("movl "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());
+		}	
 	}
 
 	private static void genLoadParamAsmCode(TAInstructions instr){
@@ -454,6 +471,8 @@ public class CodeGenerator{
 		m=m.substring(1,m.length()-1);//method name without "". pre= m="nameMethod" pos= m=nameMethod
 		pw.println("movl $0, %eax");//C convention
 		pw.println("call "+ m.toString());	
+		pushFloat=0;
+
 	}
 
 	public static void genCallExternWithReturnCode(TAInstructions instr){
@@ -467,6 +486,7 @@ public class CodeGenerator{
 			case INT: pw.println("movl %eax, "+l.toAsmCode()); break;
 			case FLOAT: pw.println("movss %xmm0, "+l.toAsmCode()); break;
 		}
+		pushFloat=0;
 	}
 	public static void genPutStringLiteralCode(TAInstructions instr){
 		pw.println(instr.getOp1().toString());
@@ -508,16 +528,14 @@ public class CodeGenerator{
 			pw.println("movss %xmm0, "+ l.toAsmCode());	
 	}
 
-	
-
     public static void genLesFAsmCode(TAInstructions instr){
     	Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
-			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm0, %xmm1");
-			pw.println("jl .L"+numberLabel);
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm1");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("jb .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
 			pw.println(".L"+numberLabel+":");
@@ -531,10 +549,10 @@ public class CodeGenerator{
     	Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
-			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm0, %xmm1");
-			pw.println("jg .L"+numberLabel);
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm1");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("ja .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
 			pw.println(".L"+numberLabel+":");
@@ -548,10 +566,10 @@ public class CodeGenerator{
     	Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
-			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm0, %xmm1");
-			pw.println("jle .L"+numberLabel);
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm1");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("jbe .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
 			pw.println(".L"+numberLabel+":");
@@ -565,11 +583,10 @@ public class CodeGenerator{
     	Expression expr1= instr.getOp1();
 		Expression expr2= instr.getOp2();
 		RefLocation l=instr.getDestination();
-		pw.println("movl "+expr1.toAsmCode()+", %eax"); //mov op1 to edx to compare
-			pw.println("movss "+expr1.toAsmCode()+", %xmm1");
-			pw.println("movss "+expr2.toAsmCode()+", %xmm0");
-			pw.println("ucomiss %xmm0, %xmm1");
-			pw.println("jge .L"+numberLabel);
+			pw.println("movss "+expr1.toAsmCode()+", %xmm0");
+			pw.println("movss "+expr2.toAsmCode()+", %xmm1");
+			pw.println("ucomiss %xmm1, %xmm0");
+			pw.println("jae .L"+numberLabel);
 			pw.println("movl $0, %eax");
 			pw.println("jmp .Continue"+numberLabel);
 			pw.println(".L"+numberLabel+":");

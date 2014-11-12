@@ -29,6 +29,13 @@ public class BooleanLiteral extends Literal<Boolean> {
 					return "False";
 				 }
 	}
+
+	public String toAsmCode(){
+		if (value)
+			return "$1";
+		else
+			return "$0";
+	}
 	
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {

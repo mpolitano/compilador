@@ -58,7 +58,7 @@ public class FloatLiteral extends Literal<Float> {
 	}
 	
 	public String toAsmCode(){
-		return ".FloatLiteral_"+ getStringValue(); // label with float value.
+			return ".FloatLiteral_"+ getStringValue();
 	}
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {

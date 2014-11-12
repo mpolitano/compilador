@@ -46,48 +46,49 @@ public TACVisitor(){
 	
 // visit statements
 	public Expression visit(AssignStmt stmt){//Aca podria tener una expresion compuesta o un literal
-		RefLocation aux;
+		RefLocation result;
 		Expression expr= stmt.getExpression().accept(this);	
 		switch(stmt.getOperator()){
 			case INCREMENT: 
 							switch(expr.getType()){
 								case INT:
-									aux= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.INT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion, created a VarLocation and set offset
-									addInstr(new TAInstructions(TAInstructions.Instr.AddI,expr,new IntLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion	
-									if (stmt.getLocation() instanceof RefArrayLocation){
+									result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.INT,currentMethod.newLocalLocation());//Variable auxiliar, created a VarLocation and set offset
+									addInstr(new TAInstructions(TAInstructions.Instr.AddI,stmt.getLocation(),expr,result)); //a+=i make a=a+i
+									//Instruccion for assing result.
+									if (stmt.getLocation() instanceof RefArrayLocation){//todo resolve the semantic of +=
 										Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);//can be an IntLiteral or RefVarLocation
-										addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,dir,stmt.getLocation()));
+										addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 									}else
-										addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+										addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 									return null;
 								case FLOAT:
-											aux= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion
-											addInstr(new TAInstructions(TAInstructions.Instr.AddF,expr,new FloatLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+											result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion
+											addInstr(new TAInstructions(TAInstructions.Instr.AddF,stmt.getLocation(),result,result)); //decremento la expresion
 											if (stmt.getLocation() instanceof RefArrayLocation){
 												Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,dir,stmt.getLocation()));
+												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 											}else
-												addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+												addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 											return null;
 							}
 			case DECREMENT: 								
 							switch(expr.getType()){
 								case INT:
-										aux= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.INT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion.Created VarLocation and set offset
-										addInstr(new TAInstructions(TAInstructions.Instr.SubI,expr,new IntLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+										result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.INT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion.Created VarLocation and set offset
+										addInstr(new TAInstructions(TAInstructions.Instr.SubI,stmt.getLocation(),expr,result)); //decremento la expresion
 												if (stmt.getLocation() instanceof RefArrayLocation){
 													Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,dir,stmt.getLocation()));
+													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 												}else
-													addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+													addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 												return null;
-								case FLOAT:aux= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion. Created VarLocation and set offset
-										addInstr(new TAInstructions(TAInstructions.Instr.SubF,expr,new FloatLiteral(1,expr.getLineNumber(),expr.getColumnNumber()),aux)); //decremento la expresion
+								case FLOAT:result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());//Variable auxiliar para decrementar la expresion. Created VarLocation and set offset
+										addInstr(new TAInstructions(TAInstructions.Instr.SubF,stmt.getLocation(),expr,result)); //decremento la expresion
 										if (stmt.getLocation() instanceof RefArrayLocation){
 											Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,aux,dir,stmt.getLocation()));
+											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 										}else
-											addInstr(new TAInstructions(TAInstructions.Instr.Assign,aux,stmt.getLocation()));
+											addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 										return null;
 							}
 			case ASSIGN: 					
@@ -320,6 +321,7 @@ public TACVisitor(){
 		return var;
 	}
 	
+	//Start Method declaration, save parameters from register into stack and visit method's blocks
 	public Expression visit(MethodLocation method){
 		currentMethod= method;
 		addInstr(new TAInstructions(TAInstructions.Instr.MethodDecl,method));//Start method declaration
@@ -689,11 +691,10 @@ public TACVisitor(){
 
 //agrego el label de float al final del programa.
 	public Expression visit(FloatLiteral lit){
-		StringLiteral value=new StringLiteral(lit.getValue().toString(),-1,-1);
+		System.out.println(lit.getValue());
+		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
 		String label=".FloatLiteral_"+lit.getStringValue();//label for FloatLiteral
-		addInstr(new TAInstructions(TAInstructions.Instr.PushFloat,new StringLiteral(label,-1,-1)));	 
-		value.setValue(label+":\n \t"+".float "+lit.getStringValue());
-
+		value.setValue(label+":\n \t"+".float "+lit.getValue());
 		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
 		return lit;}
 	public Expression visit(BooleanLiteral lit){return lit;}
