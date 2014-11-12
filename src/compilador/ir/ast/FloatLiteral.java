@@ -42,6 +42,7 @@ public class FloatLiteral extends Literal<Float> {
 
 	public void setValue(float value) {
 		this.value = value;
+		this.rawValue=Float.toString(value);
 	}
 	
 	public String getRawValue() {
@@ -58,6 +59,9 @@ public class FloatLiteral extends Literal<Float> {
 	}
 	
 	public String toAsmCode(){
+		if(value<0) //for drive label with value<0, we add _n if value is <0
+			return ".FloatLiteral_n"+ getStringValue().substring(1,getStringValue().length());
+		else
 			return ".FloatLiteral_"+ getStringValue();
 	}
 	@Override

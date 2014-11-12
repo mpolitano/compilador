@@ -12,6 +12,7 @@ public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
 private List<TAInstructions> listString; //List for save the string used as parameter in externivink calls.
+private Set<Float> setFloatLiteral; //set for drive float literal expression
 int stringLabel; 
 private int line;
 private Stack<LabelExpr> loopsEndLabel; //for drive break statement
@@ -25,6 +26,7 @@ public TACVisitor(){
 	loopsLabel= new Stack<LabelExpr>();
 	loopsEndLabel= new Stack<LabelExpr>();
 	listString= new LinkedList<TAInstructions>();
+	setFloatLiteral=new HashSet<Float>();
 }
 
 //visit program
@@ -691,12 +693,13 @@ public TACVisitor(){
 
 //agrego el label de float al final del programa.
 	public Expression visit(FloatLiteral lit){
-		System.out.println(lit.getValue());
 		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
-		String label=".FloatLiteral_"+lit.getStringValue();//label for FloatLiteral
+		String label=lit.toAsmCode();//label for FloatLiteral.
 		value.setValue(label+":\n \t"+".float "+lit.getValue());
-		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-		return lit;}
+		if(setFloatLiteral.add(lit.getValue())) //for make label only one time for each float value
+			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+		return lit;
+	}
 	public Expression visit(BooleanLiteral lit){return lit;}
 	public Expression visit(StringLiteral lit){return lit;}
 
