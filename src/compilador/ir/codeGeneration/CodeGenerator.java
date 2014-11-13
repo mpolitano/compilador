@@ -413,11 +413,12 @@ public class CodeGenerator{
 		Location destination= (Location)instr.getOp2();
 		switch (value.getType()){
 			case FLOAT: pw.println("movss "+ value.toAsmCode() +", %xmm"+Integer.toString(pushFloat)); pushFloat++;break;//float save in xmm
-			default: if (destination.getOffset()<=6)	
+			default: if (destination.getOffset()>0 && destination.getOffset()<=6)	
 						pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
 					else{
 						pw.println("sub $4, %rsp");//save place for push param
-						pw.println("movl "+ value.toAsmCode()+", "+destination.toAsmCode());//push to stack
+						pw.println("movl "+ value.toAsmCode()+" ,%eax"); //use eax as auxiliary register
+						pw.println("movl %eax, (%rsp)");//push to stack top
 					}
 					break;
 		}		
@@ -432,7 +433,8 @@ public class CodeGenerator{
 		*/
 		switch(instr.getOp1().getType()){
 			case FLOAT:pw.println("movss "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());break;
-			default: pw.println("movl "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());
+			default:   pw.println("movl "+ instr.getOp1().toAsmCode()+" , "+ instr.getDestination().toAsmCode());
+
 		}	
 	}
 
@@ -444,7 +446,7 @@ public class CodeGenerator{
 
 	private static void genPopAsmCode(TAInstructions instr){
 		String value= ((IntLiteral) instr.getOp1()).toAsmCode();
-		pw.println("sub "+value+" , %rsp");
+		pw.println("add "+value+" , %rsp");
 	}
 
 	public static void genJTrueAsmCode(TAInstructions instr){

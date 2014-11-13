@@ -40,10 +40,10 @@ the followings will be in the stack*/
       STACK representation
 
       Local Var= rbp+4*(amount of parameters+1)
-      Firsts 1..6 Arguments
-      rbp= rbp
-      dir retorno =rbp+8
-      7.. Arguments= rpb+12
+      Firsts 1..6 Arguments(are passed into register and then saved in stack)
+      last rbp= rbp(acces last ebp as rbp) 
+      dir retorno =rbp+8 
+      7.. Arguments= rpb+16
       
       */
       int i=0;
@@ -53,7 +53,7 @@ the followings will be in the stack*/
          offset=offset-4;    
          i++; 
       }
-      offset=12;//since 7 parameter to the last, put these in stack. 
+      offset=16;//since 7 parameter to the last, put these in stack. 
       while(listParameters.size()>i){
            listParameters.get(i).setOffset(offset);
            offset= offset+4;
@@ -285,6 +285,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                                                          }   
                                                                           MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
+                                                                         setParametersOffset(listParameters);
                                                                           newMethod.setBody(body);                                                                          
                                                                           newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
                                                                           methodOffset=0;//restart methodoffset for next method                            
