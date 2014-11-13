@@ -30,9 +30,10 @@ public class VarLocation extends Location {
 								case 2: return "%xmm1";
 								case 3: return "%xmm2";
 								case 4: return "%xmm3";
-								case 5: return "%xmm4";//referencing the lower r8 32 bits
-								case 6: return "%xmm5";////referencing the lower r9 32 bits						
-						}else
+								case 5: return "%xmm4";
+								case 6: return "%xmm5";				
+						}
+						else
 							switch(offset){
 								case 1: return "%edi";
 								case 2: return "%esi";
@@ -42,9 +43,9 @@ public class VarLocation extends Location {
 								case 6: return "%r9d";////referencing the lower r9 32 bits						
 							}
 					}else return offset + "(%rbp)";
-							
+					return null;								
 				}	
-		return null;		
+	
 	}
 
 }

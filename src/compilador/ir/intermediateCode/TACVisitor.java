@@ -255,9 +255,11 @@ public TACVisitor(){
 			if (i<6){
 				dest= new VarLocation("PushParamDest",-1,-1);
 				dest.setOffset(i+1);
+				dest.setType(value.getType());//progate information about the expression type
 				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 			}else{//deberia pushear al revez
 					dest=new VarLocation("PushParamDest",-1,-1);
+					dest.setType(value.getType());//progate information about the expression type
 					dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
 					listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
 				}
@@ -303,10 +305,12 @@ public TACVisitor(){
 					if (i<6){
 						dest= new VarLocation("PushParamDest",-1,-1);
 						dest.setOffset(i+1);
+						dest.setType(value.getType());//progate information about the expression type
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 					}else{
 						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(currentMethod.getOffset()-(4 * (i-5)));
+						dest.setType(value.getType());//progate information about the expression type
+						dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push
 					}
 				}
@@ -619,10 +623,12 @@ public TACVisitor(){
 					if (i<6){
 						dest= new VarLocation("PushParamDest",-1,-1);
 						dest.setOffset(i+1);
+						dest.setType(value.getType());//progate information about the expression type
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 					}else{
 						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(currentMethod.getOffset()-(4 * (i-5)));
+						dest.setType(value.getType());//progate information about the expression type
+						dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push
 					}
 				}
@@ -654,10 +660,12 @@ public TACVisitor(){
 			if (i<6){
 				dest= new VarLocation("PushParamDest",-1,-1);
 				dest.setOffset(i+1);
+				dest.setType(value.getType());//progate information about the expression type
 				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 			}else{//deberia pushear al revez
 					dest=new VarLocation("PushParamDest",-1,-1);
 					dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
+					dest.setType(value.getType());//progate information about the expression type
 					listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
 				}
 			i++;

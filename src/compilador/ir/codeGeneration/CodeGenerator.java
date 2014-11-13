@@ -101,7 +101,7 @@ public class CodeGenerator{
 		pw.println(m.getId() + ":");
 		int numEnter= m.amoutLocalLocation()*4;
 		int suma;
-		if (! m.getFloat())
+		if (true)//! m.getFloat())
 			pw.println("enter $"+ numEnter+",$0"); 
 		else{
 			if ((numEnter % 16)!=0){
@@ -413,13 +413,12 @@ public class CodeGenerator{
 		Location destination= (Location)instr.getOp2();
 		switch (value.getType()){
 			case FLOAT: if (destination.getOffset()>0 && destination.getOffset()<=6){	
-						pw.println("movss "+ value.toAsmCode() +", %xmm"+Integer.toString(pushFloat)); 
-						pushFloat++;//float save in xmm
-					}else{
-						pw.println("sub $4, %rsp");//save place for push param
-						pw.println("movss "+ value.toAsmCode()+" ,%xmm0"); //use eax as auxiliary register
-						pw.println("movss %xmm0, (%rsp)");//push to stack top
-					} break;
+							pw.println("movss "+ value.toAsmCode() +","+destination.toAsmCode()); 
+						}else{
+								pw.println("sub $4, %rsp");//save place for push param
+								pw.println("movss "+ value.toAsmCode()+" ,%xmm6"); //use xmm6 as auxiliary register
+								pw.println("movss %xmm6, (%rsp)");//push to stack top
+							 } break;
 			default: if (destination.getOffset()>0 && destination.getOffset()<=6)	
 						pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
 					else{
@@ -479,7 +478,9 @@ public class CodeGenerator{
 		String m= instr.getOp1().toString();
 		m=m.substring(1,m.length()-1);//method name without "". pre= m="nameMethod" pos= m=nameMethod
 		pw.println("movl $0, %eax");//C convention
+//		pw.println("subq $8, %rsp");//C convention
 		pw.println("call "+ m.toString());	
+//		pw.println("addq $8, %rsp");//C convention
 		pushFloat=0;
 
 	}

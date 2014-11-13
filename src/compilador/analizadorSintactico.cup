@@ -38,13 +38,15 @@ the followings will be in the stack*/
       /*
       //Remember that address has 64 bits.
       STACK representation
-
+      
+      -
       Local Var= rbp+4*(amount of parameters+1)
       Firsts 1..6 Arguments(are passed into register and then saved in stack)
       last rbp= rbp(acces last ebp as rbp) 
       dir retorno =rbp+8 
       7.. Arguments= rpb+16
-      
+      +
+
       */
       int i=0;
       int offset=-4;
