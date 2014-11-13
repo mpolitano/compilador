@@ -412,7 +412,14 @@ public class CodeGenerator{
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
 		switch (value.getType()){
-			case FLOAT: pw.println("movss "+ value.toAsmCode() +", %xmm"+Integer.toString(pushFloat)); pushFloat++;break;//float save in xmm
+			case FLOAT: if (destination.getOffset()>0 && destination.getOffset()<=6){	
+						pw.println("movss "+ value.toAsmCode() +", %xmm"+Integer.toString(pushFloat)); 
+						pushFloat++;//float save in xmm
+					}else{
+						pw.println("sub $4, %rsp");//save place for push param
+						pw.println("movss "+ value.toAsmCode()+" ,%xmm0"); //use eax as auxiliary register
+						pw.println("movss %xmm0, (%rsp)");//push to stack top
+					} break;
 			default: if (destination.getOffset()>0 && destination.getOffset()<=6)	
 						pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
 					else{
