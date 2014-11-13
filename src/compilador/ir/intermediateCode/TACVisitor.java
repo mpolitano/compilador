@@ -193,7 +193,7 @@ public TACVisitor(){
 		loopsEndLabel.push(end_for);
 		addInstr(new TAInstructions(TAInstructions.Instr.Assign,initialValue,forVar)); //Set variable for with initial value 
 		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,for_loop));
-		addInstr(new TAInstructions(TAInstructions.Instr.LEI, forVar, finalValue,conditionValue));	
+		addInstr(new TAInstructions(TAInstructions.Instr.LesI, forVar, finalValue,conditionValue));	
 		addInstr(new TAInstructions(TAInstructions.Instr.JFalse,conditionValue, end_for));	
 		stmt.getBlock().accept(this);//generate for block TAC
 		addInstr(new TAInstructions(TAInstructions.Instr.AddI,forVar,new IntLiteral(1,stmt.getLineNumber(),stmt.getColumnNumber()),forVar));	
