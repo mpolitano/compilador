@@ -240,8 +240,10 @@ public TACVisitor(){
 //Idem a MethodCallStmt ver si no me trae probelmeas
 	public Expression visit(MethodCallStmt stmt){
 		List<Location> formalParameters= stmt.getMethod().getFormalParameters();
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
 		List<Expression>actualParametersEval= new LinkedList<Expression>();
 		int i=0; 
+		int cantParamPushedIntoStack=0;
 		Location dest;
 		LinkedList<TAInstructions> listStackParamPush=new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
 		/*If we has as a parameter a expression like as 2+3 or a function call,
@@ -249,19 +251,21 @@ public TACVisitor(){
 		for(Expression e: stmt.getArguments()){//Loop for generate TAC code for actual parameters evaluation
 			Expression value= e.accept(this);
 			actualParametersEval.add(value);
+			dest= new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
 		}
-		
+		genParametersPushLocation(actualParametersDestination);
+
 		for(Expression value: actualParametersEval){//Loop for push parameters
-			if (i<6){
-				dest= new VarLocation("PushParamDest",-1,-1);
-				dest.setOffset(i+1);
-				dest.setType(value.getType());//progate information about the expression type
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-			}else{//deberia pushear al revez
-					dest=new VarLocation("PushParamDest",-1,-1);
-					dest.setType(value.getType());//progate information about the expression type
-					dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
-					listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+				dest= actualParametersDestination.pop();
+				if (dest.getOffset()<0){//param should be pushed into stack
+					 cantParamPushedIntoStack++;
+					 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+				}else{
+					//dest.setOffset(i+1);
+						dest.setType(value.getType());//progate information about the expression type
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 				}
 			i++;
 		}
@@ -269,8 +273,8 @@ public TACVisitor(){
 			addInstr(instr);
 
 		addInstr(new TAInstructions(TAInstructions.Instr.Call,new LabelExpr(stmt.getMethod().getId())));//Call sub-rutina 	
-		if(formalParameters.size()>6){//if push parameters into stack, pop them
-			Expression bytesForPop=	new IntLiteral((formalParameters.size()-6)*4,-1,-1);
+		if(cantParamPushedIntoStack>0){//if push parameters into stack, pop them
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}			
 		return null;//metho's return anything
@@ -280,45 +284,54 @@ public TACVisitor(){
 	public Expression visit(ExterninvkCallStmt stmt){
 		List<Location> formalParameters= stmt.getFormalParameters();
 		List<Expression>actualParametersEval= new LinkedList<Expression>();
-		int i=0;		
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
+		LinkedList<TAInstructions> listStackParamPush=new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order		
+		int i=0;	
+		int cantParamPushedIntoStack=0;	
 		Location dest;
 		for(Expression e: stmt.getArguments()){
 			Expression value= e.accept(this);
 			actualParametersEval.add(value);
+			dest= new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
 		}
+		genParametersPushLocation(actualParametersDestination);
+
 		for(Expression value: actualParametersEval){//Loop for push parameters
 			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
 				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
-				if(i<6){ 
-						dest= new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(i+1); 
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 
-				}else{
-						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(currentMethod.getOffset()-(4 * (i-5)));
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push	
-					 }					
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){//should be pushed into stack
+							cantParamPushedIntoStack++;
+							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order	
+						}else{ 
+							addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 
+						}
+						
 				((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
 				listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
 				stringLabel++;	
 			}else{//value isn't stringLiteral
-					if (i<6){
-						dest= new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(i+1);
-						dest.setType(value.getType());//progate information about the expression type
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-					}else{
-						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setType(value.getType());//progate information about the expression type
-						dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push
-					}
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){
+							cantParamPushedIntoStack++;	
+							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order	
+						}else{
+							//dest.setOffset(i+1);
+								dest.setType(value.getType());//progate information about the expression type
+								addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
+							}
 				}
 				i++;
 		}
+
+		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
+			addInstr(instr);
+
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr(stmt.getMethod())));//Call sub-rutina 	
-		if(stmt.getArguments().size()>6){
-			Expression bytesForPop=	new IntLiteral((stmt.getArguments().size()-6)*4,-1,-1);
+		if(cantParamPushedIntoStack>0){
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
  		}
 		return null;//method return anything
@@ -337,16 +350,31 @@ public TACVisitor(){
 	//Start Method declaration, save parameters from register into stack and visit method's blocks
 	public Expression visit(MethodLocation method){
 		currentMethod= method;
+	    int commonRegister=1;
+      	int coprocessorRegister=1;
 		addInstr(new TAInstructions(TAInstructions.Instr.MethodDecl,method));//Start method declaration
 		//for (Location l: method.getFormalParameters()){//loop for save parameter passed into register in stack
-		Location l;
-		for (int i=1; i<=6;i++){//loop for save parameter passed into register in stack
-			if (i<=method.getFormalParameters().size()){
-				l= method.getFormalParameters().get(i-1);
-				RefLocation from= new RefVarLocation("SaveParam",-1,-1,l.getType(),i);
-				RefLocation dest= new RefVarLocation((VarLocation)l,-1,-1);
-				addInstr(new TAInstructions(TAInstructions.Instr.SaveParam,from,dest)); //ReadArray from destination	
-			}else break; //there aren't more parameters for save so break this loop
+		RefLocation from,dest;
+		//for (int i=1; i<=6;i++){//loop for save parameter passed into register in stack
+		for(Location l:method.getFormalParameters()){
+			//if (i<=method.getFormalParameters().size()){
+			//	l= method.getFormalParameters().get(i-1);
+				if (l.getType()==Type.FLOAT && coprocessorRegister<=8){
+					from= new RefVarLocation("SaveParam",-1,-1,l.getType(),coprocessorRegister);
+					coprocessorRegister++;
+					dest= new RefVarLocation((VarLocation)l,-1,-1);
+					dest.setType(l.getType());//propagate de types
+					addInstr(new TAInstructions(TAInstructions.Instr.SaveParam,from,dest)); 
+				}else
+						if (commonRegister<=6){
+							from= new RefVarLocation("SaveParam",-1,-1,l.getType(),commonRegister);
+							commonRegister++;
+							dest= new RefVarLocation((VarLocation)l,-1,-1);
+							dest.setType(l.getType());//propagate de types
+							addInstr(new TAInstructions(TAInstructions.Instr.SaveParam,from,dest)); 
+						}
+
+			//}else break; //there aren't more parameters for save so break this loop
 		}
 		method.getBody().accept(this);
 		addInstr(new TAInstructions(TAInstructions.Instr.MethodDeclEnd,method));//end Method declaration
@@ -597,47 +625,55 @@ public TACVisitor(){
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
 	public Expression visit(ExterninvkCallExpr expr){
 		List<Location> formalParameters= expr.getFormalParameters();
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
 		List<Expression> actualParametersEval= new LinkedList<Expression>();
+		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
 		int i=0;		
+		int cantParamPushedIntoStack=0;
 		Location dest;
 		for(Expression e: expr.getArguments()){//Loop for generate TAC instructions for calc parameters
 			Expression value= e.accept(this);
 			actualParametersEval.add(value);
+			dest=new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
 		}
+
+		genParametersPushLocation(actualParametersDestination);
 		for(Expression value: actualParametersEval){
 			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
 				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
-				if(i<6){ 
-						dest= new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(i+1); 
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 
-				}else{
-						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(currentMethod.getOffset()-(4 * (i-5)));
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push	
-					 }					
-				((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
-				listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-				stringLabel++;	
+				//if(i<6){ 
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){
+							cantParamPushedIntoStack++;	
+							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+						} 
+				//		dest.setOffset(i+1); 
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 			
+
+						((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
+						listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+						stringLabel++;	
 			}else{//value isn't stringLiteral
-					if (i<6){
-						dest= new VarLocation("PushParamDest",-1,-1);
-						dest.setOffset(i+1);
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){
+							 cantParamPushedIntoStack++;
+							 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+						}
 						dest.setType(value.getType());//progate information about the expression type
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-					}else{
-						dest=new VarLocation("PushParamDest",-1,-1);
-						dest.setType(value.getType());//progate information about the expression type
-						dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push
-					}
 				}
 				i++;
 		}
+
+		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
+			addInstr(instr);
+		
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
 		addInstr(new TAInstructions(TAInstructions.Instr.CallExternWithReturn,new LabelExpr(expr.getMethod()),result));//Call sub-rutina with Return	
-		if(expr.getArguments().size()>6){
-			Expression bytesForPop=	new IntLiteral((expr.getArguments().size()-6)*4,-1,-1);
+		if(cantParamPushedIntoStack>0){
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
  		}
 		return result;
@@ -646,7 +682,9 @@ public TACVisitor(){
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
 	public Expression visit(MethodCallExpr expr){
 		List<Location> formalParameters= expr.getMethod().getFormalParameters();
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
 		int i=0; 
+		int cantParamPushedIntoStack=0;
 		Location dest;
 		List<Expression> actualParametersEval= new LinkedList<Expression>();
 		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
@@ -655,18 +693,20 @@ public TACVisitor(){
 		for(Expression e: expr.getArguments()){//Loop for generate TAC code for actual parameters evaluation
 			Expression value= e.accept(this);
 			actualParametersEval.add(value);
+			dest=new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
 		}
+		genParametersPushLocation(actualParametersDestination);
+
 		for(Expression value: actualParametersEval){//Loop for push parameters
-			if (i<6){
-				dest= new VarLocation("PushParamDest",-1,-1);
-				dest.setOffset(i+1);
-				dest.setType(value.getType());//progate information about the expression type
-				addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-			}else{//deberia pushear al revez
-					dest=new VarLocation("PushParamDest",-1,-1);
-					dest.setOffset(-1);//for say that this param should't push into a register(should be push to stack)
-					dest.setType(value.getType());//progate information about the expression type
-					listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+				dest= actualParametersDestination.pop();
+				if (dest.getOffset()<0){//param should be pushed into stack
+					 cantParamPushedIntoStack++;
+					 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+				}else{
+						dest.setType(value.getType());//progate information about the expression type
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
 				}
 			i++;
 		}		
@@ -675,8 +715,8 @@ public TACVisitor(){
 
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
 		addInstr(new TAInstructions(TAInstructions.Instr.CallWithReturn,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
-		if(formalParameters.size()>6){//if push parameters into stack, pop them
-			Expression bytesForPop=	new IntLiteral((formalParameters.size()-6)*4,-1,-1);
+		if(cantParamPushedIntoStack>0){//if push parameters into stack, pop them
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}		
 		return result;//return method's result 
@@ -765,5 +805,78 @@ public TACVisitor(){
 		TAC.add(line, inst);
 		line++;
 	}	
+
+
+	    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
+the followings will be in the stack*/
+//Este metodo le dice a cada parametro donde debe pasarse para la invocacion a un metodo
+    private void genParametersPushLocation(List<Location> listParameters){
+      /*
+        //Remember that address has 64 bits.
+        STACK representation
+        
+        -
+        Local Var= rbp+4*(amount of parameters+1)
+        Firsts 1..6 Arguments(are passed into register and then saved in stack)
+        last rbp= rbp(acces last ebp as rbp) 
+        dir retorno =rbp+8 
+        7.. Arguments= rpb+16
+        +
+
+      */
+
+      //clone listparameters
+      LinkedList<Location> auxiliaryList=new LinkedList<Location>();
+      for(Location l: listParameters)
+        auxiliaryList.add(l);
+      
+      int i=0;
+      int offset=-4;
+      int commonRegister=1;
+      int coprocessorRegister=1;
+      while (commonRegister<=6 && coprocessorRegister<=6 && auxiliaryList.size()>0){//while have parameters for assign offset, and have registers for any type make the offset assignation        
+        if (auxiliaryList.peek().getType()== Type.FLOAT){//consult about the type of the curren't elemen type 
+          auxiliaryList.pop().setOffset(coprocessorRegister);//will passed as parameters in coprocessor register
+          coprocessorRegister++;
+        }else{ 
+              auxiliaryList.pop().setOffset(commonRegister);//will passed as parameters in common register
+              commonRegister++;
+             }
+         offset=offset-4;    
+         i++; 
+      }  
+      //case there are common register without assign
+      i=auxiliaryList.size();
+      List<Location> parametersWithOutOffset=new LinkedList<Location>();
+      while(commonRegister<=6 && i>0){//agoto registros comunes
+            if(auxiliaryList.peek().getType()!= Type.FLOAT){ 
+              auxiliaryList.pop().setOffset(commonRegister); //will passed as parameters in common register
+              commonRegister++;
+              offset=offset-4;
+            }else
+               parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+        }
+       //case there are coprocesor registers without assign
+        auxiliaryList.addAll(parametersWithOutOffset);
+        i=auxiliaryList.size();
+        parametersWithOutOffset=new LinkedList<Location>();
+        while(coprocessorRegister<=8 && i>0){//agoto registros del coprocesador
+              if(auxiliaryList.peek().getType()== Type.FLOAT){ 
+                auxiliaryList.pop().setOffset(coprocessorRegister);//will passed as parameters in coprocessor register
+                coprocessorRegister++;
+                offset=offset-4;
+              }else
+                 parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+          }
+      //case there aren't more registers for assign  
+      auxiliaryList.addAll(parametersWithOutOffset);
+      offset=16;//since there aren't more registers for parameters, put these in stack. 
+      while(auxiliaryList.size()>0){
+           auxiliaryList.pop().setOffset(-1); //put into stack
+           offset= offset+4;
+      }          
+    }
 
 }
