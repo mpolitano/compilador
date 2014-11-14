@@ -52,7 +52,7 @@ private List<Error> errors;
 	public Boolean visit(WhileStmt stmt){return stmt.getBlock().accept(this);}	
 	public Boolean visit(MethodCallStmt stmt){return false;}
 	public Boolean visit(ExterninvkCallStmt stmt){
-		if (stmt.getMethod().equals("\"print_float_1\""))
+		if (stmt.getMethod().equals("\"print_float\""))
 			return true;
 		else
 			return false;
