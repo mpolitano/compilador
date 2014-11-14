@@ -101,10 +101,10 @@ public class CodeGenerator{
 		pw.println(m.getId() + ":");
 		int numEnter= m.amoutLocalLocation()*4;
 		int suma;
-		if (true)//! m.getFloat())
-			pw.println("enter $"+ numEnter+",$0"); 
-		else{
-			if ((numEnter % 16)!=0){
+		//if (! m.getFloat())
+		//	pw.println("enter $"+ numEnter+",$0"); 
+		//else{
+			//if ((numEnter % 16)!=0){
 				switch(numEnter%16){
 					case 4: suma=numEnter+12;
 							pw.println("enter $"+ suma+",$0");break;
@@ -112,11 +112,12 @@ public class CodeGenerator{
 							pw.println("enter $"+ suma+",$0");break;
 					case 12:suma=numEnter+4;
 							pw.println("enter $"+ suma+",$0");break;
+					case 0: pw.println("enter $"+ numEnter+",$0");break; 	
 				}
-			} 
-			else{
-				pw.println("enter $"+ numEnter+",$0"); }
-		}
+			//} 
+			//else{
+				//pw.println("enter $"+ numEnter+",$0"); //}
+		//}
 	}
 
 	private static void genMethodDeclEndAsmCode(TAInstructions instr){
@@ -412,12 +413,12 @@ public class CodeGenerator{
 		Expression value= instr.getOp1();
 		Location destination= (Location)instr.getOp2();
 		switch (value.getType()){
-			case FLOAT: if (destination.getOffset()>0 && destination.getOffset()<=6){	
+			case FLOAT: if (destination.getOffset()>0 && destination.getOffset()<=8){	
 							pw.println("movss "+ value.toAsmCode() +","+destination.toAsmCode()); 
 						}else{
 								pw.println("sub $4, %rsp");//save place for push param
-								pw.println("movss "+ value.toAsmCode()+" ,%xmm6"); //use xmm6 as auxiliary register
-								pw.println("movss %xmm6, (%rsp)");//push to stack top
+								pw.println("movss "+ value.toAsmCode()+" ,%xmm8"); //use xmm6 as auxiliary register
+								pw.println("movss %xmm8, (%rsp)");//push to stack top
 							 } break;
 			default: if (destination.getOffset()>0 && destination.getOffset()<=6)	
 						pw.println("movl "+ value.toAsmCode()+" , "+destination.toAsmCode());//push to register		
