@@ -1,0 +1,50 @@
+class maxComunDivisor{	
+int main(){
+		float a,b;
+		a=-2.0;
+		b=3.0;
+		if(a<b){
+			externinvk("print_float_1", void, "%f < %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f >= %f \n",a,b);
+		}
+
+		if(a<=b){
+			externinvk("print_float_1", void, "%f <= %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f > %f \n",a,b);
+		}   	
+
+		if(a>b){
+			externinvk("print_float_1", void, "%f > %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f <= %f \n",a,b);
+		}
+
+		if(a>=b){
+			externinvk("print_float_1", void, "%f>= %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f < %f \n",a,b);
+		}
+
+		if(a==b){
+			externinvk("print_float_1", void, "%f = %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f != %f \n",a,b);
+		}
+
+		if(a!=b){
+			externinvk("print_float_1", void, "%f != %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f = %f \n",a,b);
+		}
+
+		a=-3.0;
+		if(a==b){
+			externinvk("print_float_1", void, "%f = %f \n",a,b);		
+		}else{
+			externinvk("print_float_1", void, "%f != %f \n",a,b);
+		}
+}
+
+}

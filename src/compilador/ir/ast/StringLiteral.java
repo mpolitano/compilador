@@ -34,6 +34,10 @@ public class StringLiteral extends Literal<String> {
 		return "$"+value;	
 	}
 
+	public boolean equals(StringLiteral cad){
+		return this.getValue().equals(cad.getValue());
+	}
+
 
 }
 

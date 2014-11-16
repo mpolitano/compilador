@@ -8,6 +8,7 @@ public class Block extends Statement {
 	private List<Statement> statements;
 	private List<Location> field;
 	private int blockId;
+	private int offset;
 	
 	public Block(int bId) {
 		statements = new ArrayList<Statement>();
@@ -52,6 +53,15 @@ public class Block extends Statement {
 		
 		return rtn; 
 	}
+
+	public int getOffset(){
+		return offset;
+	}
+
+	public void setOffset(int offset){
+		this.offset= offset;
+	}
+
 
 	public List<Location> getFields(){
 		return field;	

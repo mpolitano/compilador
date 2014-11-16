@@ -1,0 +1,34 @@
+class testMethodsWith8Parameters{
+	
+	int sum8(int a,int b, int c, int d, int e,int f, int g,int h){
+		return a+b+c+d+e+f+g+h;
+	}
+
+	void sum8procedure(int a,int b, int c, int d, int e,int f, int g,int h){
+		externinvk("printf",void, "Los numeros ingresados son: \n");
+		externinvk("printf",void, "%d \n", a);
+		externinvk("printf",void, "%d \n", b);
+		externinvk("printf",void, "%d \n", c);
+		externinvk("printf",void, "%d \n", d);
+		externinvk("printf",void, "%d \n", e);
+		externinvk("printf",void, "%d \n", f);
+		externinvk("printf",void, "%d \n", g);
+		externinvk("printf",void, "%d \n", h);
+	}
+
+	void main(){
+		int a,b,c,d,e,f,g,h;
+		a=1;
+		b=2;
+		c=3;
+		d=4;
+		e=5;
+		f=6;
+		g=7;
+		h=8;
+		externinvk("printf",void, "La suma de 1 a 8 es 36 \n");
+		externinvk("printf",void, "La suma de 1 a 8 da %d \n", sum8(a,b,c,d,e,f,g,h));
+		sum8procedure(a,b,c,d,e,f,g,h);	
+	}
+
+}

@@ -81,7 +81,8 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		Expression finalValue= stmt.getFinalValue();
 		if(initialValue.accept(this)!=Type.INT || finalValue.accept(this)!=Type.INT){//check for integer expression in initial value and final value
 			addError(stmt,"For loop must have integer expressions: ");
-		}		
+		}
+		stmt.getBlock().accept(this);//visit ford block		
 		return Type.UNDEFINED;
 	};
 	public Type visit(SecStmt stmt){return Type.UNDEFINED;};//Should't do anything
@@ -111,12 +112,18 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	};	
 	
 	public Type visit(ExterninvkCallStmt stmt){
+		List<Expression> expressionExter= stmt.getArguments();
+
+		//if (stmt.getMethod().toString().equals("\"printf\"") && expressionExter.get(1).getType()==Type.FLOAT){
+		//	addError(stmt,"printf type problem. Maybe he meant print_float");	//Para escribir float, problema de tipo.
+			
+		//}
 		for (Expression e:stmt.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
 		return Type.UNDEFINED;//return the method's return type
-
 	}
+
 
 
 //Visit Location
@@ -127,7 +134,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		methodBody.accept(this);
 		for (Statement s: methodBody.getStatements()){
 			if (s instanceof ReturnStmt){
-				if (loc.getType()==Type.VOID){//If method's return type is void so return statement can't has a expression
+				if (loc.getType()==Type.VOID){//If method's return t(s.getBlock().getStatements()ype is void so return statement can't has a expression
 					if (((ReturnStmt)s).getExpression()!=null){
 						addError(s,"Void Method can't have a 'return <expr>' statement");	
 					}
@@ -138,6 +145,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 				}
 			}
 		}
+	
 		return loc.getType();
 	};
 	

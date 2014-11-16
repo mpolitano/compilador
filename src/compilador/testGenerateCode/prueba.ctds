@@ -1,7 +1,4 @@
-class prueba {
-	
-
-	
+class prueba {	
 	void main(){
 		int a;
 		a = 2;

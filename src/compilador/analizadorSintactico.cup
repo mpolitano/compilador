@@ -34,32 +34,89 @@ action code {:
 
     /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
 the followings will be in the stack*/
+//Este metodo le dice a cada metodo definido en el .ctds donde va a estar cada uno de sus parametros
     private void setParametersOffset(List<Location> listParameters){
-
       /*
-      //Remember that address has 64 bits.
-      STACK representation
+        //Remember that address has 64 bits.
+        STACK representation
+        
+        -
+        Local Var= rbp+4*(amount of parameters+1)
+        Firsts 1..6 Arguments(are passed into register and then saved in stack)
+        last rbp= rbp(acces last ebp as rbp) 
+        dir retorno =rbp+8 
+        7.. Arguments= rpb+16
+        +
 
-      Local Var= rbp+4*(amount of parameters+1)
-      Firsts 1..6 Arguments
-      rbp= rbp
-      dir retorno =rbp+8
-      7.. Arguments= rpb+12
-      
       */
+
+      //clone listparameters
+      LinkedList<Location> auxiliaryList=new LinkedList<Location>();
+      for(Location l: listParameters)
+        auxiliaryList.add(l);
+      
       int i=0;
       int offset=-4;
-      while (i<6 && listParameters.size()>i){
-        listParameters.get(i).setOffset(offset);
+      int commonRegister=1;
+      int coprocessorRegister=1;
+      while (commonRegister<=6 && coprocessorRegister<=6 && auxiliaryList.size()>0){//while have parameters for assign offset, and have registers for any type make the offset assignation        
+        if (auxiliaryList.peek().getType()== Type.FLOAT){//consult about the type of the curren't elemen type 
+          auxiliaryList.pop().setOffset(offset);//will passed as parameters in coprocessor register
+          coprocessorRegister++;
+        }else{ 
+              auxiliaryList.pop().setOffset(offset);//will passed as parameters in common register
+              commonRegister++;
+             }
          offset=offset-4;    
          i++; 
-      }
-      offset=12;//since 7 parameter to the last, put these in stack. 
-      while(listParameters.size()>i){
-           listParameters.get(i).setOffset(offset);
+      }  
+      //case there are common register without assign
+      i=auxiliaryList.size();
+      List<Location> parametersWithOutOffset=new LinkedList<Location>();
+      while(commonRegister<=6 && i>0){//agoto registros comunes
+            if(auxiliaryList.peek().getType()!= Type.FLOAT){ 
+              auxiliaryList.pop().setOffset(offset); //will passed as parameters in common register
+              commonRegister++;
+              offset=offset-4;
+            }else
+               parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+        }
+       //case there are coprocesor registers without assign
+        auxiliaryList.addAll(parametersWithOutOffset);
+        i=auxiliaryList.size();
+        parametersWithOutOffset=new LinkedList<Location>();
+        while(coprocessorRegister<=8 && i>0){//agoto registros del coprocesador
+              if(auxiliaryList.peek().getType()== Type.FLOAT){ 
+                auxiliaryList.pop().setOffset(offset);//will passed as parameters in coprocessor register
+                coprocessorRegister++;
+                offset=offset-4;
+              }else
+                 parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+          }
+      //case there aren't more registers for assign  
+      auxiliaryList.addAll(parametersWithOutOffset);
+      offset=16;//since there aren't more registers for parameters, put these in stack. 
+      while(auxiliaryList.size()>0){
+           auxiliaryList.pop().setOffset(offset);
            offset= offset+4;
-           i++;
       }          
+    }
+
+    private int countOffsetForSaveParam(List<Location> listParameters){
+      int cantParamsWillPassedInCommonRegister=0;
+      int cantParamsWillPassedInCoprocessorRegister=0;
+      for(Location l: listParameters)
+        if (l.getType()==Type.FLOAT) //if is passed into a register
+          cantParamsWillPassedInCoprocessorRegister++;
+        else
+          cantParamsWillPassedInCommonRegister++;
+
+     if (cantParamsWillPassedInCommonRegister>6) cantParamsWillPassedInCommonRegister=6;
+     if (cantParamsWillPassedInCoprocessorRegister>8) cantParamsWillPassedInCoprocessorRegister=8;
+
+      return cantParamsWillPassedInCommonRegister + cantParamsWillPassedInCoprocessorRegister;
     }
 :}
 
@@ -249,7 +306,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                           symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                           symTable.pushLevel();
                         :} 
-                        PARENIZQ PARAMETERS:listParameters{:methodOffset=-(listParameters.size()*4);:}  PARENDER BLOCK:body
+                        PARENIZQ PARAMETERS:listParameters{:methodOffset=-(countOffsetForSaveParam(listParameters)*4);:}  PARENDER BLOCK:body
                         {:
                         if (ide.getId().equals("main")){
                             cantMain++;
@@ -278,7 +335,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                         symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
                                         symTable.pushLevel();
                                       :} 
-                                      PARENIZQ PARAMETERS:listParameters{:methodOffset=-(listParameters.size()*4);:}  PARENDER BLOCK:body
+                                      PARENIZQ PARAMETERS:listParameters{:methodOffset=-(countOffsetForSaveParam(listParameters)*4);:}  PARENDER BLOCK:body
                                                                         {: 
                                                                           if (ide.getId().equals("main")){
                                                                              cantMain++;
@@ -288,6 +345,7 @@ METHOD_DECL ::= 	       TYPE:t ID:ide
                                                                          }   
                                                                           MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
                                                                           newMethod.setParameters(listParameters);
+                                                                         setParametersOffset(listParameters);
                                                                           newMethod.setBody(body);                                                                          
                                                                           newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
                                                                           methodOffset=0;//restart methodoffset for next method                            
@@ -450,7 +508,7 @@ EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
                         | EXPR:lexpr EQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
                         |EXPR:lexpr DIFFERENT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
 
-                        | SUB EXPR:expr{:RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
+                        | SUB EXPR:expr{:if(expr instanceof FloatLiteral){((FloatLiteral)expr).setValue(-((FloatLiteral)expr).getValue()); RESULT=expr; }else RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
               			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS
               			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
 

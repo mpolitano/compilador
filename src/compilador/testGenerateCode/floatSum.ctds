@@ -1,10 +1,30 @@
 class prueba1 {
+	
+	float sum(float a, float b){
+		return a+b;
+	}
+
+	float rest(float a, float b){
+		return a-b;
+	}
+
+	float mult(float a, float b){
+		return a*b;
+	}
+
+	float div(float a, float b){
+		return a/b;
+	}
+
 	void main(){
 		float z;
 		float x;
 		z=2.0;
-		x=504.21;
-			externinvk("printf",void, "%f\n",x+z);
+		x=5.1;
+		externinvk("print_float_1",void, "La suma de %f y %f es: %f\n",z,x, sum(z,x));
+		externinvk("print_float_1",void, "La resta de %f y %f es: %f\n",z,x, rest(z,x));
+		externinvk("print_float_1",void, "La division de %f y %f es: %f\n",z,x, div(z,x));
+		externinvk("print_float_1",void, "La multiplicacion de %f y %f es: %f\n",z,x, mult(z,x));
 	
 	}
 }

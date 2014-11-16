@@ -1,0 +1,21 @@
+class maxComunDivisorRecursivo{
+
+int maxComun(int a, int b){ // asumiendo que a es mayor que b --a>b 
+	int mcd; 
+	if(b==0){
+		return a;}
+	else{
+		return maxComun(b, a % b);
+	}
+} 
+	
+
+
+int main(){
+	int a,b;
+	a=120;
+	b=16;
+    externinvk("printf", void , "%d\n",maxComun(a,b));
+}
+
+}

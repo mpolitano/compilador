@@ -39,8 +39,10 @@ for's condition and then will generate code only for reachables sentences.
 
 	/* Visit return's expression and make constant propagation */
 	public Expression visit(ReturnStmt stmt){
-		Expression e= stmt.getExpression().accept(this);
-		stmt.setExpression(e);
+		if (stmt.getExpression()!=null){
+			Expression e= stmt.getExpression().accept(this);
+			stmt.setExpression(e);
+		}
 		return null;
 	}
 	

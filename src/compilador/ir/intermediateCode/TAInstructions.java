@@ -18,11 +18,11 @@ public class TAInstructions{
 	//Logical unary Instuctions
 	Not,
 	//relational binary instructions
-	Equal, Dif, GEI,GEF,LEI,LEF,GrtI,GrtF,LesI,LesF,
+	EqualI, DifI,EqualF, DifF, GEI,GEF,LEI,LEF,GrtI,GrtF,LesI,LesF,
 	//Jump Instructions
 	Jmp, JTrue, JFalse,
 	//Instructions for call procedure
-	Call,CallWithReturn, ParamPush, ParamPop, CallExtern, Ret, SaveParam, LoadParam,
+	Call,CallWithReturn, ParamPush, ParamPop, CallExtern,CallExternWithReturn ,Ret, SaveParam, LoadParam,
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
@@ -111,8 +111,10 @@ public class TAInstructions{
 			case And: labelOp= "And";break;
 			case Or: labelOp="Or";break;
 			case Not: labelOp="Not";break;
-			case Equal: labelOp="Equal";break;
-			case Dif: labelOp= "Dif";break;
+			case EqualI: labelOp="EqualI";break;
+			case DifI: labelOp= "DifI";break;
+			case EqualF: labelOp="EqualF";break;
+			case DifF: labelOp= "DifF";break;
 			case GEI: labelOp= "GEI";break;
 			case GEF: labelOp= "GEF";break;
 			case LEF: labelOp="LEF";break;
@@ -128,6 +130,7 @@ public class TAInstructions{
 			case ParamPush: labelOp= "ParamPush";break;
 			case ParamPop: labelOp= "ParamPop";break;
 			case CallExtern: labelOp= "CallExtern";break;
+			case CallExternWithReturn: labelOp= "CallExternWithReturn";break;
 			case Ret: labelOp= "Ret";break;
 			case ReadArray: labelOp= "ReadArray";break;
 			case WriteArray: labelOp="WriteArray";break;
@@ -168,7 +171,7 @@ public class TAInstructions{
 	jmp Label
 	//Instructions for call procedure
 	Call|CallExtern Label
-	CallWithReturn label location
+	CallWithReturn|CallExternWithReturn label location
 	ParamPush Expression Location(register or ebp+12...)
 	ParamPop IntLiteral
 	//Conversion instruction
