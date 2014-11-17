@@ -266,8 +266,8 @@ for's condition and then will generate code only for reachables sentences.
 		if (e instanceof Literal){
 			switch(expr.getOperator()){
 				case NOT: return new BooleanLiteral(!((BooleanLiteral)e).getValue(),expr.getLineNumber(),expr.getColumnNumber());
-				case MINUS: if(e instanceof IntLiteral) return makeLiteral(((IntLiteral)e).getValue(),expr.getLineNumber(),expr.getColumnNumber());
-					   else /*intance of FloatLiteral*/ return makeLiteral(((FloatLiteral)e).getValue(),expr.getLineNumber(),expr.getColumnNumber());
+				case MINUS: if(e instanceof IntLiteral) return makeLiteral(-((IntLiteral)e).getValue(),expr.getLineNumber(),expr.getColumnNumber());
+					   else /*intance of FloatLiteral*/ return makeLiteral(-((FloatLiteral)e).getValue(),expr.getLineNumber(),expr.getColumnNumber());
 			}		
 		}		
 		return expr;

@@ -50,7 +50,7 @@ void print_float(float x){
 	}
 
 // imprime dos real en la salida con la cadena pasada.
-void print_float2(char cad[50]3, float x,float y){
+void print_float2(char cad[50], float x,float y){
        printf(cad,x,y);	
 	}
 	

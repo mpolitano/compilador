@@ -7,7 +7,7 @@ import ir.semcheck.TypeCheckVisitor;
 import ir.semcheck.BreakContinueCheckVisitor;
 import ir.intermediateCode.TACVisitor;
 import ir.codeGeneration.*;
-import ir.optimization.FrameOptimization;
+import ir.optimization.*;
 //{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
 /* Codigo del parser, se copia integramente a la clase final.
     Agregamos el manejo de errores. */
@@ -148,6 +148,8 @@ parser code{:
             result.accept(typeCheckVisitor);
             BreakContinueCheckVisitor breakCheckVisitor= new BreakContinueCheckVisitor();
             result.accept(breakCheckVisitor);
+            ConstPropVisitor propConst= new ConstPropVisitor();
+            result.accept(propConst);
             int sizeErrorType = typeCheckVisitor.getErrors().size();
             int sizeErrorBreak= breakCheckVisitor.getErrors().size();
             if (sizeErrorType==0 && sizeErrorBreak==0) {
@@ -155,7 +157,7 @@ parser code{:
                 TACVisitor coding= new TACVisitor();
                 result.accept(coding);
                 System.out.println("TAC: "+coding.getTAC().toString());  
-                //FrameOptimization frameOptimizator= new FrameOptimization();
+              //  FrameOptimization frameOptimizator= new FrameOptimization();
                 //result.accept(frameOptimizator);
                 CodeGenerator.generateCode(coding.getTAC(),args[1],false);
             }else{
