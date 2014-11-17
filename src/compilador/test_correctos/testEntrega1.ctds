@@ -1,0 +1,327 @@
+/* Contiene los casos de test para el compilador C-TDS
+ * Necesita el archivo libtestCTDS.c e input
+ * en el archivo output se encuentran las salidas esperadas
+ * */
+
+class test_primer_entrega{
+	int A[20] ;
+//Prueba expresiones
+int expresiones ( int p) {
+		int a;
+		int f;
+		{
+			int b;
+			int c;
+			b=4;
+			c=5;
+			a= b*c;
+			p=a+p;
+		}
+		{
+			float pi;
+			pi=3.14;
+			f= 10;
+		}
+		return f;
+	}
+
+//Prueba breaks
+int breaks(int g){
+      int  i;
+      i = 0;
+
+      while(i < 10){
+	{ //bloque 1
+          i = i + 1;
+        
+             { //bloque 2
+	          if(g < 2){
+	                break;
+                   }
+	           else{
+	                continue;
+                   }
+             } //fin bloque 2
+        }//fin bloque 1
+
+     } //fin while
+
+	return i;
+}
+
+
+//Prueba breaks
+int break_cont(int g){
+      int  i;
+      i = 0;
+
+      while(i < 10){
+	{ //bloque 1
+          float j;
+          i = i + 1;
+        
+             { //bloque 2
+                  j = 2.3;
+	          if(g < 0){
+	                break;
+                   }
+	           else{
+	                continue;
+                   }
+             } //fin bloque 2
+        }//fin bloque 1
+
+     } //fin while
+
+	return i;
+}
+// test condiciones
+float dados (int d1, int d2, int d3){
+	if (!(d1 == 6) && !(d2==6) && !(d3==6)){
+		return 1.0;
+	}
+	if ( ( (d1==6) && !(d2==6) && !(d3==6)) ||
+	    (!(d1==6) &&  (d2==6) && !(d3==6)) ||
+	    (!(d1==6) && !(d2==6) &&  (d3==6)) ){
+		return 4.0;
+	}
+	if (( (d1==6) &&  (d2==6) && !(d3==6)) ||
+	    ( (d1==6) && !(d2==6) &&  (d3==6)) ||
+	    (!(d1==6) &&  (d2==6) &&  (d3==6)) ) {
+		return 8.50;
+	}
+	if ((d1==6) && (d2==6) && (d3==6)){
+		return 10.00;
+	}
+}
+
+boolean neg(boolean b){
+   return !b;
+}
+
+boolean and(boolean a, boolean b){
+  return a &&b;
+}
+
+boolean or(boolean a, boolean b){
+  return a||b;
+}
+
+float sumatoria(float b){
+	float total;
+	float i;
+	float res;
+        total = 0.0;
+        i = b;
+	while(i > 0  || i > 0 )   {
+		if(i > 0){
+			total = total + i;
+                }
+		i -= 1.0;
+	} /* fin while */
+	res = total;
+	return res;
+
+}
+//Arreglos y for
+int pruArreglos(int b, int c ){
+        int i;
+
+        A[c] = b; 
+        for i = 1 , 10 { 
+               A[i] = i;
+
+        }
+return A[c]; //debe devolver lo que queda en c, osea c.
+}
+
+//test arreglos y for con condiciones
+int pruArreglos2(int b, int c ){
+        int i;  
+
+	A[c] = b; 
+        for i = 1 , (-10 + 11 * 2) { 
+               A[i] = i;
+        }
+	return A[c]; //debe devolver c.
+ }
+int cons1(){
+   return 1;
+
+}
+
+//if
+int pruAritmetica(int b, int c ){
+        int res;
+	if(b > c){
+		res = b - c;
+        }else{ if(b == c){
+		res = b*5;
+        }else{
+		res = b - c;
+        }
+	}
+	return res;
+	}
+ //MCD   
+int maxcomdiv (int a, int b){
+        int dividendo,divisor,resto;
+	if(((a > b))){
+		dividendo = a;
+		divisor = b;
+	}
+	else{
+		dividendo = b;
+		divisor = a;
+	}
+	resto = 1;
+	while ((resto != 0)){
+		resto = dividendo % divisor;
+		dividendo = divisor;
+		divisor = resto;
+	}
+	return dividendo;
+}   
+//test metodos llamdas
+   int alo(int x){
+      x= x + 1;
+      return x ; 
+   }
+
+   int alo2(int x){
+      x=alo(x);
+      x=  x + 1; 
+      return x; 
+   }
+
+//test mod
+int mod( int a){
+		return (a % 7 );		
+	}
+
+//test multi int
+int pruMultInt(int c){
+	int a;
+	int d;
+        a = 5;
+        d = 200;
+	return ( a * 100 * c *d );
+}
+//test multi float
+float pruMultFloat(float c){
+	float a;
+	float d;
+        a = 5.0;
+        d = 200.0;
+	return ( a * 100.0 * c *d );
+}
+
+
+// funcion main 
+void main (){
+       
+        int x, i; 
+	externinvk("init_input",void,"input"); 
+
+// test expresiones    
+        externinvk("print_string",void,"Prueba expresiones----------------------------------");    
+        externinvk("print_int",void,expresiones(6));
+	externinvk("print_string",void,"---------------------------------------------------------");
+// test break    
+        externinvk("print_string",void,"Prueba breaks----------------------------------");    
+	externinvk("print_int", void , breaks( 1));
+	externinvk("print_int", void , breaks( 3));
+	externinvk("print_string",void,"---------------------------------------------------------");
+// test break and continue    
+        externinvk("print_string",void,"Prueba breaks2----------------------------------");    
+	externinvk("print_int", void , break_cont( 1));
+	externinvk("print_int", void , break_cont( -1));
+	externinvk("print_string",void,"---------------------------------------------------------");
+// test boolean  
+        externinvk("print_string",void,"Prueba booleanos----------------------------------");
+    	{boolean a,b,c;
+	int x,y;
+	a= true;
+	b= false;
+	b= neg(a);
+	c= or(and(a,b), neg(b) );    
+ 	externinvk("print_int",void , c);
+	externinvk("print_int",void , b);
+	externinvk("print_int",void , a);
+	externinvk("print_string",void,"---------------------------------------------------------");
+}
+// test condiciones  
+        externinvk("print_string",void,"Prueba condiciones----------------------------------");   
+    	externinvk("print_float", float , dados(1,6,9 ));
+	externinvk("print_float", float , dados(9,9,9 ));
+	externinvk("print_float", float , dados(5,6,1 ));
+	externinvk("print_string",void,"---------------------------------------------------------");
+// test condiciones  
+        externinvk("print_string",void,"Prueba condiciones----------------------------------");   
+    	externinvk("print_float", float , dados(1,6,9 ));
+	externinvk("print_float", float , dados(9,9,9 ));
+	externinvk("print_float", float , dados(5,6,1 ));
+	externinvk("print_string",void,"---------------------------------------------------------");
+// test sumatoria float  
+        externinvk("print_string",void,"Prueba sumatoria float----------------------------------");  
+{ 
+	float a,f;
+	a = 8.0;
+	f = sumatoria(a);
+	externinvk("print_float", void , f);
+	f = sumatoria(4.0);
+	externinvk("print_float", void , f);
+	externinvk("print_string",void,"---------------------------------------------------------");
+}
+//test arreglo y for
+	externinvk("print_string",void,"Prueba Arreglo y for ----------------------------------");   
+	externinvk("print_int", int , pruArreglos(4,8));
+	externinvk("print_string",void,"---------------------------------------------------------");
+//test arreglo y for
+	externinvk("print_string",void,"Prueba Arreglo y for1 ----------------------------------");   
+	externinvk("print_int", int , pruArreglos2(4,8));
+	externinvk("print_string",void,"---------------------------------------------------------");
+//test arreglo y for con llamada
+	externinvk("print_string",void,"Prueba Arreglo y for con llamada ----------------------------------");   
+	{	int A[5] ;
+	for i = cons1() , cons1() +5 {  
+               A[i] = i ;
+        }
+	externinvk("print_int", int , A[4]);
+}
+	externinvk("print_string",void,"---------------------------------------------------------");
+//test if
+	externinvk("print_string",void,"Prueba if ----------------------------------");   
+    	externinvk("print_int", int , pruAritmetica(4,8 ));
+   	externinvk("print_int", int , pruAritmetica(4,4 ));
+    	externinvk("print_int", int , pruAritmetica(8,5 ));
+	externinvk("print_string",void,"---------------------------------------------------------");
+//MCD
+	externinvk("print_string",void,"Prueba MCD ----------------------------------");   
+	externinvk("print_int", void, maxcomdiv(6,9 ));
+	externinvk("print_int", void, maxcomdiv(12,22 ));
+	externinvk("print_int", void, maxcomdiv(8,3));
+	externinvk("print_string",void,"---------------------------------------------------------");
+//metodos
+	externinvk("print_string",void,"Prueba metodos ----------------------------------"); 
+{
+        int y;
+        y = 7;
+        y = alo2(y);
+        y = alo2((3)*y);
+	externinvk("print_int", void, y);
+	externinvk("print_string",void,"---------------------------------------------------------");
+}
+//mod
+	externinvk("print_string",void,"Prueba mod ----------------------------------"); 
+	externinvk("print_int", void, mod(90));
+	externinvk("print_string",void,"---------------------------------------------------------");
+//test multiplicacion
+	externinvk("print_string",void,"Prueba multiplicacion int and float ----------------------------------"); 
+	externinvk("print_int", void, pruMultInt(2));
+	externinvk("print_float", void, pruMultFloat(2.00));
+	externinvk("print_string",void,"---------------------------------------------------------");
+
+} // endmain
+
+}
