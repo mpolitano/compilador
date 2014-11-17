@@ -1,0 +1,42 @@
+class prueba1 {
+
+// retorna el factorial de v 
+int factorial (int v){
+  int limit;
+  limit = 15;
+  if ( v > limit) { return -1;}
+  { 
+	int c, fact;
+	c = 0;
+	fact = 1;
+    while (c<v){
+       c = c+1;
+       fact = fact*c;
+    }
+    return fact;
+  }
+}
+
+// funcion main 
+
+void main (){
+    int x, i; 
+	externinvk("init_input",void,"input");
+
+	// test factorial entero    
+        externinvk("print_string",void,"Factorial Enteros----------------------------------");    
+        x=externinvk("get_int",int); // lee la cantidad de veces que ejecutara la funcion  
+        externinvk("printf",void,"%d\n",x);    
+        i = 0;        
+        while (i<x){              
+            int aux;         
+            aux=externinvk("get_int",int); // lee los datos para invocar a la funcion
+            aux = factorial(aux);
+            externinvk("print_int",void,aux);             
+            i += 1;
+	    }
+		externinvk("print_string",void,"---------------------------------------------------------");
+		
+}
+}
+

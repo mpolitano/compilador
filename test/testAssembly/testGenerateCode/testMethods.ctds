@@ -1,0 +1,22 @@
+class Program {
+	int add(int a, int b){
+		return a+b;
+	}
+
+	int a(int b, int c){
+		c=add(c,b);
+		return c;	
+	}
+
+    void main() {
+      int x;
+			int z;
+      x=1;
+      z=2;
+   		externinvk("printf", void, "%d\n",a(x,z));
+			z=3;
+   		externinvk("printf", void, "%d\n",a(x,z));
+			z=4;
+   		externinvk("printf", void, "%d\n",a(x,z));
+    }
+}

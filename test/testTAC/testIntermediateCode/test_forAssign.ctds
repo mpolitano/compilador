@@ -1,0 +1,31 @@
+class test_for{
+
+int main(){
+	float i;
+	int j;
+        for i = 5 , 10 { 
+              j = i + 2;
+							
+        }
+    }
+}
+/*
+CORRECTO 11/10. EL I DEL FOR LO ES INDEPENDIENTE DEL DE LA DECLARACION.
+
+TAC: [ProgramDecl Op1: test_for , 
+MethodDecl Op1: main , 
+LocationDecl int Op1: i , 
+Assign Op1: 5 Destination: i , 
+PutLabel Op1: For_Loop_3 , 
+LesI Op1: i Op2: 10 Destination: 3 , 
+JFalse Op1: 3 Op2: End_For_3 ,
+ AddI Op1: i Op2: 2 Destination: 7 , 
+Assign Op1: 7 Destination: i , 
+AddI Op1: i Op2: 1 Destination: i , 
+Jmp Op1: For_Loop_3 , 
+PutLabel Op1: End_For_3 , 
+MethodDeclEnd Op1: main ]
+
+
+*/
+

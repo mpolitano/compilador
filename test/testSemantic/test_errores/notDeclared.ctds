@@ -1,0 +1,17 @@
+/*paso el valor a, que no esta definido, al metodo suma, debe fallar*/
+class notDeclared{
+
+int suma(int a, int b){
+	a=a+b;
+	return a;
+}
+
+int main (){
+	int b;
+	b=10;
+	externinvk("printf", int, suma(a,b)); //pasamos a cuando este no esta declarado
+
+	return 1;
+}
+
+}

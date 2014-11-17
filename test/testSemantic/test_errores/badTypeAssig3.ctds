@@ -1,0 +1,9 @@
+class badTypeAssig3{
+	int main(){
+		float a;
+		a=1222;
+		a-=true; //error, a es float no boolean
+
+		return 1;
+	}
+}

@@ -1,0 +1,24 @@
+/*test en el que probamos un metodo que recibe muchos parametros, y el valor que retorna lo asigna a una variable del mismo tipo, no deberia fallar
+*/
+
+class pruebaParametros{
+
+ int sumaCinco(int a, int b, int c, int d, int e){
+	int res;
+	res = ((((a+b)+c)+d)+e);
+	return res;
+	}
+
+	int main(){
+		int a;
+		int b;
+		int c;
+		int d,e;
+		int res;
+		res = sumaCinco(a,b,c,d,e);
+		externinvk("printf", int, res);
+
+		return 1;
+	}
+
+}

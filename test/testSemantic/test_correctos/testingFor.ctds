@@ -1,0 +1,26 @@
+class  testingFor{
+	int count;
+	
+	int siguiente(int a){
+		return a+1;
+	}
+
+	int tresVeces(int a){
+		return a*3;
+	}
+
+
+int main (){
+	int a;
+	count=1;
+	
+	for  a = 1 , tresVeces(a) { 
+		externinvk("printf",int,count);
+		count+=1;
+		a+=1;
+	}
+
+	return 1;
+}
+
+}

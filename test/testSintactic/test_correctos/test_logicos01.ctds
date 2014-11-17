@@ -1,0 +1,13 @@
+class test_logicos{
+
+boolean pruebaLogica(boolean i){
+		boolean a;
+                a = true;
+		return ( ((false || a ) && !true) && !i);
+	}
+
+int main(){
+    externinvk("print_int", int , pruebaLogica(false));
+}
+
+}

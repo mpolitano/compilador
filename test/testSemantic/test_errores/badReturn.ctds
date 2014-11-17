@@ -1,0 +1,20 @@
+/*en este test probaremos que no se puede retornar un valor de distinto tipo que el declarado*/
+class badReturn {
+
+	int masUno (int a){
+		float b;
+		a+=1;		
+		b=10;
+		return b; //retornamos b cuando es de tipo float y masUno retorna tipo int
+	}
+
+	int main(){
+		int aux;
+		aux=10;
+		externinvk("printf", int, masUno(aux));
+
+		return 1;
+	}
+
+
+}

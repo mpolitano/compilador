@@ -1,0 +1,18 @@
+class prueba1 {	
+
+	void main(){
+		float z;
+		float y;
+		float x;
+		float p;
+		float w;
+
+		x=1.1;
+		y=1.2;
+		x=x+y;
+		w=1.3;
+					externinvk("print_float", void, "%f\n",x);
+			
+		
+	}
+}

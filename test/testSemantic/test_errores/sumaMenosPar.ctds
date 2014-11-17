@@ -1,0 +1,21 @@
+/*en este test probamos que un metodo no puede recibir menos parametros de los que tiene definidos, 
+debe fallar el parser
+*/
+class sumaMenosPar{
+
+	int suma(int x, int y){
+		x=x+y;
+		return x;	
+	}
+
+int main(){
+	int a;
+	int b;
+	a=10;
+	b=100;
+	externinvk("printf",int, suma(a)); //a suma le damos un solo parametro cuando espera recibir 2
+
+	return 1;
+}
+
+}

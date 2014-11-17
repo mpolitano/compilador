@@ -1,0 +1,13 @@
+class prueba1 {
+	
+	
+	void main(){
+		//float x,y;
+		float z,x;
+		z=3.0;
+		x=2.0;
+		//x = y+1.6;
+		//z = x+2;
+	externinvk("printf", void, "%d\n",z+x);
+	}
+}

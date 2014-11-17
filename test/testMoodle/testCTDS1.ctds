@@ -1,0 +1,144 @@
+/* Contiene los casos de test para el compilador C-TDS
+ * Necesita el archivo libtestCTDS.c
+ * en el archivo output1 se encuentran las salidas esperadas
+ * */
+
+class testing{
+
+  int global;
+
+  void ochoparametrosInt(int a, int b, int c, int d, int e, int f, int g, int h){
+      int c1;
+      c1 = a + b + c + d + e + f + g + h+global;
+      global = 1000;
+      externinvk("print_int",void,c1);
+      return; 
+  } 
+
+  void ochoparametrosFloat(float a, float b, float c, float d, float e, float f, float g, float h){
+      float c1;
+      c1 = a + b + c + d + e + f + g + h;
+      externinvk("print_float",void,c1);
+      return; 
+  } 
+     
+  void ochoparametrosMixtos(int a, float b, int c, float d, int e, float f, int g, float h){
+      int c1;
+      float c2;
+      c1 = a + c + e + g + global;
+      c2 = b + d + f + h;
+      global = 10000;
+      externinvk("print_int",void,c1); 
+      externinvk("print_float",void,c2);
+      return; 
+  } 
+
+
+// funcion main 
+void main (){
+       
+    int v, i, c1,c2,c3; 
+	externinvk("init_input",void,"input1"); 
+
+    global = 100;
+
+    i = 0;
+    v = 11;
+    for c1=1 , v {      
+      for c2=1 , v {
+        for c3=1 , v {      
+          i = i +1;
+        }    
+      }
+    } 
+    externinvk("print_int",void,i);             
+
+  { int i1,i2,i3;
+
+    i1 = 0;
+    i2 = 0;
+    i3 = 0; 
+    
+    for c1=1 , v {      
+      for c2=1 , v {
+        break;  
+        for c3=1 , v {      
+          i3 = i3+1;
+        }
+        i2 = i2+1;    
+      }
+      i1 = i1+1;
+    } 
+    externinvk("print_int",void,i1);
+    externinvk("print_int",void,i2);
+    externinvk("print_int",void,i3);
+  } 
+
+  { int i1,i2,i3;
+    int c1,c2,c3;
+
+    i1 = 1;
+    i2 = 1;
+    i3 = 1; 
+    c1 = i1;
+    c2 = i2;
+    c3 = i3;
+    v = 10;
+    
+    while (c1<v){      
+      while (c2<v){          
+        while (c3<v){       
+          i3 = i3+1;
+          c3 = c3+1;
+        }
+        i2 = i2+1;
+        c2 = c2+1;    
+      }
+      i1 = i1+1;
+      c1 = c1+1;
+     
+      { int i1,i2,i3;
+        int c1,c2,c3;
+        int v;
+
+        i1 = 100;
+        i2 = 100;
+        i3 = 100; 
+        c1 = i1;
+        c2 = i2;
+        c3 = i3;
+        v = 1000;
+    
+        while (c1<v){      
+          while (c2<v){          
+            break;
+            while (c3<v){       
+              i3 = i3+1;
+              c3 = c3+1;
+            }
+            i2 = i2+1;
+            c2 = c2+1;    
+          }
+          i1 = i1+100;
+          c1 = c1+100;
+          continue;
+        } 
+        externinvk("print_int",void,i1);
+        externinvk("print_int",void,i2);
+        externinvk("print_int",void,i3);
+     }
+    } 
+    externinvk("print_int",void,i1);
+    externinvk("print_int",void,i2);
+    externinvk("print_int",void,i3);
+  } 
+
+  ochoparametrosInt(1,2,3,4,5,6,7,8); 
+
+  ochoparametrosFloat(1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0); 
+
+  ochoparametrosMixtos(10,11.0,20,22.0,30,33.0,40,44.0); 
+
+} // endmain
+
+}

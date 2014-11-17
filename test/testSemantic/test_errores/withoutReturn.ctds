@@ -1,0 +1,17 @@
+/*Invocamos a un metodo en una expresion, el mismo deberia devolver un valor, pero no lo hace ya que es void*/
+class withoutReturn{
+	
+	void anterior(int a){
+		a-=1;
+	} 
+
+	int main(){
+int a;
+a=2;
+a=anterior(a); //anterior no retorna nada, es void
+externinvk("printf",int,a);
+	
+return 1;
+	}
+
+}

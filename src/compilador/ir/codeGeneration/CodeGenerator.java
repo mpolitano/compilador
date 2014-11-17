@@ -141,7 +141,7 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination(); 
 		//code for return in location
 		switch(l.getType()){//TODO defined the other cases
-			case INT: pw.println("movl %eax, "+l.toAsmCode()); break;
+			case INT: case BOOLEAN: pw.println("movl %eax, "+l.toAsmCode()); break;
 			case FLOAT: pw.println("movss %xmm0, "+l.toAsmCode()); break;
 
 		}
@@ -404,7 +404,7 @@ public class CodeGenerator{
 	private static void genRetAsmCode(TAInstructions instr){
 		Expression expr=instr.getOp1();
 		switch(expr.getType()){
-			case INT: pw.println("movl "+ expr.toAsmCode() +", %eax" );break;//Int return in eax	
+			case INT: case BOOLEAN: pw.println("movl "+ expr.toAsmCode() +", %eax" );break;//Int return in eax	
 			case FLOAT:pw.println("movss "+expr.toAsmCode() + ", %xmm0"); break;	
 		}
 	}
@@ -494,7 +494,7 @@ public class CodeGenerator{
 		RefLocation l= instr.getDestination(); 
 		//code for return in location
 		switch(l.getType()){
-			case INT: pw.println("movl %eax, "+l.toAsmCode()); break;
+			case INT: case BOOLEAN: pw.println("movl %eax, "+l.toAsmCode()); break;
 			case FLOAT: pw.println("movss %xmm0, "+l.toAsmCode()); break;
 		}
 		pushFloat=0;

@@ -1,0 +1,22 @@
+/*test que deberia fallar ya que la clase no contiene main*/
+class sinMain{
+
+int suma(int a, int b){
+	a=a+b ;
+	return a;
+}
+
+int resta(int a, int b){
+	a=a-b;
+	return a;
+}
+
+int mult (int a, int b){
+	return a*b;
+}
+
+int masUno (int a){
+	return a+1;
+}
+
+}
