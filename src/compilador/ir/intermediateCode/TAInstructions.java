@@ -5,6 +5,8 @@ public class TAInstructions{
 	public enum Instr {
 	//Instruction for define a program
 	ProgramDecl,
+	//Instructions for indicate a block declaration
+	BlockBegin, BlockEnd,
 	//Instructions for define label and methods
 	MethodDecl, MethodDeclEnd,LocationDecl,	
 	//Statement instructios
@@ -93,6 +95,8 @@ public class TAInstructions{
 		String labelOp;
 		switch (inst){
 			case ProgramDecl: labelOp= "ProgramDecl"; break;
+			case BlockBegin: labelOp= "BlockBegin";break;
+			case BlockEnd: labelOp="BlockEnd";break;
 			case MethodDecl: labelOp= "MethodDecl";break;
 			case MethodDeclEnd:labelOp= "MethodDeclEnd";break;
 			case LocationDecl: labelOp= "LocationDecl " + op1.getType();break;
