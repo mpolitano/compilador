@@ -10,12 +10,14 @@ public class CodeGenerator{
     private static PrintWriter pw=null;
     private static int numberLabel=0;
     private static	int pushFloat=0;
-		
-	public static void generateCode(List<TAInstructions> program, String path){
+	private static boolean frameOptimization; //flag for make frame optimization or not
+
+	public static void generateCode(List<TAInstructions> program, String path,boolean my_frameOptimization){
     	try
     	{
         	f = new FileWriter(path);
         	pw = new PrintWriter(f);
+        	frameOptimization=my_frameOptimization;
         	for(TAInstructions instr: program){
         		generateAsmCode(instr);
         	}
@@ -32,6 +34,8 @@ public class CodeGenerator{
 	private static void generateAsmCode(TAInstructions instr){
 		switch(instr.getInstruction()){
 			case ProgramDecl: genProgramAsmCode(instr); break;
+			case BlockBegin: genBlockBeginAsmCode(instr);break;
+			case BlockEnd: genBlockEndAsmCode(instr);break;
 			case LocationDecl: genLocationDeclAsmCode(instr); break;
 			case MethodDecl: genMethodDeclAsmCode(instr); break;
 			case MethodDeclEnd: genMethodDeclEndAsmCode(instr); break;
@@ -86,6 +90,28 @@ public class CodeGenerator{
 		pw.println(".file \""+instr.getOp1().toString()+ "\"");
 	}
 
+	private static void genBlockBeginAsmCode(TAInstructions instr){
+		if (frameOptimization){
+			IntLiteral offset= (IntLiteral)instr.getOp1();
+				switch(offset.getValue()%16){
+					case 4: offset.setValue(offset.getValue()+12);
+							break;
+					case 8: offset.setValue(offset.getValue()+8);
+							break;
+					case 12:offset.setValue(offset.getValue()+4);
+							break;
+				}	
+			pw.println("subq "+offset.toAsmCode()+" ,%rsp");
+		}
+	}
+
+	private static void genBlockEndAsmCode(TAInstructions instr){
+		if (frameOptimization){
+			IntLiteral offset= (IntLiteral)instr.getOp1();
+			pw.println("addq "+offset.toAsmCode()+" ,%rsp");
+		}
+	}
+
 	private static void genLocationDeclAsmCode(TAInstructions instr){
 		Location l= (Location) instr.getOp1();
 		switch (l.getOffset()){
@@ -104,7 +130,7 @@ public class CodeGenerator{
 		//if (! m.getFloat())
 		//	pw.println("enter $"+ numEnter+",$0"); 
 		//else{
-			//if ((numEnter % 16)!=0){
+			if (!frameOptimization){
 				switch(numEnter%16){
 					case 4: suma=numEnter+12;
 							pw.println("enter $"+ suma+",$0");break;
@@ -114,9 +140,9 @@ public class CodeGenerator{
 							pw.println("enter $"+ suma+",$0");break;
 					case 0: pw.println("enter $"+ numEnter+",$0");break; 	
 				}
-			//} 
-			//else{
-				//pw.println("enter $"+ numEnter+",$0"); //}
+			} 
+			else
+				pw.println("enter $0,$0"); //}
 		//}
 	}
 
