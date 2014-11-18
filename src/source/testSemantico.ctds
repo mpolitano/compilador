@@ -1,0 +1,16 @@
+class Nando{
+
+int method(int a){
+	a=a+3;
+}
+int main(){
+	int i;
+	float f;
+	if (true){
+		f=i+f;
+		i=10 + method(i);
+	}
+}
+}
+
+TAC: [MethodDecl Op1: method , AddI Op1: a Op2: 3 Destination: 1 , Assign Op1: 1 Destination: a , MethodDeclEnd Op1: method , MethodDecl Op1: main , PutLabel Op1: if 5 , ToFloat Op1: i Destination: 6 , AddF Op1: 6 Op2: f Destination: 6 , Assign Op1: 6 Destination: f , ParamPush Op1: i , Call Op1: method Destination: 10 , ParamPop Op1: i , AddI Op1: 10 Op2: 10 Destination: 12 , Assign Op1: 12 Destination: i , PutLabel Op1: endif 5 , MethodDeclEnd Op1: main ]
