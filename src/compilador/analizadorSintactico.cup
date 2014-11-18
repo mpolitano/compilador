@@ -138,45 +138,6 @@ parser code{:
         System.exit(1); //Interrumpo la ejecucion
     }
   
-
-    //Metodo main para ejecutar el analizador lexico sintactico y semantico
-    public static void main(String[] args){
-        try {
-            parser a = new parser(new AnalizadorLexico( new FileReader(args[0])));
-            Program result = (Program)a.parse().value;
-            TypeCheckVisitor typeCheckVisitor= new TypeCheckVisitor();
-            result.accept(typeCheckVisitor);
-            BreakContinueCheckVisitor breakCheckVisitor= new BreakContinueCheckVisitor();
-            result.accept(breakCheckVisitor);
-            ConstPropVisitor propConst= new ConstPropVisitor();
-            result.accept(propConst);
-            int sizeErrorType = typeCheckVisitor.getErrors().size();
-            int sizeErrorBreak= breakCheckVisitor.getErrors().size();
-            if (sizeErrorType==0 && sizeErrorBreak==0) {
-                System.out.println("---- PARSER COMPLETADO!! ------");
-                TACVisitor coding= new TACVisitor();
-                result.accept(coding);
-                System.out.println("TAC: "+coding.getTAC().toString());  
-              //  FrameOptimization frameOptimizator= new FrameOptimization();
-                //result.accept(frameOptimizator);
-                CodeGenerator.generateCode(coding.getTAC(),args[1],false);
-            }else{
-              if (sizeErrorBreak!=0){
-                System.out.println(breakCheckVisitor.getErrors().toString());
-              }else{
-                if (sizeErrorType!=0){
-                System.out.println(typeCheckVisitor.getErrors().toString());
-              }else{
-                System.out.println(breakCheckVisitor.getErrors().toString());
-                System.out.println(typeCheckVisitor.getErrors().toString());
-              }
-            }
-          }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
 :}
 
 init with {:               
