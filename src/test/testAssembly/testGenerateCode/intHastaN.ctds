@@ -1,0 +1,21 @@
+class enterosHastaN {
+
+    int hastaN(int n) {
+        int i;
+        int acum;
+        acum = 0;
+        for i=0, n {
+            acum = acum + i;
+            externinvk("printf",void,"itereacion numero: %d \n", i);
+        }
+        return acum;
+    }
+
+    void main() {
+        int a;
+        int result;
+        a = 10;
+        result = hastaN(a);
+        externinvk("printf",void,"la suma de los primeros numeros %d es: %d \n", a, result);
+    }
+}

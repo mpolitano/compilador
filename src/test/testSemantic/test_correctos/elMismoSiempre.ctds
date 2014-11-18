@@ -1,0 +1,40 @@
+/*Test en el que redefino muchas veces la variable a, pero siempre en distintos bloques, no debe fallar*/
+
+class elMismoSiempre{
+
+	int cambioTipo(int a){
+		if (a==1) {
+			float a;
+			a=10.00;
+			if (a==10.00){
+				int a;
+				a=1;
+				if (a==1.00){
+					float a;
+					a=1002020.00;
+					return 2;				
+				}
+				return 1;			
+			}	
+			return 0;	
+		}if (a==2.00){
+			boolean a;
+			a = true;
+			return 3;		
+		}if (a==3){
+			int a[3];		
+			return 4;
+		}else{
+			float a[4];
+			return 5;		
+		}
+	}
+
+	int main(){
+		int a;
+		a=1;
+		externinvk("printf", int, cambioTipo(a));
+		return 1;
+	}
+
+}

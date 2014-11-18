@@ -1,0 +1,26 @@
+class test_prueba1{
+
+	int prueba ( int p) {
+		int a;
+		int f;
+		{
+			int b;
+			int c;
+			b=4;
+			c=5;
+			a= b*c;
+			p=a+p;
+		}
+		{
+			float pi;
+			pi=3.14;
+			f= 10;
+		}
+	return f;
+	}
+
+			int main(){
+		  externinvk("print_int", int , prueba(6));
+	}
+
+}

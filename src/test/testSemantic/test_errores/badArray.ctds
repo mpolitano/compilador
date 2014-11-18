@@ -1,0 +1,12 @@
+/*test en el que pruebo que el valor de n en un arreglo sea un intLiteral, debe fallar*/
+class badArray{
+
+ int main(){
+	float c[10];
+	boolean d[10];
+	int z[hola];
+
+	return 1;
+ }
+
+}

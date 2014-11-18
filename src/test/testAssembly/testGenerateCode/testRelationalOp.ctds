@@ -1,0 +1,109 @@
+class maxComunDivisor{	
+int main(){
+		int a,b;
+		a=-2;
+		b=3;
+		if(a<b){
+			externinvk("printf", void, "%d < %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d >= %d \n",a,b);
+		}
+
+		if(a<=b){
+			externinvk("printf", void, "%d <= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d > %d \n",a,b);
+		}   	
+
+		if(a>b){
+			externinvk("printf", void, "%d > %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d <= %d \n",a,b);
+		}
+
+		if(a>=b){
+			externinvk("printf", void, "%d >= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d < %d \n",a,b);
+		}
+
+		if(a==b){
+			externinvk("printf", void, "%d = %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d != %d \n",a,b);
+		}
+
+		if(a!=b){
+			externinvk("printf", void, "%d != %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d = %d \n",a,b);
+		}
+
+		a=-3;
+		if(a==b){
+			externinvk("printf", void, "%d = %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d != %d \n",a,b);
+		}
+		{
+		float a;
+		a=1.0;
+		}
+		if(a==b){
+			externinvk("printf", void, "%d = %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d != %d \n",a,b);
+		}
+		{
+		int a;
+		a=10;
+		}
+		if(a!=b){
+			externinvk("printf", void, "%d != %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d == %d \n",a,b);
+		}
+		b=124;
+		if(a<b){
+			externinvk("printf", void, "%d < %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d => %d \n",a,b);
+		}
+		{
+		b=42;
+		}
+		if(a<=b){
+			externinvk("printf", void, "%d <= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d > %d \n",a,b);
+		}
+
+		{
+			int c;
+			c=-1;
+			a=-1;
+			if(a==c){
+				externinvk("printf", void, "%d = %d \n",a,c);		
+			}else{
+				externinvk("printf", void, "%d != %d \n",a,c);
+			}
+		}
+
+		{
+		a=1;
+		}
+		if(a>=b){
+			externinvk("printf", void, "%d >= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d < %d \n",a,b);
+		}
+
+		if(a<=b){
+			externinvk("printf", void, "%d <= %d \n",a,b);		
+		}else{
+			externinvk("printf", void, "%d > %d \n",a,b);
+		}
+
+}
+
+}

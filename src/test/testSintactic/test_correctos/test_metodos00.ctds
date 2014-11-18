@@ -1,0 +1,14 @@
+class test_class{
+   float c;
+   int alo(int x){
+      x= x + 1;
+   }
+
+   void alo2(int x){
+      x=alo(x);
+      x=  alo(x) + 1;
+   }
+
+	void main(){}
+
+}

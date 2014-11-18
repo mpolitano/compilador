@@ -1,0 +1,24 @@
+/*redefino tres veces la variable a, debe fallar cuando la redefino con boolean, 
+ya que esta en el mismo bloque, en float no(distinto bloque)*/
+
+class tripleId{
+
+	int main(){
+		int a;
+		int b;
+		boolean a;
+		a=1;
+		b=2;
+		a=b+a;
+		a=true;
+		if (a){
+			float a= 0;	
+		}else{
+			float a= 1;
+		}
+		externinvk("printf", float, a);
+
+		return 1;
+	}
+
+}

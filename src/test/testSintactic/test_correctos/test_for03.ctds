@@ -1,0 +1,27 @@
+class test_for{
+
+int A[5] ;
+float B [56];
+boolean C[10];
+
+int pruArreglos(int b, int c ){
+
+        A[0] = 2; 
+        
+ 
+ 
+        for i = 5 , 6 { //semanticamente correcto aunq no termina ese ciclo
+               A[i] = i + 2;
+        }
+               return A[5];
+}
+
+int main(){
+
+    externinvk("print_int", int , pruArreglos(4,8 ));
+    
+    return 1;
+    
+}
+
+}

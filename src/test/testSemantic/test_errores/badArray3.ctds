@@ -1,0 +1,8 @@
+class badArray3{
+	
+	void main () {
+		int a[10];
+		int b[a]; //error, no esta permitido en el lenguaje
+	}
+
+}
