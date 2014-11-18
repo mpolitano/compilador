@@ -1,0 +1,480 @@
+import java_cup.runtime.*;
+import java.io.FileReader;
+import ir.ast.*;
+import java.util.*;
+import ir.ASTVisitor;
+import ir.semcheck.TypeCheckVisitor;
+import ir.semcheck.BreakContinueCheckVisitor;
+import ir.intermediateCode.TACVisitor;
+import ir.codeGeneration.*;
+import ir.optimization.*;
+//{: symTable=new SymbolTable(); symTable.pushLevel(); symTable.addSymbolToLevel(ID); :}   
+/* Codigo del parser, se copia integramente a la clase final.
+    Agregamos el manejo de errores. */
+
+action code {:
+//Global variables   
+    private SymbolTable symTable= new SymbolTable(); //Symbol Table for check location(variables, methods) definition(not redefinition), invocation and referencing    
+    private boolean inMethodDecl;//Flag for drive Symbol Table level 
+    private int cantMain; //Amount of mehods with "Main" label for check that there is a only definition. 
+    private int paramaterMain; //Amount of parameters that has a method with label "Main"
+    private int methodOffset;
+
+//Method for report error and information about this
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof Location) {
+                m.append(" in line "+ (((Location)info).getLineNumber()+1));
+                m.append(", column "+ (((Location)info).getColumnNumber()+1));
+        }
+        m.append(" : "+message);
+        System.out.println(m + " " + ((Location)info).toString());
+        System.exit(1); //Interrumpo la ejecucion
+    }
+
+    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
+the followings will be in the stack*/
+//Este metodo le dice a cada metodo definido en el .ctds donde va a estar cada uno de sus parametros
+    private void setParametersOffset(List<Location> listParameters){
+      /*
+        //Remember that address has 64 bits.
+        STACK representation
+        
+        -
+        Local Var= rbp+4*(amount of parameters+1)
+        Firsts 1..6 Arguments(are passed into register and then saved in stack)
+        last rbp= rbp(acces last ebp as rbp) 
+        dir retorno =rbp+8 
+        7.. Arguments= rpb+16
+        +
+
+      */
+
+      //clone listparameters
+      LinkedList<Location> auxiliaryList=new LinkedList<Location>();
+      for(Location l: listParameters)
+        auxiliaryList.add(l);
+      
+      int i=0;
+      int offset=-4;
+      int commonRegister=1;
+      int coprocessorRegister=1;
+      while (commonRegister<=6 && coprocessorRegister<=6 && auxiliaryList.size()>0){//while have parameters for assign offset, and have registers for any type make the offset assignation        
+        if (auxiliaryList.peek().getType()== Type.FLOAT){//consult about the type of the curren't elemen type 
+          auxiliaryList.pop().setOffset(offset);//will passed as parameters in coprocessor register
+          coprocessorRegister++;
+        }else{ 
+              auxiliaryList.pop().setOffset(offset);//will passed as parameters in common register
+              commonRegister++;
+             }
+         offset=offset-4;    
+         i++; 
+      }  
+      //case there are common register without assign
+      i=auxiliaryList.size();
+      List<Location> parametersWithOutOffset=new LinkedList<Location>();
+      while(commonRegister<=6 && i>0){//agoto registros comunes
+            if(auxiliaryList.peek().getType()!= Type.FLOAT){ 
+              auxiliaryList.pop().setOffset(offset); //will passed as parameters in common register
+              commonRegister++;
+              offset=offset-4;
+            }else
+               parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+        }
+       //case there are coprocesor registers without assign
+        auxiliaryList.addAll(parametersWithOutOffset);
+        i=auxiliaryList.size();
+        parametersWithOutOffset=new LinkedList<Location>();
+        while(coprocessorRegister<=8 && i>0){//agoto registros del coprocesador
+              if(auxiliaryList.peek().getType()== Type.FLOAT){ 
+                auxiliaryList.pop().setOffset(offset);//will passed as parameters in coprocessor register
+                coprocessorRegister++;
+                offset=offset-4;
+              }else
+                 parametersWithOutOffset.add(auxiliaryList.pop()); //put in list the location without offset
+            i--;
+          }
+      //case there aren't more registers for assign  
+      auxiliaryList.addAll(parametersWithOutOffset);
+      offset=16;//since there aren't more registers for parameters, put these in stack. 
+      while(auxiliaryList.size()>0){
+           auxiliaryList.pop().setOffset(offset);
+           offset= offset+4;
+      }          
+    }
+
+    private int countOffsetForSaveParam(List<Location> listParameters){
+      int cantParamsWillPassedInCommonRegister=0;
+      int cantParamsWillPassedInCoprocessorRegister=0;
+      for(Location l: listParameters)
+        if (l.getType()==Type.FLOAT) //if is passed into a register
+          cantParamsWillPassedInCoprocessorRegister++;
+        else
+          cantParamsWillPassedInCommonRegister++;
+
+     if (cantParamsWillPassedInCommonRegister>6) cantParamsWillPassedInCommonRegister=6;
+     if (cantParamsWillPassedInCoprocessorRegister>8) cantParamsWillPassedInCoprocessorRegister=8;
+
+      return cantParamsWillPassedInCommonRegister + cantParamsWillPassedInCoprocessorRegister;
+    }
+:}
+
+parser code{:    
+
+    //Method for report sintax error and information about this
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {                
+                m.append(" in line "+(s.left+1));
+                if (s.right >= 0)
+                    m.append(", column "+(s.right+1));
+            }
+        }
+        m.append(" : "+message);
+        System.out.println(m + "  " + info.toString());
+        System.exit(1); //Interrumpo la ejecucion
+    }
+  
+:}
+
+init with {:               
+             //We Can't use this block for parser variables inicialization, we should do this in a extra-rule called "begin"
+          :}
+
+  
+   
+// Terminales (tokens obtenidos por el analizador lexico).  
+
+terminal  CLASS,ELSE,FOR, IF,WHILE, UMINUS,
+          PARENIZQ, PARENDER, COMA,LLAB, LLCER, CORAB, CORCER,EXTERNINVK;
+
+terminal Location ID;
+terminal Type RESERV_BOOLEAN, RESERV_INT, RESERV_FLOAT, VOID;
+terminal IntLiteral INT;
+terminal SecStmt PUNTOCOMA;
+terminal AssignOpType ASSIGSUB,ASSIG,ASSIGPLUS;
+terminal StringLiteral STRING;
+terminal FloatLiteral FLOAT;
+terminal BooleanLiteral TRUE,FALSE;
+terminal BinOpType  LOWEREQUAL,HIGHEREQUAL, HIGHER,LOWER,PLUS,SUB,MULT,DIVI,MOD, EQUAL,DIFFERENT, OR, AND;
+terminal UnaryOpType NEG;
+terminal BreakStmt BREAK;
+terminal ContinueStmt CONTINUE;
+terminal ReturnStmt RETURN;
+
+
+// No Terminales (producciones).  
+                        
+non terminal Program BEGIN, PROGRAM;
+non terminal Type TYPE;
+non terminal LinkedList<Location> FIELD_PLUS;   
+non terminal Location FIELD;
+non terminal RefLocation LOCATION; 
+non terminal LinkedList<Location> FIELD_DECL_STAR, FIELD_DECL;
+non terminal LinkedList<MethodLocation> METHOD_DECL_STAR;
+non terminal MethodLocation METHOD_DECL;
+non terminal Block BLOCK;
+non terminal LinkedList<Location> PARAMETERS, PARAMETER_PLUS;
+non terminal Location PARAMETER;
+non terminal LinkedList<Statement> STATAMENT_STAR;
+non terminal Statement STATAMENT;
+non terminal Block ELSE_OPTIONAL;
+non terminal AssignOpType ASSING_OP;
+non terminal Expression EXPR, EXPR_OPTIONAL,EXTERNINVK_ARG;
+non terminal CallExpr METHOD_CALL;
+non terminal LinkedList<Expression> EXPR_COMA_OPTIONAL,EXPR_PLUS,EXTERNINVK_OPTIONAL, EXTERNINVK_PLUS;
+non terminal Literal LITERAL;
+non terminal BooleanLiteral BOOLEAN;
+// -------------Seccion de predencia y asociacion de los terminales----------- 
+
+precedence left AND, OR;
+precedence nonassoc EQUAL,DIFFERENT,HIGHER, LOWER, LOWEREQUAL, HIGHEREQUAL;
+precedence left PLUS, SUB;             
+precedence left MULT, DIVI, MOD;      
+precedence right UMINUS;   
+
+// ------------------- Seccion de la gramatica ------------------------ 
+   
+// La gramatica 
+
+
+start with BEGIN;
+
+BEGIN ::=     {:symTable= new SymbolTable();
+               symTable.pushLevel(); //Push "global" level 
+               inMethodDecl= false; //set flag inMethodDecl 
+               cantMain=0;
+               methodOffset=0;
+              :} PROGRAM:p{:RESULT=p;:} ;
+
+PROGRAM ::=             CLASS ID:ide LLAB FIELD_DECL_STAR:listField METHOD_DECL_STAR:listMehod LLCER {: 
+                                  if(cantMain==0){
+                                    report_error("Problem Main ", ide);//Program must has a Mehod declaration          
+                                  }
+                                  for(Location l: listField){//Set offset to global location 
+                                    l.setOffset(0);//0 mean that location l has a global scope, it won't be in stack
+                                  }
+                                  RESULT= new Program(ide.getId(),listField, listMehod);
+                                :}
+              					| CLASS ID:ide LLAB METHOD_DECL_STAR:listMehod LLCER{: 
+                                  if(cantMain==0 ){
+                                    report_error("Prom Main ", ide);//Program must has a Mehod declaration                    
+                                  }
+                                  RESULT= new Program(ide.getId(),new LinkedList<Location>(), listMehod);
+                                :};
+
+FIELD_DECL_STAR ::=     FIELD_DECL_STAR:fieldList FIELD_DECL:f {:fieldList.addAll(f); RESULT=fieldList;:}
+                        |FIELD_DECL:f{:RESULT= new LinkedList<Location>(f);:};
+
+FIELD_DECL  ::=	        TYPE:t FIELD_PLUS:decl {:
+                                                for (Location id:decl){
+                                                  if(id instanceof VarLocation){ 
+                                                    id.setType(t);                       
+                                                  }else{//id instance of ArrayLocation     
+                                                    id.setType(t.toArray());
+                                                    if (((ArrayLocation) id).getSize().getValue()<=0){
+                                                      report_error("Wrong number for Array Size: ", id);                      
+                                                    }
+                                                  } 
+                                                  if(!symTable.addSymbolToLevel(id)){//add Location to SymbolTable
+                                                    report_error("Symbol Redefine: ", id);          
+                                                  }
+                                                }                                              
+                                                RESULT=decl;
+                                               :};
+
+FIELD_PLUS ::=	        FIELD:f COMA  FIELD_PLUS:listId {:listId.add(f); RESULT=listId; :} 
+                        | FIELD:f PUNTOCOMA {: LinkedList<Location> listId=new LinkedList<Location>();listId.add(f);RESULT=listId;:};
+
+FIELD ::=               ID:ide CORAB INT:i CORCER {:RESULT= new ArrayLocation(ide.getId(),ide.getLineNumber(),ide.getColumnNumber(),-1,i);:} //define a array's identifier
+					              |ID:ide {: RESULT=ide; :};
+
+
+METHOD_DECL_STAR  ::=   METHOD_DECL:m METHOD_DECL_STAR:listMehod {: listMehod.addFirst(m); RESULT=listMehod;:}
+                        | {:RESULT= new LinkedList<MethodLocation>();:};
+
+METHOD_DECL ::= 	       TYPE:t ID:ide 
+                         {:
+                       
+                          inMethodDecl=true; //Set true flag inMethodDecl for drive levels
+                          MethodLocation newMethod= new MethodLocation(ide.getId());
+                          newMethod.setType(t);//Set return type to method identifier
+                          if(!symTable.addSymbolToLevel(newMethod)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                            report_error("Method Redefine: ",newMethod);
+                          }
+                          symTable.pushLevel();//push this method's level
+                          symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                          symTable.pushLevel();
+                        :} 
+                        PARENIZQ PARAMETERS:listParameters{:methodOffset=-(countOffsetForSaveParam(listParameters)*4);:}  PARENDER BLOCK:body
+                        {:
+                        if (ide.getId().equals("main")){
+                            cantMain++;
+                            if (listParameters.size()!=0){
+                              report_error("Parameter in main :" ,ide);
+                            }
+                          }
+                          MethodLocation newMethod=(MethodLocation) symTable.getByIde(ide.getId());
+                          newMethod.setParameters(listParameters);
+                          setParametersOffset(listParameters);
+                          newMethod.setBody(body);
+                          newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
+                          methodOffset=0;//restart methodoffset for next method                            
+                          RESULT= newMethod; 
+                        :}
+                        | VOID:t ID:ide {:
+                                        
+                                        inMethodDecl=true; //Set true flag inMethodDecl for drive levels
+                                        MethodLocation newMethod= new MethodLocation(ide.getId());
+                                        newMethod.setType(t);//Set return type to method identifier
+                                        if(!symTable.addSymbolToLevel(newMethod)){//add symbol to current level for forbid declarate other symbol with same name, and check if it isn't refifined
+                                          report_error("Method Redefine: ",newMethod);
+                                        }
+                                        symTable.pushLevel();//push this method's level
+                                        newMethod.setType(t);
+                                        symTable.addSymbolToLevel(newMethod);//Add symbol to a method's level for forbid declarate variable with same name in method's block
+                                        symTable.pushLevel();
+                                      :} 
+                                      PARENIZQ PARAMETERS:listParameters{:methodOffset=-(countOffsetForSaveParam(listParameters)*4);:}  PARENDER BLOCK:body
+                                                                        {: 
+                                                                          if (ide.getId().equals("main")){
+                                                                             cantMain++;
+                                                                               if (listParameters.size()!=0){
+                                                                                report_error("Parameter in main : " ,ide);
+                                                                              }
+                                                                         }   
+                                                                          MethodLocation newMethod= (MethodLocation) symTable.getByIde(ide.getId());
+                                                                          newMethod.setParameters(listParameters);
+                                                                         setParametersOffset(listParameters);
+                                                                          newMethod.setBody(body);                                                                          
+                                                                          newMethod.setOffset(methodOffset);//set method offset, save offset for parameters pass into register and local variables
+                                                                          methodOffset=0;//restart methodoffset for next method                            
+                                                                          RESULT= newMethod;
+                                                                        :};
+
+
+PARAMETERS ::=          PARAMETER_PLUS:parametersList {:RESULT=parametersList;:}
+                        | {:RESULT=new LinkedList<Location>();:};
+					
+
+PARAMETER_PLUS  ::=     PARAMETER:p COMA PARAMETER_PLUS:parametersList {:parametersList.addFirst(p);RESULT=parametersList;:} 
+                        | PARAMETER:p {:LinkedList<Location> parametersList= new LinkedList<Location>(); parametersList.add(p); RESULT=parametersList;:} ;
+
+
+PARAMETER ::=	          TYPE:t ID:ide {:symTable.addSymbolToLevel(ide); ide.setType(t);RESULT=ide;:};
+  
+BLOCK  ::=              LLAB
+                            {:
+                              if(!inMethodDecl){
+                                                symTable.pushLevel();
+                                               }else{inMethodDecl=false;} 
+                            :} 
+                            FIELD_DECL_STAR:listField STATAMENT_STAR:listStatament LLCER
+                            {:
+                               symTable.popLevel();
+                               for(Location l: listField){//Set offset for local block labels
+                                  if (l instanceof VarLocation){
+                                    methodOffset= methodOffset-4;
+                                    l.setOffset(methodOffset);
+                                  }else{//intanceof ArrayLocation
+                                          methodOffset= methodOffset-4;//save place for first position of array
+                                          l.setOffset(methodOffset);
+                                          methodOffset= methodOffset - ((4* ((ArrayLocation)l).getSize().getValue())) ; //save place for 2..n position of array
+                                       }                                                                   
+                               }
+                               RESULT= new Block(-1,listField,listStatament); 
+                            :}
+                        
+                       |LLAB {:
+                              if(!inMethodDecl){
+                                  symTable.pushLevel();
+                              }else{inMethodDecl=false;}
+                            :}
+                            STATAMENT_STAR:listStatament LLCER {:
+                                                    symTable.popLevel(); 
+                                                    RESULT= new Block(-1,listStatament); 
+                                                 :};
+
+
+STATAMENT_STAR  ::=     STATAMENT:s STATAMENT_STAR:listStatament {: listStatament.addFirst(s); RESULT=listStatament;:} 
+            						| {:RESULT=new LinkedList<Statement>(); :};
+
+
+TYPE::=                 RESERV_INT:t {:RESULT=t;:}|RESERV_BOOLEAN:t {:RESULT=t;:}|RESERV_FLOAT:t {:RESULT=t;:};
+
+
+BOOLEAN  ::=            TRUE:t{:RESULT= t;:} | FALSE:f{:RESULT= f;:} ;
+
+
+STATAMENT ::= 	        LOCATION:id ASSING_OP:op EXPR:expr PUNTOCOMA{:RESULT= new AssignStmt(id,op,expr,expr.getLineNumber(),expr.getColumnNumber());:}
+                				| METHOD_CALL:method PUNTOCOMA{:if (method instanceof MethodCallExpr){ RESULT= new  MethodCallStmt(((MethodCallExpr)method).getMethod(), ((MethodCallExpr)method).getArguments()); RESULT.setLineNumber(method.getLineNumber());RESULT.setLineNumber(method.getLineNumber());}
+                                                        else{ RESULT= new ExterninvkCallStmt(((ExterninvkCallExpr)method).getMethod(), ((ExterninvkCallExpr)method).getArguments());}
+                        :}
+                				| IF PARENIZQ EXPR:boolExpr PARENDER BLOCK:b ELSE_OPTIONAL:else_optional{:RESULT= new IfStmt(boolExpr,b,else_optional,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
+                				| FOR ID:id ASSIG EXPR:iexpr COMA EXPR:fexpr{:symTable.pushLevel(); id.setType(Type.INT);symTable.addSymbolToLevel(id);methodOffset= methodOffset-4;id.setOffset(methodOffset);inMethodDecl=true;:} BLOCK:body {:body.addField(id);RESULT= new ForStmt(new RefVarLocation(((VarLocation)id),id.getLineNumber(),id.getColumnNumber()),iexpr,fexpr,body,id.getLineNumber(),id.getColumnNumber());:}
+              			    | WHILE EXPR:boolExpr BLOCK:body{:RESULT= new WhileStmt(boolExpr,body,boolExpr.getLineNumber(),boolExpr.getColumnNumber());:}
+              			    | RETURN:rt EXPR_OPTIONAL:expr PUNTOCOMA{:rt.setExpression(expr); RESULT=rt ;:} 
+              			    | BREAK:br PUNTOCOMA{:RESULT= br;:}
+              			    | CONTINUE:cnt PUNTOCOMA{:RESULT= cnt;:}
+              			    | PUNTOCOMA:s{:RESULT=s;;:}
+              			    | BLOCK:b {:RESULT=b;:};
+
+
+ELSE_OPTIONAL  ::=      ELSE BLOCK:b{:RESULT= b;:}
+			               		|{:RESULT= null;:} ;					
+
+EXPR_OPTIONAL  ::=	   EXPR:expr {:RESULT=expr;:}
+					             | {:RESULT=null;:};  
+
+
+ASSING_OP  ::=         ASSIG:asign{: RESULT=asign;:} | ASSIGPLUS:asign {: RESULT=asign;:}| ASSIGSUB:asign{: RESULT=asign;:} ;
+
+
+METHOD_CALL  ::=       ID:id PARENIZQ EXPR_COMA_OPTIONAL:actualParametersList PARENDER
+                      {: 
+                        Location m=symTable.getByIde(id.getId());
+                        if (m==null){
+                          report_error("Method not defined: ",id);//If methods could't be find in this level or upper level, it can't be invoke     
+                        }else{
+                              if (!(m instanceof MethodLocation)){
+                                report_error("Label isn't a method in this scope:",id);
+                              }else{
+                                    RESULT= new MethodCallExpr(((MethodLocation)m),actualParametersList,id.getLineNumber(),id.getColumnNumber());
+                                  }
+                              }    
+                      :}                          
+              				|EXTERNINVK PARENIZQ STRING:name COMA VOID:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:} 
+              				|EXTERNINVK PARENIZQ STRING:name COMA TYPE:t EXTERNINVK_OPTIONAL:listParameters PARENDER{:RESULT= new ExterninvkCallExpr(name.getValue(),listParameters,t,name.getLineNumber(),name.getColumnNumber());:};
+
+
+EXPR_COMA_OPTIONAL  ::= EXPR_PLUS:listExpr{:RESULT=listExpr;:} 
+                        |{:RESULT= new LinkedList<Expression>();:};
+
+EXPR_PLUS  ::=          EXPR:expr COMA EXPR_PLUS:listExpr{:listExpr.addFirst(expr);RESULT=listExpr;:} 
+                        | EXPR:expr{:LinkedList<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:} ;
+
+EXTERNINVK_OPTIONAL ::= COMA EXTERNINVK_PLUS:listExpr{:RESULT= listExpr;:}
+                        |{: RESULT= new LinkedList<Expression>();:} ;
+
+EXTERNINVK_PLUS ::=	    EXTERNINVK_ARG:expr COMA EXTERNINVK_PLUS:listExpr{:listExpr.addFirst(expr);RESULT=listExpr;:} 
+                        | EXTERNINVK_ARG:expr{:LinkedList<Expression> listExpr=new LinkedList<Expression>(); listExpr.add(expr);RESULT=listExpr;:};
+
+
+EXTERNINVK_ARG ::=       EXPR:expr{:RESULT=expr;:} | STRING:str {:RESULT=str;:} ;
+
+LOCATION  ::=           ID:id
+                            {:
+                              Location l= symTable.getByIde(id.getId()); 
+                              if (l==null){
+                                report_error("Symbol not defined :",id);//If location could't be find in this level or upper level, it can't be refering     
+                              }else{
+                                if (l instanceof VarLocation)
+                                  RESULT=new RefVarLocation(((VarLocation)l),id.getLineNumber(),id.getColumnNumber());
+                                else report_error("Simbol isn't an Array Location  :",id);
+
+                              }                                                      
+                            :} 
+                        | ID:id CORAB EXPR:expr CORCER
+                          {:
+                              Location l= symTable.getByIde(id.getId()); 
+                              if (l==null){
+                                report_error("Symbol not defined :",id);
+                              }else{
+                                if(l instanceof ArrayLocation){RESULT= new RefArrayLocation(((ArrayLocation)l),id.getLineNumber(),id.getColumnNumber(),expr);}
+                                else{report_error("Simbol isn't an Array Location  :",id);};                               
+                              }                          
+                          :};
+
+
+EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
+                				| METHOD_CALL:m{:RESULT= m;:}
+                				| LITERAL:l{:RESULT= l;:}
+                				//| EXPR:lexpr BIN_OP:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Bin logical opertors
+                        | EXPR:lexpr OR:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+              			    | EXPR:lexpr AND:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Bin Relational Operator  
+                        | EXPR:lexpr HIGHER:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr HIGHEREQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr LOWER:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr LOWEREQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}  
+                        //Bin arithmetical operator  
+                        | EXPR:lexpr PLUS:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:} 
+                        | EXPR:lexpr SUB:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr MULT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr DIVI:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        | EXPR:lexpr MOD:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        //Equal op
+                        | EXPR:lexpr EQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+                        |EXPR:lexpr DIFFERENT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
+
+                        | SUB EXPR:expr{:if(expr instanceof FloatLiteral){((FloatLiteral)expr).setValue(-((FloatLiteral)expr).getValue()); RESULT=expr; }else RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
+              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS
+              			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
+
+
+LITERAL  ::=            INT:i {:RESULT=i;:}|BOOLEAN:b {:RESULT=b;:}|FLOAT:f {:RESULT=f;:} ; 
+
