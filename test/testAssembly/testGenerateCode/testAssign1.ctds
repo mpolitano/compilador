@@ -1,8 +1,0 @@
-class Nando{
-	int b;
-	int main(){
-		int a;
-		a=122;
-		b=2;
-	}
-}

@@ -1,9 +1,0 @@
-class badType{
-	int main(){
-		string cadena;  // el tipo string no existe
-		cadena="hola";
-		cadena= cadena ++ "mundo";
-
-		return 1;
-	}
-}

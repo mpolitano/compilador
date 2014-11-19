@@ -1,8 +1,0 @@
-   class factorialF{
-
-   int main(){
-   	int d;
-   	d=7;
-    externinvk("print_int",void,d%2);     // toma el resto del numero decimal
-        }
-        }
