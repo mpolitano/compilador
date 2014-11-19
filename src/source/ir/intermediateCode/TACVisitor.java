@@ -65,7 +65,8 @@ public TACVisitor(){
 									//Instruccion for assing result.
 									if (stmt.getLocation() instanceof RefArrayLocation){//todo resolve the semantic of +=
 										Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);//can be an IntLiteral or RefVarLocation
-										addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+										if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir)) //Check array access error in execution time
+											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation())); 
 									}else
 										addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 									return null;
@@ -75,7 +76,8 @@ public TACVisitor(){
 											addInstr(new TAInstructions(TAInstructions.Instr.AddF,stmt.getLocation(),result,result)); //decremento la expresion
 											if (stmt.getLocation() instanceof RefArrayLocation){
 												Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+												if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir)) //Check array access error in execution time
+													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 											}else
 												addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 											return null;
@@ -88,7 +90,8 @@ public TACVisitor(){
 										addInstr(new TAInstructions(TAInstructions.Instr.SubI,stmt.getLocation(),expr,result)); //decremento la expresion
 												if (stmt.getLocation() instanceof RefArrayLocation){
 													Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+													if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
+														addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 												}else
 													addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 												return null;
@@ -97,7 +100,8 @@ public TACVisitor(){
 										addInstr(new TAInstructions(TAInstructions.Instr.SubF,stmt.getLocation(),expr,result)); //decremento la expresion
 										if (stmt.getLocation() instanceof RefArrayLocation){
 											Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+											if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
+												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 										}else
 											addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 										return null;
@@ -105,7 +109,8 @@ public TACVisitor(){
 			case ASSIGN: 					
 							if (stmt.getLocation() instanceof RefArrayLocation){
 								Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-								addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,expr,dir,stmt.getLocation()));
+								if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
+									addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,expr,dir,stmt.getLocation()));
 							}else
 								addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
 							return null;
@@ -422,11 +427,27 @@ public TACVisitor(){
 		Expression dir= array.getExpression().accept(this);
 		RefVarLocation varArray= new RefVarLocation(Integer.toString(line),array.getLineNumber(),array.getColumnNumber(),array.getType().fromArray(),currentMethod.newLocalLocation());
 		stackBlocks.peek().addField(varArray.getLocation()); //add a new location to a block that cointaint it.
-		addInstr(new TAInstructions(TAInstructions.Instr.ReadArray,array,dir,varArray)); //ReadArray from destination
+		if(!errorArray(array,dir))//Check array access error in execution time
+			addInstr(new TAInstructions(TAInstructions.Instr.ReadArray,array,dir,varArray)); //ReadArray from destination
 		varArray.setType(array.getType().fromArray());//set new label with type
 		return varArray;
 	}	
 
+	//Return true if it is an error trying to access in an array's bad position
+	public boolean errorArray(RefArrayLocation array, Expression dir){
+		int sizeArray=((ArrayLocation)array.getLocation()).getSize().getValue();
+		int pos=((IntLiteral)dir).getValue();
+		if((sizeArray < pos) || (pos< 0)){
+			StringLiteral value=new StringLiteral("",-1,-1);
+			String label=".StringLiteral"+Integer.toString(stringLabel);//new string label for inform access bad array			
+			value.setValue(label+":\n \t"+".string \"Error:: Access to array Incorrect\"");
+			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+			stringLabel++;
+			addInstr(new TAInstructions(TAInstructions.Instr.ExitErrorArray, new StringLiteral(label,-1,-1))); //Instruction for report error and exit program
+			return true;
+		}	
+		return false;
+	}
 
 	public Expression visit(ArrayLocation array){
 		addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,array));

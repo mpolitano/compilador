@@ -82,6 +82,7 @@ public class CodeGenerator{
 			case ToFloat: genToFloatAsmCode(instr); break;
 			case ReadArray: genReadArrayAsmCode(instr);break;
 			case WriteArray: genWriteArrayAsmCode(instr);break;
+			case ExitErrorArray: genExitErrorAsmCode(instr);break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -655,7 +656,7 @@ ebp
 */
     public static void genReadArrayAsmCode(TAInstructions instr){//puedo hacerlo todo como C
     	ArrayLocation from= (ArrayLocation) ((RefArrayLocation)instr.getOp1()).getLocation();
-    	int arraySize= from.getOffset()-(from.getSize().getValue()*4);//calc the end of array. a[i] is acces as end(a)+ i*4   				
+    	int arraySize= from.getOffset()-(from.getSize().getValue()*4);//calc the end of array. a[i] is acces as end(a)+ i*4   	
     	switch(from.getOffset()){ 
     		case 0://array in static data segment		    			
 	    			pw.println("movl "+ instr.getOp2().toAsmCode()+ ", %eax");	    				
@@ -671,6 +672,14 @@ ebp
     				break;	
     }
 }
+//exit program, and print error.
+	public static void genExitErrorAsmCode(TAInstructions instr){
+			pw.println("movl " + instr.getOp1().toAsmCode() + ", %edi");
+			pw.println("movl $0, %eax");
+			pw.println("call print_string");
+			pw.println("call exit");	 
+	}
+
 // WriteArray expr, dir, location deja expr en location
     public static void genWriteArrayAsmCode(TAInstructions instr){
     	ArrayLocation dest= (ArrayLocation) ((RefArrayLocation)instr.getDestination()).getLocation();
