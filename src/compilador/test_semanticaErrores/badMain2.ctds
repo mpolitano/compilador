@@ -1,9 +1,0 @@
-class badMain2{
-
-	void main(){
-		int a;
-		a=2;
-		return a; //no se puede hacer un return dentro de un main
-	}
-
-}

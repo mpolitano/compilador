@@ -1,9 +1,0 @@
-class badMain{
-
-	int main(){
-		int a;
-		a=2;
-		// int main sin return
-	}
-
-}

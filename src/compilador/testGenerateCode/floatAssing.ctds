@@ -1,9 +1,0 @@
-class prueba1 {
-	void main(){
-		float z;
-		z=2.0;
-			externinvk("printf",void, "%f\n",z);
-	
-	}
-}
-

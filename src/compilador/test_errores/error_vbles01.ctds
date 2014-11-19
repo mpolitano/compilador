@@ -1,9 +1,0 @@
-class prueba3{
-   int fx;
-   void x(int x) { 
-    return;
-   }
-   main(int ){ //falta nombre parametro
-    return ;
-   }
-} 

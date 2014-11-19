@@ -1,8 +1,0 @@
-class badTypeAssig4{
-	int main(){
-		int a;
-		a=true; //error a es tipo int no boolean
-
-		return 1;
-	}
-}

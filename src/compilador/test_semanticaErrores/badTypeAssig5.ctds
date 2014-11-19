@@ -1,9 +1,0 @@
-
-class badTypeAssig5{
-	int main(){
-		boolean a;
-		a=10; //error a es tipo boolean no int
-
-		return 1;
-	}
-}
