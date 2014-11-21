@@ -156,7 +156,7 @@ public TACVisitor(){
 					stmt.getIfBlock().accept(this);
 					addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		
 			}else{
-					if ((((BooleanLiteral)expr).getValue()== true) && (stmt.getElseBlock()!=null)){
+					if (stmt.getElseBlock()!=null){
 						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, lif)); //put label for read only
 						stmt.getElseBlock().accept(this);
 						addInstr(new TAInstructions(TAInstructions.Instr.PutLabel, endif));		

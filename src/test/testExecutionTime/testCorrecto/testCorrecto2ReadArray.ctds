@@ -1,0 +1,11 @@
+class testCorrecto2ReadArray{
+	void main(){
+		int a[10];
+	if(false){
+		
+		a[123]=2;//no recorre este bloque.
+	}else{
+		a[1]=1	;
+	}
+	}
+}
