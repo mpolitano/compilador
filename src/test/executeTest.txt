@@ -1,4 +1,4 @@
-EJECUTAR LOS TEST.
+EJECUTAR LOS TEST de tiempo en ejecucicion.
 
 pararse en la carpeta del src del codigo.
 cd /compilador/src/source/
@@ -7,7 +7,7 @@ cd /compilador/src/source/
 PARA EJECUTAR Y CHEQUEAR EJEMPLOS HACER (desde la /src/compilador):
 
 SIN OPTIMIZACIONES 
-java parser ../test/testCheckTest.ctds ../test/a.s
+java Ctds ../test/testCheckTest.ctds ../test/a.s
 
 CON OPTIMIZACIONES (Las dos juntas):
 sh ../test/runCheckTestOptimazation.sh

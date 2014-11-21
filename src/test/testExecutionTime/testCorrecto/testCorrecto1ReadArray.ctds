@@ -1,0 +1,8 @@
+class testCorrecto2ReadArray{
+int a[10];
+	void main(){
+			externinvk("printf",void,"Pos 0 %d \n",a[1]); //todos ok los acceso.
+			externinvk("printf",void,"Pos 9 %d \n",a[8]);
+			externinvk("printf",void,"Pos 10 %d \n",a[9]);
+	}
+}
