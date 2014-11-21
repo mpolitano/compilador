@@ -1,5 +1,5 @@
 /*
-	Class that visit AST and generate a tree address code 
+	Class that visit AST and generate a tree address code from AST
 */
 
 package ir.intermediateCode;
@@ -124,6 +124,7 @@ public TACVisitor(){
 			Expression retExpr= stmt.getExpression().accept(this);
 			addInstr(new TAInstructions(TAInstructions.Instr.Ret, retExpr));
 		}
+		addInstr(new TAInstructions(TAInstructions.Instr.MethodDeclEnd, currentMethod));
 		return null;
 	}
 	
@@ -209,11 +210,6 @@ public TACVisitor(){
 	public Expression visit(ForStmt stmt){
 		Expression begin=stmt.getInitialValue();
 		Expression end= stmt.getFinalValue();
-		/*If begin and end expression are IntLiteral, we knows in compilation time 
-		if for's body will be executed or not. If never will be executed we don't generate code for its.*/
-		if ( begin instanceof IntLiteral && end instanceof IntLiteral ) 
-			if (((IntLiteral)begin).getValue() > ((IntLiteral)end).getValue())
-				return null;
 		//ForStmt make Three adrees code
 		RefLocation forVar=stmt.getId();
 		Expression initialValue= stmt.getInitialValue().accept(this);

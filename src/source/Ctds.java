@@ -34,14 +34,17 @@ public class Ctds{
 											case "-o":	
 											case "-pc": 
 																
-																ConstPropVisitor propConst= new ConstPropVisitor();
+																ConstPropVisitor propConst= new ConstPropVisitor();                                  
 																result.accept(propConst);					
+                                PruneUnreachableCode pruneUnreachableCode= new PruneUnreachableCode();
+                                result.accept(pruneUnreachableCode);
 																if (args[2].equals("-pc")){ result.accept(coding); break;}																																	
-											case "-f": 																	 
+                      case "-f": 																	 
   														 result.accept(coding);
 								               FrameOptimization frameOptimizator= new FrameOptimization();
 								               result.accept(frameOptimizator);
 															 makeFrameOptimization=true;
+
 							
 									}
 							 		CodeGenerator.generateCode(coding.getTAC(),args[1],makeFrameOptimization);									

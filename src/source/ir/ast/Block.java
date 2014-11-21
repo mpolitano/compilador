@@ -80,4 +80,8 @@ public class Block extends Statement {
 		field.add(l);
 	}
 
+	public void setStatements(List<Statement> statements){
+		this.statements=statements;
+	}
+
 }

@@ -10,7 +10,7 @@ Poscondition= All Expression that can be resolve in compilation time has been re
 
 Visit each node in AST and propagate constante in each expression. 
 Visitor's prune sub-tree that contain Expression only. Then in Three Addres Code Generation
-this resuts are analized, and will make code for reachables part in AST(break,continue and return statement aren't analized).  
+this resuts are analized, and will make code for reachables part in AST.  
 */
 
 
