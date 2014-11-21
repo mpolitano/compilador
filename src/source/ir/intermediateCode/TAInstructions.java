@@ -28,7 +28,7 @@ public class TAInstructions{
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
-	ReadArray, WriteArray, ExitErrorArray,
+	ReadArray, WriteArray,
 	//Gerate label
 	PutLabel,
 	//Generate a String Literal
@@ -137,7 +137,6 @@ public class TAInstructions{
 			case Ret: labelOp= "Ret";break;
 			case ReadArray: labelOp= "ReadArray";break;
 			case WriteArray: labelOp="WriteArray";break;
-			case ExitErrorArray:  labelOp="Exit";break;
 			case ToFloat: labelOp= "ToFloat";break;
 			case PutLabel: labelOp= "PutLabel";break;
 			case PutStringLiteral: labelOp="PutStringLiteral";break;

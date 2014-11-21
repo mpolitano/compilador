@@ -1,0 +1,18 @@
+class testError1ReadArray{
+
+	void main(){
+		int a[11];
+		int i;
+		i=0;
+	while(true){
+		i+=1;
+		a[i]=i;
+		if(i==10){
+			break;}//Corta cuando llega al final del arreglo
+	}
+		
+	externinvk("printf",void,"Pos 0 %d \n",a[0]);
+			externinvk("printf",void,"Pos 9 %d \n",a[8]);
+			externinvk("printf",void,"Pos 10 %d \n",a[9]);
+	}
+}

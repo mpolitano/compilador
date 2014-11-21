@@ -1,0 +1,57 @@
+EJECUTAR LOS TEST de tiempo en ejecucicion CORRECTOS.
+
+pararse en la carpeta del src del codigo.
+cd /compilador/src/source/
+
+
+PARA EJECUTAR Y CHEQUEAR EJEMPLOS HACER (desde la /src/compilador):
+
+SIN OPTIMIZACIONES 
+sh ../test/testExecutionTime/testCorrecto/runCheckExecutionCorrectoTest.sh ../test/a.s
+
+
+Y luego hacer
+
+
+gcc ../test/a.s -o ../test/a.out
+./../test/a.out >../test/NOMBRE_DEL_ARCHIVO_DONDE_GUARDAR_LO_EJECUTADO
+
+
+
+Y PARA CHEQUEAR QUE NO HAY DIFERENCIA ES:
+
+diff ../test/NOMBRE_DEL_ARCHIVO_DONDE_GUARDAR_LO_EJECUTADO ../test/testExecutionTime/testCorrecto/checkCorrecto.txt
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+-------------------------------------------------------------
+
+EJECUTAR LOS TEST de tiempo en ejecucicion INCORRECTOS.
+
+pararse en la carpeta del src del codigo.
+cd /compilador/src/source/
+
+
+PARA EJECUTAR Y CHEQUEAR EJEMPLOS HACER (desde la /src/compilador):
+
+SIN OPTIMIZACIONES 
+sh ../test/testExecutionTime/testError/runCheckExecutionCorrectoTest.sh ../test/a.s
+
+
+Y luego hacer
+
+
+gcc ../test/a.s -o ../test/a.out
+./../test/a.out >../test/NOMBRE_DEL_ARCHIVO_DONDE_GUARDAR_LO_EJECUTADO
+
+
+
+Y PARA CHEQUEAR QUE NO HAY DIFERENCIA ES:
+
+diff ../test/NOMBRE_DEL_ARCHIVO_DONDE_GUARDAR_LO_EJECUTADO ../test/testExecutionTime/testError/testcheckError.txt
+
+
+
+
+
+

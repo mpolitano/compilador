@@ -1,13 +1,15 @@
-class testErrorReadArray{
+class testError1ReadArray{
 
 	void main(){
 		int a[10];
-	for i=0, 10{
-		a[i]=i;//Debe tirar error, accede a pos 11 y 12.	
+		int i;
+		i=0;
+	while(true){
+		i+=1;
+		a[i]=i;//Debe tirar error, va a acceder a algun lugar que no exista.	
 	}
 		
 	externinvk("printf",void,"Pos 0 %d \n",a[0]);
-			externinvk("printf",void,"Pos 1 %d \n",a[1]); //ESTO DEBE TIRAR ERROR.
 			externinvk("printf",void,"Pos 9 %d \n",a[8]);
 			externinvk("printf",void,"Pos 10 %d \n",a[9]);
 	}

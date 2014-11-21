@@ -3,7 +3,7 @@
  * en el archivo output se encuentran las salidas esperadas
  * */
 
-class test_primer_entrega{
+class test_check_total{
 	int A[20] ;
 //Prueba expresiones
 int expresiones ( int p) {
@@ -288,6 +288,35 @@ float a,b;
 		}
 }
 
+//Lazzy evaluacion
+void lazzy(){
+		if(true || 10/0==1){ //Esto con propagacion lazy no andaria. hace la division por 0
+			externinvk("printf",void,"Es lazzy Evaluation \n");									
+		}else{
+					externinvk("printf",void,"Error de coma flo lazzy Evaluation");			
+				 }
+	}
+
+void forAnidados(){
+		for i=0, 10{
+			for j=0,10{
+				externinvk("printf",void, "%d,%d \n",i,j);
+			}
+		}
+}
+//test access array
+/*	
+void accesArray(){
+	int a[10];
+	for i=0, 11{
+		a[i]=i;
+	}
+	externinvk("printf",void,"Pos 0 %d \n",a[0]);
+	externinvk("printf",void,"Pos 1 %d \n",a[1]);
+	externinvk("printf",void,"Pos 9 %d \n",a[9]);
+	externinvk("printf",void,"Pos 10 %d \n",a[10]);
+}*/
+
 
 // funcion main 
 void main (){
@@ -421,6 +450,21 @@ void main (){
     }
 	externinvk("print_string",void,"---------------------------------------------------------");
 
-} // endmain
+//test lazzy evaluation
+	externinvk("print_string",void,"test Lazy evaluation ----------------------------------"); 
+	{
+		lazzy();
+	}
+	externinvk("print_string",void,"---------------------------------------------------------");
+
+//test for anidados
+	externinvk("print_string",void,"test for anidados----------------------------------"); 
+	forAnidados()  ;
+	externinvk("print_string",void,"---------------------------------------------------------");
+
+
+//test access array
+
+}// endmain
 
 }
