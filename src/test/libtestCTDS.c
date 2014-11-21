@@ -49,9 +49,9 @@ void print_float(float x){
        printf("%f\n",x);	
 	}
 
-// imprime dos real en la salida con la cadena pasada.
-void print_float2(char cad[50], float x,float y){
-       printf(cad,x,y);	
+// imprime dos reales en la salida
+void print_float2(float x,float y){
+       printf("%f%f\n",x,y);	
 	}
 	
 // imprime un string en la salida	

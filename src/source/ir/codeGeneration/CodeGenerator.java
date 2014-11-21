@@ -82,7 +82,6 @@ public class CodeGenerator{
 			case ToFloat: genToFloatAsmCode(instr); break;
 			case ReadArray: genReadArrayAsmCode(instr);break;
 			case WriteArray: genWriteArrayAsmCode(instr);break;
-			case ExitErrorArray: genExitErrorAsmCode(instr);break;
 			default: pw.println("Asssembler code for instruction: "+ instr.getInstruction().toString() +" not defined");		
 		}
 	}
@@ -672,13 +671,6 @@ ebp
     				break;	
     }
 }
-//exit program, and print error.
-	public static void genExitErrorAsmCode(TAInstructions instr){
-			pw.println("movl " + instr.getOp1().toAsmCode() + ", %edi");
-			pw.println("movl $0, %eax");
-			pw.println("call print_string");
-			pw.println("call exit");	 
-	}
 
 // WriteArray expr, dir, location deja expr en location
     public static void genWriteArrayAsmCode(TAInstructions instr){
