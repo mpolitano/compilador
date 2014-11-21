@@ -1,0 +1,10 @@
+class LazzyEvaluation{
+
+	void main(){
+		if(true || 10/0==1){
+			externinvk("printf",void,"Es lazzy Evaluation \n");									
+		}else{
+//					externinvk("printf",void,"Es lazzy Evaluation");			
+				 }
+	}
+}

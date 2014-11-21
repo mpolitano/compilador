@@ -64,9 +64,8 @@ public TACVisitor(){
 									addInstr(new TAInstructions(TAInstructions.Instr.AddI,stmt.getLocation(),expr,result)); //a+=i make a=a+i
 									//Instruccion for assing result.
 									if (stmt.getLocation() instanceof RefArrayLocation){//todo resolve the semantic of +=
-										Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);//can be an IntLiteral or RefVarLocation
-										if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir)) //Check array access error in execution time
-											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation())); 
+										Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);//can be an IntLiteral or RefVarLocation				
+										addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation())); 
 									}else
 										addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 									return null;
@@ -75,9 +74,8 @@ public TACVisitor(){
 											stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
 											addInstr(new TAInstructions(TAInstructions.Instr.AddF,stmt.getLocation(),result,result)); //decremento la expresion
 											if (stmt.getLocation() instanceof RefArrayLocation){
-												Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-												if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir)) //Check array access error in execution time
-													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+												Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);											
+												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 											}else
 												addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 											return null;
@@ -89,9 +87,8 @@ public TACVisitor(){
 										stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
 										addInstr(new TAInstructions(TAInstructions.Instr.SubI,stmt.getLocation(),expr,result)); //decremento la expresion
 												if (stmt.getLocation() instanceof RefArrayLocation){
-													Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-													if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
-														addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+													Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);										
+													addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 												}else
 													addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 												return null;
@@ -100,8 +97,7 @@ public TACVisitor(){
 										addInstr(new TAInstructions(TAInstructions.Instr.SubF,stmt.getLocation(),expr,result)); //decremento la expresion
 										if (stmt.getLocation() instanceof RefArrayLocation){
 											Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-											if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
-												addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
+											addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,result,dir,stmt.getLocation()));
 										}else
 											addInstr(new TAInstructions(TAInstructions.Instr.Assign,result,stmt.getLocation()));
 										return null;
@@ -109,8 +105,7 @@ public TACVisitor(){
 			case ASSIGN: 					
 							if (stmt.getLocation() instanceof RefArrayLocation){
 								Expression dir=((RefArrayLocation)stmt.getLocation()).getExpression().accept(this);
-								if(!errorArray((RefArrayLocation)(stmt.getLocation()),dir))//Check array access error in execution time
-									addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,expr,dir,stmt.getLocation()));
+								addInstr(new TAInstructions(TAInstructions.Instr.WriteArray,expr,dir,stmt.getLocation()));
 							}else
 								addInstr(new TAInstructions(TAInstructions.Instr.Assign,expr,stmt.getLocation()));
 							return null;
@@ -422,32 +417,35 @@ public TACVisitor(){
 		return null;
 	}
 
-	//Access to array position and return this in temp location
+	//Access to array position and return this in temp location or report error in execution time if the array position don't exist
 	public Expression visit(RefArrayLocation array){
 		Expression dir= array.getExpression().accept(this);
 		RefVarLocation varArray= new RefVarLocation(Integer.toString(line),array.getLineNumber(),array.getColumnNumber(),array.getType().fromArray(),currentMethod.newLocalLocation());
 		stackBlocks.peek().addField(varArray.getLocation()); //add a new location to a block that cointaint it.
-		if(!errorArray(array,dir))//Check array access error in execution time
-			addInstr(new TAInstructions(TAInstructions.Instr.ReadArray,array,dir,varArray)); //ReadArray from destination
+		LabelExpr readOk=new LabelExpr(".ReadArray_"+line);
+		//Check in execution time if acces to available array position
+		RefLocation result= new RefVarLocation(Integer.toString(line),array.getLineNumber(),array.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
+		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.		
+		addInstr(new TAInstructions(TAInstructions.Instr.LesI,dir,((ArrayLocation)array.getLocation()).getSize(),result));	
+		addInstr(new TAInstructions(TAInstructions.Instr.JTrue,result,readOk));
+		//Create code for report error in execution time
+		StringLiteral errorMsj= new StringLiteral("",-1,-1);
+		String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
+		errorMsj.setValue(label+":\n \t"+".string \"Invalid array position access in line: " + array.getLineNumber()+"\"");
+		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,errorMsj));
+		stringLabel++;	
+		//call printf	
+		VarLocation dest= new VarLocation(Integer.toString(line),-1,-1);
+		dest.setOffset(1);
+		addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push in list for make push in invese order							
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"printf\"")));
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"exit\"")));
+		//case access ok: Read Array
+		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,readOk));
+		addInstr(new TAInstructions(TAInstructions.Instr.ReadArray,array,dir,varArray)); //ReadArray from destination
 		varArray.setType(array.getType().fromArray());//set new label with type
 		return varArray;
 	}	
-
-	//Return true if it is an error trying to access in an array's bad position
-	public boolean errorArray(RefArrayLocation array, Expression dir){
-		int sizeArray=((ArrayLocation)array.getLocation()).getSize().getValue();
-		int pos=((IntLiteral)dir).getValue();
-		if((sizeArray < pos) || (pos< 0)){
-			StringLiteral value=new StringLiteral("",-1,-1);
-			String label=".StringLiteral"+Integer.toString(stringLabel);//new string label for inform access bad array			
-			value.setValue(label+":\n \t"+".string \"Error:: Access to array Incorrect\"");
-			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-			stringLabel++;
-			addInstr(new TAInstructions(TAInstructions.Instr.ExitErrorArray, new StringLiteral(label,-1,-1))); //Instruction for report error and exit program
-			return true;
-		}	
-		return false;
-	}
 
 	public Expression visit(ArrayLocation array){
 		addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,array));
@@ -457,248 +455,317 @@ public TACVisitor(){
 	
 // visit expressions
 	public Expression visit(BinOpExpr expr){
-		Expression lo= (Expression) expr.getLeftOperand().accept(this);//literal or location
-		Expression ro= (Expression) expr.getRightOperand().accept(this);
 		BinOpType op= expr.getOperator();
-		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result,set offset for result location
-		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
-		switch(op){
-			case PLUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
-							addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
+		if (op==BinOpType.AND || op==BinOpType.OR)
+			return logicalOpLazzyEvaluation(expr);	
+		else{
+			Expression lo= (Expression) expr.getLeftOperand().accept(this);//literal or location
+			Expression ro= (Expression) expr.getRightOperand().accept(this);
+			RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result,set offset for result location
+			stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
+			switch(op){
+				case PLUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+								addInstr(new TAInstructions(TAInstructions.Instr.AddI,lo,ro,result));
+								result.setType(Type.INT);
+							}else{//expe.type=float
+								if (lo.getType()==Type.INT){//lo is int
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									floatLo.setType(Type.FLOAT);
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+									addInstr(new TAInstructions(TAInstructions.Instr.AddF,floatLo,ro,result)); //calc add	
+									result.setType(Type.FLOAT);
+								}else{
+										if (ro.getType()==Type.INT){//ro is int
+											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+											floatRo.setType(Type.FLOAT);
+											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
+									 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
+									 		result.setType(Type.FLOAT);
+									 	}else{//ninguno es int
+									 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
+									 			result.setType(Type.FLOAT);
+									 	}
+									 }
+								
+							}
+							return result;
+			
+				case MINUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+								addInstr(new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));
+								result.setType(Type.INT);
+							}else{ //(expr.getType==Type.FLOAT)
+								if (lo.getType()==Type.INT){//lo is int
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									floatLo.setType(Type.FLOAT);
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+									addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc add	
+									result.setType(Type.FLOAT);
+								}else{
+										if (ro.getType()==Type.INT){//ro is int
+											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
+									 		addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result)); //calc add	
+									 		result.setType(Type.FLOAT);
+									 	}else{//ninguno es int
+									 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc add	
+									 			result.setType(Type.FLOAT);
+									 	}
+									 }
+								
+							}
+							return result;
+				case MULTIPLY: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
+								addInstr(new TAInstructions(TAInstructions.Instr.MultI,lo,ro,result));
+								result.setType(Type.INT);
+							}else{ //(expr.getType==Type.FLOAT)
+								if (lo.getType()==Type.INT){//lo is int
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
+									addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc add	
+									result.setType(Type.FLOAT);
+								}else{
+										if (ro.getType()==Type.INT){//ro is int
+											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
+									 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc add	
+									 		result.setType(Type.FLOAT);
+									 	}else{//ninguno es int
+									 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc add	
+									 			result.setType(Type.FLOAT);
+									 	}
+									 }
+								
+							}
+							return result;
+				case DIVIDE:
+							if(lo.getType()==Type.INT && ro.getType()==Type.INT){//semantica de la division entera
+								addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
+								result.setType(Type.INT);
+							}else{//expr.getType()==Type.FLOAT	 
+							 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+										RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+										stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float										
+										addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	
+										result.setType(Type.FLOAT);
+									}else{
+											if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+													RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+													stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+													addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+													addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));					
+													result.setType(Type.FLOAT);
+											}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));result.setType(Type.FLOAT);}//Both type operators are float
+									}
+								}
+								return result;
+				case MOD: 
+							addInstr(new TAInstructions(TAInstructions.Instr.Mod,lo,ro,result));
 							result.setType(Type.INT);
-						}else{//expe.type=float
-							if (lo.getType()==Type.INT){//lo is int
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								floatLo.setType(Type.FLOAT);
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
-								addInstr(new TAInstructions(TAInstructions.Instr.AddF,floatLo,ro,result)); //calc add	
-								result.setType(Type.FLOAT);
-							}else{
-									if (ro.getType()==Type.INT){//ro is int
-										RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-										floatRo.setType(Type.FLOAT);
-										stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
-								 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
-								 		result.setType(Type.FLOAT);
-								 	}else{//ninguno es int
-								 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
-								 			result.setType(Type.FLOAT);
-								 	}
-								 }
-							
-						}
-						return result;
-		
-			case MINUS: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
-							addInstr(new TAInstructions(TAInstructions.Instr.SubI,lo,ro,result));
-							result.setType(Type.INT);
-						}else{ //(expr.getType==Type.FLOAT)
-							if (lo.getType()==Type.INT){//lo is int
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								floatLo.setType(Type.FLOAT);
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
-								addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc add	
-								result.setType(Type.FLOAT);
-							}else{
-									if (ro.getType()==Type.INT){//ro is int
-										RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-										stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
-								 		addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result)); //calc add	
-								 		result.setType(Type.FLOAT);
-								 	}else{//ninguno es int
-								 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc add	
-								 			result.setType(Type.FLOAT);
-								 	}
-								 }
-							
-						}
-						return result;
-			case MULTIPLY: if (lo.getType()==Type.INT && ro.getType()==Type.INT){//If expr.type=int so leftop and rightop will be int
-							addInstr(new TAInstructions(TAInstructions.Instr.MultI,lo,ro,result));
-							result.setType(Type.INT);
-						}else{ //(expr.getType==Type.FLOAT)
-							if (lo.getType()==Type.INT){//lo is int
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
-								addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc add	
-								result.setType(Type.FLOAT);
-							}else{
-									if (ro.getType()==Type.INT){//ro is int
-										RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-										stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
-								 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc add	
-								 		result.setType(Type.FLOAT);
-								 	}else{//ninguno es int
-								 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc add	
-								 			result.setType(Type.FLOAT);
-								 	}
-								 }
-							
-						}
-						return result;
-			case DIVIDE:
-						if(lo.getType()==Type.INT && ro.getType()==Type.INT){//semantica de la division entera
-							addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
-							result.setType(Type.INT);
+							return result;
+				case LE: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.LesI,lo,ro,result));	
 						}else{//expr.getType()==Type.FLOAT	 
 						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
 									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float										
-									addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	
-									result.setType(Type.FLOAT);
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.LesF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,ro,result));}//Both type operators are float
+								}
+							}
+							result.setType(Type.BOOLEAN);
+							return result;						
+				case LEQ: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.LEI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.LEF,floatLo,ro,result));	
 								}else{
 										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
 												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-												addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));					
-												result.setType(Type.FLOAT);
-										}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));result.setType(Type.FLOAT);}//Both type operators are float
+												addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,ro,result));}//Both type operators are float
 								}
 							}
-							return result;
-			case MOD: 
-						addInstr(new TAInstructions(TAInstructions.Instr.Mod,lo,ro,result));
-						result.setType(Type.INT);
-						return result;
-			case LE: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.LesI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.LesF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.LesF,lo,ro,result));}//Both type operators are float
+							result.setType(Type.BOOLEAN);
+							return result;											
+				case GE: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.GrtI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.GrtF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,ro,result));}//Both type operators are float
+								}
 							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;						
-			case LEQ: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.LEI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.LEF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.LEF,lo,ro,result));}//Both type operators are float
+							result.setType(Type.BOOLEAN);
+							return result;						
+				case GEQ: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.GEI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.GEF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,ro,result));}//Both type operators are float
+								}
 							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;											
-			case GE: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.GrtI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.GrtF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.GrtF,lo,ro,result));}//Both type operators are float
+							result.setType(Type.BOOLEAN);
+							return result;						
+				case NEQ: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.DifI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.DifF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,floatRo,result));					
+										}else{addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,ro,result));}//Both type operators are float
+								}
 							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;						
-			case GEQ: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.GEI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.GEF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.GEF,lo,ro,result));}//Both type operators are float
+							result.setType(Type.BOOLEAN);
+							return result;						
+				case CEQ: 
+						if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
+							addInstr(new TAInstructions(TAInstructions.Instr.EqualI,lo,ro,result));	
+						}else{//expr.getType()==Type.FLOAT	 
+						 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
+									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
+									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
+									addInstr(new TAInstructions(TAInstructions.Instr.EqualF,floatLo,ro,result));	
+								}else{
+										if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
+												RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
+												stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
+												addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
+												addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,floatRo,result));		
+										}else{
+										addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,ro,result));}//Both type operators are float
+								}
 							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;						
-			case NEQ: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.DifI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.DifF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,floatRo,result));					
-									}else{addInstr(new TAInstructions(TAInstructions.Instr.DifF,lo,ro,result));}//Both type operators are float
-							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;						
-			case CEQ: 
-					if(lo.getType()==Type.INT && ro.getType()==Type.INT ){
-						addInstr(new TAInstructions(TAInstructions.Instr.EqualI,lo,ro,result));	
-					}else{//expr.getType()==Type.FLOAT	 
-					 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
-								RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-								stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
-								addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float	
-								addInstr(new TAInstructions(TAInstructions.Instr.EqualF,floatLo,ro,result));	
-							}else{
-									if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
-											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
-											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
-											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-											addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,floatRo,result));		
-									}else{
-									addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,ro,result));}//Both type operators are float
-							}
-						}
-						result.setType(Type.BOOLEAN);
-						return result;						
+							result.setType(Type.BOOLEAN);
+							return result;	
+				/*case AND: 
+							addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result));
+							result.setType(Type.BOOLEAN);
+							return result;						
+				case OR: 
+							addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result));
+							result.setType(Type.BOOLEAN);
+							return result;		*/								
+			}
+		}	
+		return null;
+	}
+
+//Method that implemets a lazzy evaluation for operators && and ||
+	private Expression logicalOpLazzyEvaluation(BinOpExpr expr){
+		Expression lo= (Expression) expr.getLeftOperand().accept(this);//literal or location
+		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result,set offset for result location
+		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
+		result.setType(Type.BOOLEAN);
+		switch(expr.getOperator()){
 			case AND: 
-						addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result));
-						result.setType(Type.BOOLEAN);
-						return result;						
+						if (lo instanceof BooleanLiteral)
+							if(((BooleanLiteral)lo).getValue()){
+								  	Expression ro=(Expression) expr.getRightOperand().accept(this);	
+						 			addInstr(new TAInstructions(TAInstructions.Instr.Assign,ro,result)); //assign to result the second operator value
+								    return result;	
+							}else{
+									  addInstr(new TAInstructions(TAInstructions.Instr.Assign,new BooleanLiteral(false,-1,-1),result)); //assign false to result	
+									  return result;
+							
+								 }
+						else{
+								LabelExpr evalSecondOp= new LabelExpr(".EvalSeconOp_"+line);
+								LabelExpr endEval= new LabelExpr(".EndEval_"+line);
+								addInstr(new TAInstructions(TAInstructions.Instr.JTrue,lo,evalSecondOp));
+								//generate instructions for set false as result
+								addInstr(new TAInstructions(TAInstructions.Instr.Assign,new BooleanLiteral(false,-1,-1),result)); //assign false to result		
+								addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endEval));
+								//end generate instructions for set false as result
+								//generate instructions for eval second operator y make AND
+								addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,evalSecondOp));
+								Expression ro=(Expression) expr.getRightOperand().accept(this);	
+								addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result)); 									  
+								//end generate instructions for eval second operator y make AND
+								addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,endEval));
+								return result;
+							}					
 			case OR: 
-						addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result));
-						result.setType(Type.BOOLEAN);
-						return result;						
+						if (lo instanceof BooleanLiteral)
+							if(!(((BooleanLiteral)lo).getValue())){//case false
+								  	Expression ro=(Expression) expr.getRightOperand().accept(this);	
+						 			addInstr(new TAInstructions(TAInstructions.Instr.Assign,ro,result)); //assign to result the second operator value	
+								    return result;	
+							}else{//case true
+									  addInstr(new TAInstructions(TAInstructions.Instr.Assign,new BooleanLiteral(true,-1,-1),result)); //assign false to result	
+									  return result;
+							
+								 }
+						else{
+								LabelExpr evalSecondOp= new LabelExpr(".EvalSeconOp_"+line);
+								LabelExpr endEval= new LabelExpr(".EndEval_"+line);
+								addInstr(new TAInstructions(TAInstructions.Instr.JFalse,lo,evalSecondOp));
+								//generate instructions for set true as result
+								addInstr(new TAInstructions(TAInstructions.Instr.Assign,new BooleanLiteral(true,-1,-1),result)); //assign false to result		
+								addInstr(new TAInstructions(TAInstructions.Instr.Jmp,endEval));
+								//end generate instructions for set false as result
+								//generate instructions for eval second operator y make AND
+								addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,evalSecondOp));
+								Expression ro=(Expression) expr.getRightOperand().accept(this);	
+								addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result)); 									  
+								//end generate instructions for eval second operator y make OR
+								addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,endEval));
+								return result;
+							}			
 		}
-		return result;
+		return null;
 	}
 	
 	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)

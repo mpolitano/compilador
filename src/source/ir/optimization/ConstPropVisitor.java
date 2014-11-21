@@ -158,14 +158,11 @@ for's condition and then will generate code only for reachables sentences.
 	
 // visit expressions
 	public Expression visit(BinOpExpr expr){
-		Expression lo= expr.getLeftOperand().accept(this);
-		Expression ro= expr.getRightOperand().accept(this);
-		if (lo instanceof BooleanLiteral && ro instanceof BooleanLiteral)
-			switch(expr.getOperator()){
-				case AND: return new BooleanLiteral(((BooleanLiteral)lo).getValue() && ((BooleanLiteral)ro).getValue() ,lo.getLineNumber(),lo.getColumnNumber());
-				case OR:return new BooleanLiteral(((BooleanLiteral)lo).getValue() || ((BooleanLiteral)ro).getValue() ,lo.getLineNumber(),lo.getColumnNumber());	
-			}
-		else	
+		if (expr.getOperator()== BinOpType.AND || expr.getOperator()== BinOpType.OR)
+			return lazzyLogicalOpPropConst(expr);
+		else{	
+			Expression lo= expr.getLeftOperand().accept(this);
+			Expression ro= expr.getRightOperand().accept(this);
 			if (lo instanceof IntLiteral && ro instanceof IntLiteral) //prune this node
 				switch (expr.getOperator()){ 
 					case PLUS: return makeLiteral( ((IntLiteral)lo).getValue() + ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
@@ -223,11 +220,6 @@ for's condition and then will generate code only for reachables sentences.
 							case CEQ: return new BooleanLiteral(((FloatLiteral)lo).getValue().equals(((FloatLiteral)ro).getValue()) ,lo.getLineNumber(),lo.getColumnNumber());	
 					}
 
-
-
-
-
-
 		//If left or right operand could be prune reemplaze in your ocurent in current node
 		if (lo instanceof Literal)
 			expr.setLeftOperand(lo);
@@ -236,6 +228,30 @@ for's condition and then will generate code only for reachables sentences.
 				expr.setRightOperand(ro);
 
 		return expr; //by default return current node 
+	}
+}
+
+	private Expression lazzyLogicalOpPropConst(BinOpExpr expr){
+		Expression lo=expr.getLeftOperand().accept(this);
+		Expression ro= expr.getRightOperand();
+		if (lo instanceof BooleanLiteral)
+			switch(expr.getOperator()){	
+				case AND:
+						if (((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
+							ro=expr.getRightOperand().accept(this);
+							return ro;
+					 	}else{//value of this expression will be false
+					 		return lo; 
+					 	}					
+				case OR:
+						if (!((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
+							ro=expr.getRightOperand().accept(this);
+							return ro;
+					 	}else{//value of this expression will be true
+					 		return lo; 
+					 	}	
+		}
+		return expr;
 	}
 
 	/* Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,

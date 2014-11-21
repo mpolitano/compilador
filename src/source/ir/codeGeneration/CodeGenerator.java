@@ -177,7 +177,7 @@ public class CodeGenerator{
 		if (expr instanceof IntLiteral){
 			pw.println("movl "+expr.toAsmCode()+", "+ l.toAsmCode());
 		}else{if (expr instanceof FloatLiteral){
-			pw.println("movss "+expr.toAsmCode()+", %xmm3" );//by convention nuestr, save float in xmm3.
+			pw.println("movss "+expr.toAsmCode()+", %xmm3" );//by our convention , save float in xmm3.
 			pw.println("movss %xmm3 ," +l.toAsmCode());
 			}else{
 				pw.println("movl "+expr.toAsmCode()+", "+ "%ecx"); //problem in case x=y. Use auxiliar register for move.
