@@ -71,7 +71,7 @@ public class FrameOptimization implements ASTVisitor{
 		else
 			currentBlockOffset= new Integer(blockStack.peek().intValue());			 
 		//Re-assign offset for each block location
-		for(Location l: stmt.getFields()){			
+		for(Location l: stmt.getAllLocation()){			
 			currentBlockOffset=currentBlockOffset-4;
 			l.setOffset(currentBlockOffset.intValue());
 			//if a location is an ArrayLocation must reverve place for all position
