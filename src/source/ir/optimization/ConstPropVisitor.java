@@ -15,6 +15,11 @@ this resuts are analized, and will make code for reachables part in AST(break,co
 
 
 public final class ConstPropVisitor implements ASTVisitor<Expression>{
+	public static List<String> errorDiv0;
+
+	public List<String> getListError(){
+		return errorDiv0;
+	}
 //visit program
 	public Expression visit(Program prog){
 		for (MethodLocation m:prog.getMethods())//constant propagation in each program's methods
@@ -168,7 +173,8 @@ for's condition and then will generate code only for reachables sentences.
 					case PLUS: return makeLiteral( ((IntLiteral)lo).getValue() + ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 					case MINUS: return makeLiteral( ((IntLiteral)lo).getValue() - ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 					case MULTIPLY: return makeLiteral( ((IntLiteral)lo).getValue() * ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
-					case DIVIDE: return makeLiteral( ((IntLiteral)lo).getValue() / ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+					case DIVIDE: if (((IntLiteral)ro).getValue()!=0)return makeLiteral( ((IntLiteral)lo).getValue() / ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+								 else System.out.println("Error in divide for 0 en line: " + lo.getLineNumber());return makeLiteral(-1,-1,-1); 						
 					case MOD: return makeLiteral( ((IntLiteral)lo).getValue() % ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 					case LE: return new BooleanLiteral(((IntLiteral)lo).getValue() < ((IntLiteral)ro).getValue() ,lo.getLineNumber(),lo.getColumnNumber());	
 					case LEQ: return new BooleanLiteral(((IntLiteral)lo).getValue() <= ((IntLiteral)ro).getValue() ,lo.getLineNumber(),lo.getColumnNumber());	
@@ -183,7 +189,8 @@ for's condition and then will generate code only for reachables sentences.
 						case PLUS: return makeLiteral( ((IntLiteral)lo).getValue() + ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 						case MINUS: return makeLiteral( ((IntLiteral)lo).getValue() - ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 						case MULTIPLY: return makeLiteral( ((IntLiteral)lo).getValue() * ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
-						case DIVIDE: return makeLiteral( ((IntLiteral)lo).getValue() / ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+						case DIVIDE:  if (((FloatLiteral)ro).getValue()!=0.0)return makeLiteral( ((IntLiteral)lo).getValue() / ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+										else System.out.println("Error in divide for 0 en line: " + lo.getLineNumber());return makeLiteral(-1,-1,-1);	
 						case LE: return new BooleanLiteral(((IntLiteral)lo).getValue() < ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 						case LEQ:return new BooleanLiteral(((IntLiteral)lo).getValue() <= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 						case GE:return new BooleanLiteral(((IntLiteral)lo).getValue() > ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
@@ -197,7 +204,8 @@ for's condition and then will generate code only for reachables sentences.
 							case PLUS: return makeLiteral( ((FloatLiteral)lo).getValue() + ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 							case MINUS: return makeLiteral( ((FloatLiteral)lo).getValue() - ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 							case MULTIPLY: return makeLiteral( ((FloatLiteral)lo).getValue() * ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
-							case DIVIDE: return makeLiteral( ((FloatLiteral)lo).getValue() / ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+							case DIVIDE: if (((FloatLiteral)ro).getValue()!=0.0) return makeLiteral( ((FloatLiteral)lo).getValue() / ((IntLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+										else System.out.println("Error in divide for 0 en line: " + lo.getLineNumber());return makeLiteral(-1,-1,-1);	
 							case LE: return new BooleanLiteral(((FloatLiteral)lo).getValue() < ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case LEQ: return new BooleanLiteral(((FloatLiteral)lo).getValue() <= ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GE:return new BooleanLiteral(((FloatLiteral)lo).getValue() > ((IntLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
@@ -211,7 +219,8 @@ for's condition and then will generate code only for reachables sentences.
 							case PLUS: return makeLiteral( ((FloatLiteral)lo).getValue() + ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 							case MINUS: return makeLiteral( ((FloatLiteral)lo).getValue() - ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
 							case MULTIPLY: return makeLiteral( ((FloatLiteral)lo).getValue() * ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
-							case DIVIDE: return makeLiteral( ((FloatLiteral)lo).getValue() / ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+							case DIVIDE: if (((FloatLiteral)ro).getValue()!=0.0) return makeLiteral( ((FloatLiteral)lo).getValue() / ((FloatLiteral)ro).getValue(), lo.getLineNumber(),ro.getLineNumber());
+										else System.out.println("Error in divide for 0 en line: " + lo.getLineNumber());return makeLiteral(-1,-1,-1);	
 							case LE: return new BooleanLiteral(((FloatLiteral)lo).getValue() < ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case LEQ:return new BooleanLiteral(((FloatLiteral)lo).getValue() <= ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
 							case GE:return new BooleanLiteral(((FloatLiteral)lo).getValue() > ((FloatLiteral)ro).getValue(),lo.getLineNumber(),lo.getColumnNumber());	
@@ -325,6 +334,7 @@ for's condition and then will generate code only for reachables sentences.
 	private int value(Object n){return -1;}
 
 	public static void main(String[] args){
+		errorDiv0= new LinkedList<String>();
 		BinOpExpr e=new BinOpExpr(new IntLiteral(1,-1,-1), BinOpType.PLUS, new IntLiteral(1,-1,-1),-1,-1);
 		Integer i= new Integer(2);
 		Float f= new Float(2.0);
