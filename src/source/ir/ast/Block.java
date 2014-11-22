@@ -10,11 +10,13 @@ public class Block extends Statement {
 	private List<Location> field;
 	private int blockId;
 	private IntLiteral offset;
+	private List<Location> auxiliaryLocation;
 	
 	public Block(int bId) {
 		statements = new LinkedList<Statement>();
 		blockId = bId;
 		offset= new IntLiteral(Integer.toString(0),-1,-1);
+		auxiliaryLocation= new LinkedList<Location>();
 	}
 	
 	public Block(int bId, List<Statement> s) {
@@ -22,6 +24,7 @@ public class Block extends Statement {
 		field= new LinkedList<Location>();
 		offset= new IntLiteral(Integer.toString(0),-1,-1);
 		statements = s;
+		auxiliaryLocation= new LinkedList<Location>();
 	}
 	
 	public Block(int bId,  List<Location> f,List<Statement> s) {
@@ -29,6 +32,7 @@ public class Block extends Statement {
 		statements = s;
 		field= f;
 		offset= new IntLiteral(Integer.toString(0),-1,-1);
+		auxiliaryLocation= new LinkedList<Location>();	
 	}
 	public void addStatement(Statement s) {
 		this.statements.add(s);
@@ -77,7 +81,18 @@ public class Block extends Statement {
 	}
 
 	public void addField(Location l){
-		field.add(l);
+		auxiliaryLocation.add(l);
 	}
+
+	public void setStatements(List<Statement> statements){
+		this.statements=statements;
+	}
+
+	public List<Location> getAllLocation(){
+		List<Location> auxList= new LinkedList<Location>(field);
+		auxList.addAll(auxiliaryLocation);
+		return auxList;	
+	}
+
 
 }

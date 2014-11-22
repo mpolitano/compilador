@@ -1,5 +1,5 @@
 /*
-	Class that visit AST and generate a tree address code 
+	Class that visit AST and generate a tree address code from AST
 */
 
 package ir.intermediateCode;
@@ -20,7 +20,8 @@ private Stack<LabelExpr> loopsLabel;//for drive continue statement
 private MethodLocation currentMethod;
 private Stack<Block> stackBlocks;//Stack for stored block's when tour AST, for generate information for Frame Optimization phase. 
 private boolean firstBlockMethod;//flags for generate information for Frame Optimization phase.It is only true when will be visit a first block in a Method  
-
+private List<TAInstructions> initializaLocations;
+private List<TAInstructions> initializaGlobalLocations;
 //constructor
 public TACVisitor(){
 	TAC= new LinkedList();
@@ -39,10 +40,14 @@ public TACVisitor(){
 		floatCheckVisitor floatVisitor= new floatCheckVisitor(); //Visit AST for detect externinvk call with float.
 		prog.accept(floatVisitor);
 		addInstr(new TAInstructions(TAInstructions.Instr.ProgramDecl,new LabelExpr(prog.getId())));//declare a program
-		if (prog.getFields()!=null)
+		initializaLocations= new LinkedList<TAInstructions>();
+		initializaGlobalLocations= new LinkedList<TAInstructions>();
+		if (prog.getFields()!=null){
 			for (Location l: prog.getFields()){
 				l.accept(this);
 			}
+			initializaGlobalLocations.addAll(initializaLocations);
+		}
 		if (prog.getMethods()!=null)	
 			for(MethodLocation m : prog.getMethods()){
 				m.accept(this);
@@ -124,6 +129,7 @@ public TACVisitor(){
 			Expression retExpr= stmt.getExpression().accept(this);
 			addInstr(new TAInstructions(TAInstructions.Instr.Ret, retExpr));
 		}
+		addInstr(new TAInstructions(TAInstructions.Instr.MethodDeclEnd, currentMethod));
 		return null;
 	}
 	
@@ -169,6 +175,7 @@ public TACVisitor(){
 	
 	//Generate TAC for a block
 	public Expression visit(Block stmt){		
+		initializaLocations= new LinkedList<TAInstructions>();//list for initializate local variables
 		stackBlocks.push(stmt); //stored current block 
 		/*Indicate in TAC when start current block*/
 		if (!firstBlockMethod)//BlockBegin is put in MethodDecl
@@ -176,10 +183,17 @@ public TACVisitor(){
 		else{
 			firstBlockMethod=false;
 		}
-		if (stmt.getFields()!=null)
+		if (stmt.getFields()!=null){
 			for (Location l: stmt.getFields()){
 				l.accept(this);
 			}
+			if (currentMethod.getId().equals("main")){//add inizialization for global variables
+				initializaLocations.addAll(initializaGlobalLocations);
+				initializaGlobalLocations= new LinkedList<TAInstructions>();//reset, for not assign again
+			}
+			for(TAInstructions instr: initializaLocations)
+				addInstr(instr);			
+		}
 		if (stmt.getStatements()!=null)
 			for (Statement s: stmt.getStatements()){
 				s.accept(this);
@@ -209,11 +223,6 @@ public TACVisitor(){
 	public Expression visit(ForStmt stmt){
 		Expression begin=stmt.getInitialValue();
 		Expression end= stmt.getFinalValue();
-		/*If begin and end expression are IntLiteral, we knows in compilation time 
-		if for's body will be executed or not. If never will be executed we don't generate code for its.*/
-		if ( begin instanceof IntLiteral && end instanceof IntLiteral ) 
-			if (((IntLiteral)begin).getValue() > ((IntLiteral)end).getValue())
-				return null;
 		//ForStmt make Three adrees code
 		RefLocation forVar=stmt.getId();
 		Expression initialValue= stmt.getInitialValue().accept(this);
@@ -373,6 +382,11 @@ public TACVisitor(){
 //Visit Location
 	public Expression visit(VarLocation var){
 		addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,var));
+		switch(var.getType()){
+			case INT:initializaLocations.add(new TAInstructions(TAInstructions.Instr.Assign,new IntLiteral(0,-1,-1),new RefVarLocation(var,-1,-1))); break;
+			case FLOAT:FloatLiteral float0=new FloatLiteral(0,-1,-1);float0.accept(this);initializaLocations.add(new TAInstructions(TAInstructions.Instr.Assign,float0,new RefVarLocation(var,-1,-1))); break;
+			case BOOLEAN:initializaLocations.add(new TAInstructions(TAInstructions.Instr.Assign,new BooleanLiteral(false,-1,-1),new RefVarLocation(var,-1,-1))); break;
+		}
 		return null;
 	}
 

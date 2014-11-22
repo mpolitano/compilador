@@ -168,6 +168,7 @@ public class CodeGenerator{
 			case FLOAT: pw.println("movss %xmm0, "+l.toAsmCode()); break;
 
 		}
+		
 	}
 	
 	private static void genAssignAsmCode(TAInstructions instr){
