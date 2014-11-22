@@ -34,7 +34,7 @@ public class Ctds{
 											case "-o":	
 											case "-pc": 
 																
-																ConstPropVisitor propConst= new ConstPropVisitor();                                  
+																ConstPropVisitor propConst= new ConstPropVisitor();                           
 																result.accept(propConst);					
                                 PruneUnreachableCode pruneUnreachableCode= new PruneUnreachableCode();
                                 result.accept(pruneUnreachableCode);

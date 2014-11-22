@@ -50,8 +50,8 @@ void print_float(float x){
 	}
 
 // imprime dos reales en la salida
-void print_float2(float x,float y){
-       printf("%f%f\n",x,y);	
+void print_float2(char cad[30],float x,float y){
+       printf(cad,x,y);	
 	}
 	
 // imprime un string en la salida	

@@ -7,7 +7,7 @@ cd /compilador/src/source/
 PARA EJECUTAR Y CHEQUEAR EJEMPLOS HACER (desde la /src/compilador):
 
 SIN OPTIMIZACIONES 
-java Ctds ../test/testCheckTest.ctds ../test/a.s
+sh ../test/runCheckTest.sh ../test/a.s
 
 CON OPTIMIZACIONES (Las dos juntas):
 sh ../test/runCheckTestOptimazation.sh
