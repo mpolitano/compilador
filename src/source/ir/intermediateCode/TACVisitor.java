@@ -7,7 +7,6 @@ package ir.intermediateCode;
 import ir.ASTVisitor;
 import ir.ast.*;
 import java.util.*;
-import ir.codeGeneration.floatCheckVisitor;
 public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
@@ -37,8 +36,6 @@ public TACVisitor(){
 
 //visit program
 	public Expression visit(Program prog){
-		floatCheckVisitor floatVisitor= new floatCheckVisitor(); //Visit AST for detect externinvk call with float.
-		prog.accept(floatVisitor);
 		addInstr(new TAInstructions(TAInstructions.Instr.ProgramDecl,new LabelExpr(prog.getId())));//declare a program
 		initializaLocations= new LinkedList<TAInstructions>();
 		initializaGlobalLocations= new LinkedList<TAInstructions>();

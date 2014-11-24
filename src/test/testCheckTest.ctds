@@ -323,6 +323,27 @@ void array(){
 	}
 }
 
+//test inicializacion variables
+int init(){
+	int a;
+	return a;	
+}
+
+int init1(int a){
+	return a;
+}
+
+float initFloat(){
+	float a;
+	return a;
+}
+
+boolean initBoolean(){
+	boolean a;	
+	return a;
+}
+
+
 
 
 // funcion main 
@@ -475,6 +496,17 @@ void main (){
 	array()  ;
 	externinvk("print_string",void,"---------------------------------------------------------");
 
+
+//test array
+	externinvk("print_string",void,"test init----------------------------------"); 
+	externinvk("print_int",void,init());
+	{
+	int a;
+	externinvk("print_int",void,init1(a));
+	}
+	externinvk("print_float",void,initFloat());
+	externinvk("print_int",void,initBoolean());
+	externinvk("print_string",void,"---------------------------------------------------------");
 }// endmain
 
 }
