@@ -32,7 +32,7 @@ public class TAInstructions{
 	//Gerate label
 	PutLabel,
 	//Generate a String Literal
-	PutStringLiteral,PushFloat
+	PutStringLiteral
 	};
 
 	public Expression op1,op2;
