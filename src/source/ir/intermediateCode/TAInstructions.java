@@ -24,7 +24,7 @@ public class TAInstructions{
 	//Jump Instructions
 	Jmp, JTrue, JFalse,
 	//Instructions for call procedure
-	Call,CallWithReturn, ParamPush, ParamPop, CallExtern,CallExternWithReturn ,Ret, SaveParam, LoadParam,
+	Call,CallWithReturn, ParamPush, ParamPop, CallExtern,CallExternWithReturn ,Ret, SaveParam,
 	//Conversion instruction
 	ToFloat,
 	//Array drive instructions
@@ -135,6 +135,7 @@ public class TAInstructions{
 			case CallExtern: labelOp= "CallExtern";break;
 			case CallExternWithReturn: labelOp= "CallExternWithReturn";break;
 			case Ret: labelOp= "Ret";break;
+			case SaveParam: labelOp="SaveParam";break;
 			case ReadArray: labelOp= "ReadArray";break;
 			case WriteArray: labelOp="WriteArray";break;
 			case ToFloat: labelOp= "ToFloat";break;

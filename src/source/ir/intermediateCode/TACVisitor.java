@@ -955,32 +955,6 @@ public TACVisitor(){
 //Auxiliar methods
 
 
-	private void saveLocalParameters(List<Expression> formalParameters){
-		//Problemas con metodos con mas de 6 parametros.
-		Expression p=null;
-		int i=0;
-		while(i<6 && i<formalParameters.size()){
-			p= formalParameters.get(i);
-			if (p instanceof RefLocation)
-				if (((RefLocation) p).getLocation().getOffset()<=6 && ((RefLocation)p).getLocation().getOffset()>0)
-					addInstr(new TAInstructions(TAInstructions.Instr.SaveParam, p,new IntLiteral(4,-1,-1))); 	 
-			i++;
-		}
-	}
-
-	private void loadLocalParameterFromStack(List<Expression> formalParameters){
-		//Problemas con metodos con mas de 6 parametros.
-		Expression p=null;
-		int i=0;
-		while(i<6 && i<formalParameters.size()){
-			p= formalParameters.get(i);
-			if (p instanceof RefLocation)
-				if (((RefLocation) p).getLocation().getOffset()<=6 && ((RefLocation)p).getLocation().getOffset()>0)
-					addInstr(new TAInstructions(TAInstructions.Instr.LoadParam, p,new IntLiteral(4,-1,-1))); 	 
-			i++;
-		}
-	}
-
 	private void addInstr(TAInstructions inst){
 		TAC.add(line, inst);
 		line++;

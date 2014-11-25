@@ -471,8 +471,12 @@ EXPR  ::= 		          LOCATION:l {:RESULT=l;:}
                         | EXPR:lexpr EQUAL:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
                         |EXPR:lexpr DIFFERENT:op EXPR:rexpr{:RESULT= new BinOpExpr(lexpr,op,rexpr,lexpr.getLineNumber(),lexpr.getColumnNumber());:}
 
-                        | SUB EXPR:expr{:if(expr instanceof FloatLiteral){((FloatLiteral)expr).setValue(-((FloatLiteral)expr).getValue()); RESULT=expr; }else RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
-              			    | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS
+                        | SUB EXPR:expr{:if(expr instanceof FloatLiteral){((FloatLiteral)expr).setValue(-((FloatLiteral)expr).getValue());RESULT=expr;}
+                                        else if (expr instanceof IntLiteral){((IntLiteral)expr).setValue(-((IntLiteral)expr).getValue());RESULT=expr;}
+                                              else RESULT= new UnaryOpExpr(UnaryOpType.MINUS,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS//Here use a unary minus operator
+              			    
+
+                        | NEG:op EXPR:expr{:RESULT= new UnaryOpExpr(op,expr,expr.getLineNumber(),expr.getColumnNumber());:}%prec UMINUS
               			    | PARENIZQ EXPR:expr PARENDER{:RESULT=expr;:};
 
 

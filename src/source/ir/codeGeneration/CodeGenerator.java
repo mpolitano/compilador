@@ -50,7 +50,6 @@ public class CodeGenerator{
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
 			case SaveParam: genSaveParamAsmCode(instr);break;
-			case LoadParam: genLoadParamAsmCode(instr);break;
 			case MultI: genMultIAsmCode(instr);break;
 			case DivI: genDivIAsmCode(instr); break;
 			case Mod: genModAsmCode(instr); break;
@@ -468,12 +467,6 @@ public class CodeGenerator{
 
 		}	
 	}
-
-	private static void genLoadParamAsmCode(TAInstructions instr){
-			pw.println("movl (%rsp) , " +instr.getOp1().toAsmCode());
-			pw.println("add  $4 , %rsp");
-	}
-
 
 	private static void genPopAsmCode(TAInstructions instr){
 		String value= ((IntLiteral) instr.getOp1()).toAsmCode();
