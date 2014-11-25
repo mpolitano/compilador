@@ -290,7 +290,7 @@ float a,b;
 
 //Lazzy evaluacion
 void lazzy(){
-		if(true||10/0==1){ //Esto con propagacion lazy no andaria. hace la division por 0
+		if(true||10/0==1){ 
 			externinvk("printf",void,"Es lazzy Evaluation \n");									
 		}else{
 					externinvk("printf",void,"Error de coma flo lazzy Evaluation");			

@@ -34,12 +34,13 @@ public class Ctds{
 											default: throw new Exception ("Bad Ctds compile invocation");	
 											case "-o":	
 											case "-pc": 
-																
 																ConstPropVisitor propConst= new ConstPropVisitor();                           
 																result.accept(propConst);					
+																if (args[2].equals("-pc")){ result.accept(coding); break;}	
+                      case "-pu":
                                 PruneUnreachableCode pruneUnreachableCode= new PruneUnreachableCode();
                                 result.accept(pruneUnreachableCode);
-																if (args[2].equals("-pc")){ result.accept(coding); break;}																																	
+                                if (args[2].equals("-pu")){ result.accept(coding); break;}  
                       case "-f": 																	 
   														 result.accept(coding);
 								               FrameOptimization frameOptimizator= new FrameOptimization();
