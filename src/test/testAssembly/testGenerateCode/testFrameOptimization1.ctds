@@ -1,0 +1,11 @@
+class testFrameOptimization{
+	void main(){
+		int a,b,c,d;
+		{
+			int e,f,g,h;
+			{
+				int i,j,k,l;
+			}
+		}
+	}
+}

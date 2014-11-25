@@ -1,0 +1,13 @@
+class testPruneUnreachableOptimization{
+	void main(){
+		int a;
+		for i=0, 9{
+			a=a+1;
+			continue;
+			a=17;
+			a=16;
+			break;
+		}
+		externinvk("printf",void, "%d\n", a);
+	}
+}

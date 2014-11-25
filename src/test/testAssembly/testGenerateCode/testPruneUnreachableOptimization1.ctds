@@ -1,0 +1,15 @@
+class testPruneUnreachableOptimization{
+	void main(){
+		int a;
+		if(-1<0){
+			a=1;
+		}
+		else{
+			a=0;
+		}
+		while(-1>0){
+			a=a+1;
+		}
+		externinvk("printf",void, "%d\n", a);
+	}
+}
