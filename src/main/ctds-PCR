@@ -1,0 +1,8 @@
+#!/bin/bash
+export CLASSPATH=.:/usr/share/java/JFlex.jar:/usr/share/java/cup.jar
+java Ctds $1 $1.s $2
+file=$1
+file=${file:0:-5}
+gcc $1.s ../test/libtestCTDS.c -o $file
+rm $1.s
+
