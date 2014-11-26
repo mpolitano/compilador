@@ -1,3 +1,7 @@
+/*
+	Class that implements a visitor for tour AST
+	and make type checking.
+ */
 package ctds_pcr.semcheck;
 
 import java.util.ArrayList;
@@ -112,12 +116,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	};	
 	
 	public Type visit(ExterninvkCallStmt stmt){
-		List<Expression> expressionExter= stmt.getArguments();
-
-		//if (stmt.getMethod().toString().equals("\"printf\"") && expressionExter.get(1).getType()==Type.FLOAT){
-		//	addError(stmt,"printf type problem. Maybe he meant print_float");	//Para escribir float, problema de tipo.
-			
-		//}
+		List<Expression> expressionExter= stmt.getArguments();s
 		for (Expression e:stmt.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}
@@ -165,7 +164,8 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	}
 	
 
-//DOCUMENTAR
+	/*Method for make type checking in BinOpExpr. Are allowed all aritmetical and relational operation between 
+		float and int operand */
 	public Type visit(BinOpExpr expr){
 		Type lExprType= expr.getLeftOperand().accept(this);
 		Type rExprType= expr.getRightOperand().accept(this);
@@ -252,7 +252,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 
 	};
 
-	public Type visit(LabelExpr expr){//Nunca voy a entrar a este metodo, mi lenguaje no tiene labels
+	public Type visit(LabelExpr expr){
 		return Type.UNDEFINED;
 	}
 
@@ -296,17 +296,4 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		}
 	}
 
-//Main for test class function
-/*	public static void main(String[] args){
-		Expression e= new BinOpExpr(new IntLiteral("4"),BinOpType.DIVIDE,new IntLiteral("3"));
-		VarLocation var=new VarLocation("ab",0,0,-1);
-		var.setType(Type.FLOAT);
-		AssignStmt a= new AssignStmt(var,AssignOpType.INCREMENT,e);
-
-		
-		System.out.println(e.toString());
-		TypeCheckVisitor v= new TypeCheckVisitor();
-		System.out.println(e.accept(v).toString());
-
-	}*/
 }

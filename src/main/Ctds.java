@@ -1,3 +1,15 @@
+/*------------------------------------------
+                C-TDS-PCR COMPILER
+Class for execute de C-TDS-PCR compiler proccess. 
+The sintax for execute this is:
+java Ctds pathCtdsProgram DestinationPath ( |-o|-pc|-pu|-f)
+Where -o -pc -pu -f are flags for indicate the following optimization:
+  empty= anyone optimization
+  -pc= constant propagation
+  -pu= prune unreachable code
+  -f= frame optimization
+  -o= all optimizations
+------------------------------------------*/
 import java_cup.runtime.*;
 import java.io.FileReader;
 import parser.*;

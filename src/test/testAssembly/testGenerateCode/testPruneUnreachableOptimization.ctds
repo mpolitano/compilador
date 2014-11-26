@@ -8,6 +8,5 @@ class testPruneUnreachableOptimization{
 			a=16;
 			break;
 		}
-		externinvk("printf",void, "%d\n", a);
 	}
 }

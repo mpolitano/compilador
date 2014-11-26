@@ -1,3 +1,6 @@
+/* 
+	Class that generate assembly x86-64 code from a Three Adress Code
+*/
 package ctds_pcr.codeGeneration;
 
 import java.util.*;
@@ -11,6 +14,8 @@ public class CodeGenerator{
     private static int numberLabel=0;
 	private static boolean frameOptimization; //flag for make frame optimization or not
 
+
+	//Method for generate x86-64 code
 	public static void generateCode(List<TAInstructions> program, String path,boolean my_frameOptimization){
     	try
     	{
@@ -30,6 +35,7 @@ public class CodeGenerator{
 			}
 	}
 
+	//Method for dispatch each intructions to correct method for generate assembly x86-64 code.
 	private static void generateAsmCode(TAInstructions instr){
 		switch(instr.getInstruction()){
 			case ProgramDecl: genProgramAsmCode(instr); break;
@@ -496,10 +502,7 @@ public class CodeGenerator{
 		String m= instr.getOp1().toString();
 		m=m.substring(1,m.length()-1);//method name without "". pre= m="nameMethod" pos= m=nameMethod
 		pw.println("movl $0, %eax");//C convention
-//		pw.println("subq $8, %rsp");//C convention
 		pw.println("call "+ m.toString());	
-//		pw.println("addq $8, %rsp");//C convention
-
 	}
 
 	public static void genCallExternWithReturnCode(TAInstructions instr){

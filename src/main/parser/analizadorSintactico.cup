@@ -33,7 +33,7 @@ action code {:
         System.exit(1); //Interrumpo la ejecucion
     }
 
-    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
+    /*Method for set the offset to a method parameter list. The firsts 6 parameters int,string and boolean and the first 8 float will be in registers, 
 the followings will be in the stack*/
 //Este metodo le dice a cada metodo definido en el .ctds donde va a estar cada uno de sus parametros
     private void setParametersOffset(List<Location> listParameters){
@@ -46,7 +46,10 @@ the followings will be in the stack*/
         Firsts 1..6 Arguments(are passed into register and then saved in stack)
         last rbp= rbp(acces last ebp as rbp) 
         dir retorno =rbp+8 
-        7.. Arguments= rpb+16
+        7 int,boolean, string arguments or 9 float arguments= rpb+16
+        .
+        .
+        .
         +
 
       */

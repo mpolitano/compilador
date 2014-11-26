@@ -316,10 +316,9 @@ public TACVisitor(){
 			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
 			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
 		}			
-		return null;//metho's return anything
+		return null;//method's return anything
 	}
 
-//Idem a ExterninvkCallStmt ver si no me trae probelmeas	
 	public Expression visit(ExterninvkCallStmt stmt){
 		List<Location> formalParameters= stmt.getFormalParameters();
 		List<Expression>actualParametersEval= new LinkedList<Expression>();
@@ -401,12 +400,8 @@ public TACVisitor(){
 		addInstr(new TAInstructions(TAInstructions.Instr.BlockBegin, method.getBody().getOffset()));
 		firstBlockMethod=true;
 		
-		//for (Location l: method.getFormalParameters()){//loop for save parameter passed into register in stack
 		RefLocation from,dest;
-		//for (int i=1; i<=6;i++){//loop for save parameter passed into register in stack
 		for(Location l:method.getFormalParameters()){
-			//if (i<=method.getFormalParameters().size()){
-			//	l= method.getFormalParameters().get(i-1);
 				if (l.getType()==Type.FLOAT && coprocessorRegister<=8){
 					from= new RefVarLocation("SaveParam",-1,-1,l.getType(),coprocessorRegister);
 					coprocessorRegister++;
@@ -421,8 +416,6 @@ public TACVisitor(){
 							dest.setType(l.getType());//propagate de types
 							addInstr(new TAInstructions(TAInstructions.Instr.SaveParam,from,dest)); 
 						}
-
-			//}else break; //there aren't more parameters for save so break this loop
 		}
 		method.getBody().accept(this);
 		for(Location l: method.getFormalParameters()){//For optimization, add location where will be store actual parameters pass at register(coprocesor or common registers) to a block that cointain these
@@ -514,7 +507,7 @@ public TACVisitor(){
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
 									 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
 									 		result.setType(Type.FLOAT);
-									 	}else{//ninguno es int
+									 	}else{//anyone es int
 									 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
 									 			result.setType(Type.FLOAT);
 									 	}
@@ -721,15 +714,6 @@ public TACVisitor(){
 							}
 							result.setType(Type.BOOLEAN);
 							return result;	
-				/*case AND: 
-							addInstr(new TAInstructions(TAInstructions.Instr.And,lo,ro,result));
-							result.setType(Type.BOOLEAN);
-							return result;						
-				case OR: 
-							addInstr(new TAInstructions(TAInstructions.Instr.Or,lo,ro,result));
-							result.setType(Type.BOOLEAN);
-							return result;		*/								
-			}
 		}	
 		return null;
 	}
@@ -820,13 +804,11 @@ public TACVisitor(){
 		for(Expression value: actualParametersEval){
 			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
 				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
-				//if(i<6){ 
 						dest= actualParametersDestination.pop();
 						if (dest.getOffset()<0){
 							cantParamPushedIntoStack++;	
 							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
 						} 
-				//		dest.setOffset(i+1); 
 						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 			
 
 						((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
@@ -901,7 +883,6 @@ public TACVisitor(){
 		return result;//return method's result 
 	}
 
-//Aplicar el operador unario a la expresion
 	public Expression visit(UnaryOpExpr expr){//return literal or location where will be the value
 		Expression value=expr.getExpression().accept(this);//Obtengo la expresion		
 		UnaryOpType operator= expr.getOperator();
@@ -935,7 +916,7 @@ public TACVisitor(){
 // visit literals	
 	public Expression visit(IntLiteral lit){return lit;}
 
-//agrego el label de float al final del programa.
+//add label float to the end of TAC code.
 	public Expression visit(FloatLiteral lit){
 		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
 		String label=lit.toAsmCode();//label for FloatLiteral.
@@ -963,7 +944,7 @@ public TACVisitor(){
 
 	    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
 the followings will be in the stack*/
-//Este metodo le dice a cada parametro donde debe pasarse para la invocacion a un metodo
+//This methods says to each parameters where should be pass in a method invocation
     private void genParametersPushLocation(List<Location> listParameters){
       /*
         //Remember that address has 64 bits.
@@ -971,10 +952,11 @@ the followings will be in the stack*/
         
         -
         Local Var= rbp+4*(amount of parameters+1)
-        Firsts 1..6 Arguments(are passed into register and then saved in stack)
+        Firsts 1..6 int, string and boolean Arguments(are passed into register and then saved in stack)
+        First 1..8 float arguuments are pass into stack
         last rbp= rbp(acces last ebp as rbp) 
         dir retorno =rbp+8 
-        7.. Arguments= rpb+16
+        7 int,float,boolean or 9 float.. Arguments= rpb+16
         +
 
       */
