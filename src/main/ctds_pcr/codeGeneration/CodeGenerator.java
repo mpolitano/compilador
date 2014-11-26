@@ -1,5 +1,6 @@
 /* 
 	Class that generate assembly x86-64 code from a Three Adress Code
+	@author: Cornejo-Politano-Raverta
 */
 package ctds_pcr.codeGeneration;
 
@@ -90,10 +91,12 @@ public class CodeGenerator{
 		}
 	}
 
+	/*method that write name's program*/
 	private static void genProgramAsmCode(TAInstructions instr){
 		pw.println(".file \""+instr.getOp1().toString()+ "\"");
 	}
 
+	/*method that initial the blocks*/
 	private static void genBlockBeginAsmCode(TAInstructions instr){
 		if (frameOptimization){
 			IntLiteral offset= (IntLiteral)instr.getOp1();
@@ -109,6 +112,7 @@ public class CodeGenerator{
 		}
 	}
 
+	/*method that initial the blocks*/
 	private static void genBlockEndAsmCode(TAInstructions instr){
 		if (frameOptimization){
 			IntLiteral offset= (IntLiteral)instr.getOp1();
@@ -116,6 +120,7 @@ public class CodeGenerator{
 		}
 	}
 
+	/*method that initial the blocks*/
 	private static void genLocationDeclAsmCode(TAInstructions instr){
 		Location l= (Location) instr.getOp1();
 		switch (l.getOffset()){
@@ -124,6 +129,7 @@ public class CodeGenerator{
 		}	
 	}
 
+	/*method that initializes a method, this declared enter a multiple of 16 if use frameOptimitazion*/
 	private static void genMethodDeclAsmCode(TAInstructions instr){
 		MethodLocation m= (MethodLocation) instr.getOp1();
 		pw.println(".text");
@@ -147,6 +153,7 @@ public class CodeGenerator{
 				pw.println("enter $0,$0"); 
 	}
 
+	/*method that close a method*/
 	private static void genMethodDeclEndAsmCode(TAInstructions instr){
 		MethodLocation m= (MethodLocation) instr.getOp1();
 		if (m.amoutLocalLocation()>0)pw.println("mov %rbp, %rsp");//pop local location
@@ -155,11 +162,13 @@ public class CodeGenerator{
 
 	}
 
+	/*method that call one LabelExpr*/
 	private static void genCallAsmCode(TAInstructions instr){
 		LabelExpr m= (LabelExpr)instr.getOp1();
 		pw.println("call "+ m.toString());
 	}
 
+	/*Method for calls a LabelExpr and retrieves the return of this */
 	private static void genCallWithReturnAsmCode(TAInstructions instr){
 		LabelExpr m= (LabelExpr)instr.getOp1();
 		pw.println("call "+ m.toString());
