@@ -1,21 +1,59 @@
+/**
+*
+* Class Location represent a Locarion node in the ast. Inherit from Expression.
+*
+* It is abstract because many of the class which inherit of him will implements more methods or use those who are already done.
+*
+* @autor cornejo-politano-raverta.
+*
+*/
 package ctds_pcr.ast;
 
 public abstract class Location extends Expression {
+	/**
+	* Class's atributes.
+	*/
 	protected String id;
 	protected int offset=999999;	//999999 means offset not seted
 
+	/**
+	*
+	* Methods set and get
+	*
+	*/
+	
+	/**
+	* Method to set the Location's id. 
+	*
+	* @param id - the String to be seted.
+	*/
 	public void setId(String ide) {
 		this.id = ide;
 	}
 	
+	/**
+	* Method to get the Location's id. 
+	*
+	* @return Location's id.
+	*/
 	public String getId() {
 		return id;
 	}
 
+	/**
+	* Method to set the Location's offset. 
+	*
+	* @param my_offset - the int to be seted.
+	*/
 	public void setOffset(int my_offset){
 		offset=my_offset;	
 	}
 
+	/**
+	* Method to get the Location's offset. 
+	*
+	* @return Location's offset.
+	*/
 	public int getOffset(){
 		return offset;
 	}
@@ -36,6 +74,6 @@ public abstract class Location extends Expression {
 			Location stackLocation= new VarLocation(".stackLocation",-1,-1);
 			stackLocation.setOffset(methodOffset);
 			return stackLocation;
-	}else return null; //"Error in generate ASM code, genLocationInStack shuld be used for 0<offset<=6"	
-}
+		}else return null; //"Error in generate ASM code, genLocationInStack shuld be used for 0<offset<=6"	
+	}
 }

@@ -1,6 +1,17 @@
+/**
+*
+* Enumeration class which represents the diferents and possible Types.
+*
+* @autor cornejo-politano-raverta.
+*
+*/
 package ctds_pcr.ast;
 
 public enum Type {
+	
+	/**
+	* The values of the class enumeration.
+	*/
 	INT,
 	INTARRAY,
 	FLOATARRAY,
@@ -11,6 +22,11 @@ public enum Type {
 	UNDEFINED,
 	STRING;
 	
+	/**
+	* New implementation of the method toString.
+	*
+	* @see String#toString().
+	*/
 	@Override
 	public String toString() {
 		switch(this) {
@@ -37,6 +53,11 @@ public enum Type {
 		return null;
 	}
 	
+	/**
+	* Method to know if it is an array type.
+	*
+	* @return boolean
+	*/
 	public boolean isArray() {
 		if (this == Type.INTARRAY) {
 			return true;
@@ -45,6 +66,11 @@ public enum Type {
 		return false;
 	}
 
+	/**
+	* Method to convert a simple type to an array type.
+	*
+	* @return Type (ARRAY)
+	*/
 	public Type toArray(){
 		switch(this){
 			case INT:
@@ -57,6 +83,11 @@ public enum Type {
 		return UNDEFINED;
 	}
 
+	/**
+	* Method to convert a array type to an simple type.
+	*
+	* @return Type 
+	*/
 	public Type fromArray(){
 		switch (this){
 			case INTARRAY: return Type.INT;

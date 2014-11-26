@@ -1,25 +1,50 @@
+/**
+*
+* This class represents a VarLocation node in the AST. It inherit from Location
+* 
+* @autor cornejo-politano-raverta.
+*
+*/
 package ctds_pcr.ast;
 import java_cup.runtime.*;
 import ctds_pcr.ASTVisitor;
 
 public class VarLocation extends Location {
 
+	/**
+	* Constructor of an VarLocation object.
+	*
+	* @param my_name - name of the var location
+	* @param my_line/my_column - to report an error. 
+	*
+	*/
 	public VarLocation(String my_name,int my_line, int my_col){
 		this.id =  my_name;
 		this.lineNumber=my_line;	
 		this.colNumber= my_col;	
 	}
 	
+	/**
+	* New implementation of the method toString.
+	*
+	* @see String#toString().
+	*/
 	@Override
 	public String toString() {
 		return id;
 	}
 
+	/**
+	* New implementation of the method accept.
+	*
+	* @see AST#accept(ASTVisitor<T> v)
+	*/
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		return v.visit(this);
 	}
 
+	/** Method which return a respresentation of VarLocation's value in ASM code*/
 	public String toAsmCode(){
 		if (offset==0) return id+ "(%rip)";
 		else{	 					
