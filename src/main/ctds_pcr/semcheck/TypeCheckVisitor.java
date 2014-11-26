@@ -115,7 +115,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	};	
 	
 	public Type visit(ExterninvkCallStmt stmt){
-		List<Expression> expressionExter= stmt.getArguments();s
+		List<Expression> expressionExter= stmt.getArguments();
 		for (Expression e:stmt.getArguments()){
 			e.accept(this); //Check type in Externinvk actual parameters. 
 		}

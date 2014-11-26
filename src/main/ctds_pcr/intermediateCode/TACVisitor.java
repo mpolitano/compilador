@@ -56,7 +56,7 @@ public TACVisitor(){
 	}
 	
 	/**Visit the Assign statement*/
-	public Expression visit(AssignStmt stmt){//Aca podria tener una expresion compuesta o un literal
+	public Expression visit(AssignStmt stmt){
 		RefLocation result;
 		Expression expr= stmt.getExpression().accept(this);	
 		switch(stmt.getOperator()){
@@ -687,12 +687,13 @@ public TACVisitor(){
 												addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,floatRo,result));		
 										}else{
 										addInstr(new TAInstructions(TAInstructions.Instr.EqualF,lo,ro,result));}//Both type operators are float
+										}
 								}
-							}
-							result.setType(Type.BOOLEAN);
-							return result;	
-		}	
+						result.setType(Type.BOOLEAN);
+						return result;	
+				}	
 		return null;
+		}	
 	}
 	
 	/**Visit Externivk call Experssion.
@@ -854,7 +855,7 @@ public TACVisitor(){
 	}
 
 	/**
-	Auxiliar methods
+	*	Auxiliar methods
 	*/
 
 	/**Method for add Instrucction at TAC*/
@@ -1034,4 +1035,4 @@ public TACVisitor(){
       }          
     }
 
-}
+} /**End TACVisitor*/

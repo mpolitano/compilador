@@ -684,7 +684,7 @@ public class CodeGenerator{
 			... arrayOffset (ebp-...)
 			ebp 
 	*/
-    public static void genReadArrayAsmCode(TAInstructions instr){/
+    public static void genReadArrayAsmCode(TAInstructions instr){
     	ArrayLocation from= (ArrayLocation) ((RefArrayLocation)instr.getOp1()).getLocation();
     	int arraySize= from.getOffset()-(from.getSize().getValue()*4);//calc the end of array. a[i] is acces as end(a)+ i*4   	
     	switch(from.getOffset()){ 
