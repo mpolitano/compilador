@@ -1,27 +1,29 @@
-/*
-	Class that visit AST and generate a tree address code from AST
+/**
+*	Class that visit AST and generate a tree address code from AST
+*	@author:Cornejo-Politano-Raverta.
 */
 
 package ctds_pcr.intermediateCode;
-
 import ctds_pcr.ASTVisitor;
 import ctds_pcr.ast.*;
 import java.util.*;
+
 public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
 private List<TAInstructions> listString; //List for save the string used as parameter in externivink calls.
 private Set<Float> setFloatLiteral; //set for drive float literal expression
-int stringLabel; 
-private int line;
+private int stringLabel; //amount the string label declared 
+private int line; //number the line
 private Stack<LabelExpr> loopsEndLabel; //for drive break statement
 private Stack<LabelExpr> loopsLabel;//for drive continue statement
 private MethodLocation currentMethod;
 private Stack<Block> stackBlocks;//Stack for stored block's when tour AST, for generate information for Frame Optimization phase. 
 private boolean firstBlockMethod;//flags for generate information for Frame Optimization phase.It is only true when will be visit a first block in a Method  
-private List<TAInstructions> initializaLocations;
-private List<TAInstructions> initializaGlobalLocations;
-//constructor
+private List<TAInstructions> initializaLocations; //list use for initializa locations
+private List<TAInstructions> initializaGlobalLocations; //list use for initializa Global locations
+
+/**Constructor the class. Initializa the variabls*/
 public TACVisitor(){
 	TAC= new LinkedList();
 	line=0;
@@ -34,7 +36,7 @@ public TACVisitor(){
 	firstBlockMethod=false;
 }
 
-//visit program
+	/**Visit the program*/
 	public Expression visit(Program prog){
 		addInstr(new TAInstructions(TAInstructions.Instr.ProgramDecl,new LabelExpr(prog.getId())));//declare a program
 		initializaLocations= new LinkedList<TAInstructions>();
@@ -53,7 +55,7 @@ public TACVisitor(){
 		return null;
 	}
 	
-// visit statements
+	/**Visit the Assign statement*/
 	public Expression visit(AssignStmt stmt){//Aca podria tener una expresion compuesta o un literal
 		RefLocation result;
 		Expression expr= stmt.getExpression().accept(this);	
@@ -120,7 +122,7 @@ public TACVisitor(){
 		return null;
 	}
 
-//This method generate return expresion TAC
+	/**Visit the Return statement This method generate return expresion TAC */
 	public Expression visit(ReturnStmt stmt){
 		if (stmt.getExpression()!=null){
 			Expression retExpr= stmt.getExpression().accept(this);
@@ -130,7 +132,7 @@ public TACVisitor(){
 		return null;
 	}
 	
-//This visitor generate TAC for if-else statement, if if's condition is a boolean literal only generate code for if or else block  	
+	/** This visitor generate TAC for if-else statement, if if's condition is a boolean literal only generate code for if or else block */ 	
 	public Expression visit(IfStmt stmt){
 			LabelExpr lif= new LabelExpr(".if_"+ Integer.toString(line));
 			LabelExpr endif= new LabelExpr(".endif_"+ Integer.toString(line));
@@ -170,7 +172,7 @@ public TACVisitor(){
 		return null;
 	}
 	
-	//Generate TAC for a block
+	/** Visit the Block. Generate TAC for a block*/
 	public Expression visit(Block stmt){		
 		initializaLocations= new LinkedList<TAInstructions>();//list for initializate local variables
 		stackBlocks.push(stmt); //stored current block 
@@ -201,10 +203,13 @@ public TACVisitor(){
 		return null;
 	}
 
+	/** Visit the Block. Generate TAC for a block*/
 	public Expression visit(BreakStmt stmt){
 		addInstr(new TAInstructions(TAInstructions.Instr.Jmp,loopsEndLabel.peek()));//add intruction for jump to end of loop
 		return null;
 	}
+
+	/** Visit the Continue statement. Generate TAC for a continue statement*/
 	public Expression visit(ContinueStmt stmt){
 		LabelExpr loopLabel=loopsLabel.peek();
 		if (loopLabel.getLabel().contains(".For_Loop")){
@@ -217,6 +222,7 @@ public TACVisitor(){
 		return null;
 	}
 	
+	/** Visit the for statement. Generate TAC for a for statement*/
 	public Expression visit(ForStmt stmt){
 		Expression begin=stmt.getInitialValue();
 		Expression end= stmt.getFinalValue();
@@ -243,9 +249,10 @@ public TACVisitor(){
 		return null;
 	}
 
-	
+	/** Visit the Secuential statement. Generate TAC for a secuential statement*/	
 	public Expression visit(SecStmt stmt){return null;}
 	
+	/** Visit the while statement. Generate TAC for a while statement*/	
 	public Expression visit(WhileStmt stmt){
 		Expression cond= stmt.getCondition();		
 		LabelExpr while_condition=new LabelExpr(".While_condition_"+line);
@@ -276,7 +283,7 @@ public TACVisitor(){
 		return null;
 	}
 
-//Idem a MethodCallStmt ver si no me trae probelmeas
+	/** Visit the method call statement. Generate TAC for a method call statement*/
 	public Expression visit(MethodCallStmt stmt){
 		List<Location> formalParameters= stmt.getMethod().getFormalParameters();
 		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
@@ -319,6 +326,7 @@ public TACVisitor(){
 		return null;//method's return anything
 	}
 
+	/** Visit the Externinvk call statement. Generate TAC for a externinvk call statement*/
 	public Expression visit(ExterninvkCallStmt stmt){
 		List<Location> formalParameters= stmt.getFormalParameters();
 		List<Expression>actualParametersEval= new LinkedList<Expression>();
@@ -375,7 +383,7 @@ public TACVisitor(){
 		return null;//method return anything
 	}
 
-//Visit Location
+	/** Visit the Var Location. Generate TAC for a Var Location*/
 	public Expression visit(VarLocation var){
 		addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,var));
 		switch(var.getType()){
@@ -386,20 +394,19 @@ public TACVisitor(){
 		return null;
 	}
 
+	/** Visit the RefVar Location. Generate TAC for a RefVar Location*/
 	public Expression visit(RefVarLocation var){
 		return var;
 	}
 	
-	//Start Method declaration, save parameters from register into stack and visit method's blocks
+	/**Visit Method Location.  Start Method declaration, save parameters from register into stack and visit method's blocks*/
 	public Expression visit(MethodLocation method){
 		currentMethod= method;
 	    int commonRegister=1;
       	int coprocessorRegister=1;
 		addInstr(new TAInstructions(TAInstructions.Instr.MethodDecl,method));//Start method declaration
-		
 		addInstr(new TAInstructions(TAInstructions.Instr.BlockBegin, method.getBody().getOffset()));
 		firstBlockMethod=true;
-		
 		RefLocation from,dest;
 		for(Location l:method.getFormalParameters()){
 				if (l.getType()==Type.FLOAT && coprocessorRegister<=8){
@@ -426,7 +433,8 @@ public TACVisitor(){
 		return null;
 	}
 
-	//Access to array position and return this in temp location or report error in execution time if the array position don't exist
+	/**Visit RefArray Location.
+	Access to array position and return this in temp location or report error in execution time if the array position don't exist */
 	public Expression visit(RefArrayLocation array){
 		//case access ok: Read Array
 		Expression dir= array.getExpression().accept(this);
@@ -438,46 +446,15 @@ public TACVisitor(){
 		return varArray;
 	}
 
-	private void checkArrayAccessPositionExeTime(Expression dir,IntLiteral arraySize){						
-		LabelExpr readOk=new LabelExpr(".ReadArray_"+line);
-		//Check in execution time if acces to available array position
-		RefLocation lessArraySize= new RefVarLocation(Integer.toString(line),dir.getLineNumber(),dir.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
-		lessArraySize.setType(Type.BOOLEAN);
-		stackBlocks.peek().addField(lessArraySize.getLocation()); //add a new location to a block that cointaint it.		
-		addInstr(new TAInstructions(TAInstructions.Instr.LesI,dir,arraySize,lessArraySize));	
-
-		RefLocation nonNegative= new RefVarLocation(Integer.toString(line),dir.getLineNumber(),dir.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
-		nonNegative.setType(Type.BOOLEAN);
-		stackBlocks.peek().addField(nonNegative.getLocation()); //add a new location to a block that cointaint it.		
-		addInstr(new TAInstructions(TAInstructions.Instr.GEI,dir,new IntLiteral(0,-1,-1),nonNegative));	
-		//a[<expr>] is ok if <expr> >=0 AND <expr> < a.size
-		Expression accessOk= new BinOpExpr(lessArraySize,BinOpType.AND,nonNegative,-1,-1).accept(this);	
-
-		addInstr(new TAInstructions(TAInstructions.Instr.JTrue,accessOk,readOk));
-		//Create code for report error in execution time
-		StringLiteral errorMsj= new StringLiteral("",-1,-1);
-		String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral	
-		int lineNumber=dir.getLineNumber() +1; 			
-		errorMsj.setValue(label+":\n \t"+".string \"Invalid array position access in line: " + lineNumber +"\"");
-		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,errorMsj));
-		stringLabel++;	
-		//call printf	
-		VarLocation dest= new VarLocation(Integer.toString(line),-1,-1);
-		dest.setOffset(1);
-		addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push in list for make push in invese order							
-		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"printf\"")));
-		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"exit\"")));
-		//behavior access OK
-		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,readOk));
-	}	
-
+	/**Visit arrayLocation*/
 	public Expression visit(ArrayLocation array){
 		addInstr(new TAInstructions(TAInstructions.Instr.LocationDecl,array));
 		return null;
 	}
 
 	
-// visit expressions
+	/**visit expressions*/
+	/**Visit BinOp Expression.*/
 	public Expression visit(BinOpExpr expr){
 		BinOpType op= expr.getOperator();
 		if (op==BinOpType.AND || op==BinOpType.OR)
@@ -507,7 +484,7 @@ public TACVisitor(){
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
 									 		addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,floatRo,result)); //calc add	
 									 		result.setType(Type.FLOAT);
-									 	}else{//anyone es int
+									 	}else{//anyone is int
 									 			addInstr(new TAInstructions(TAInstructions.Instr.AddF,lo,ro,result)); //calc add	
 									 			result.setType(Type.FLOAT);
 									 	}
@@ -525,7 +502,7 @@ public TACVisitor(){
 									floatLo.setType(Type.FLOAT);
 									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
 									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
-									addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc add	
+									addInstr(new TAInstructions(TAInstructions.Instr.SubF,floatLo,ro,result));//calc sub	
 									result.setType(Type.FLOAT);
 								}else{
 										if (ro.getType()==Type.INT){//ro is int
@@ -534,8 +511,8 @@ public TACVisitor(){
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
 									 		addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,floatRo,result)); //calc add	
 									 		result.setType(Type.FLOAT);
-									 	}else{//ninguno es int
-									 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc add	
+									 	}else{//anyone is int
+									 			addInstr(new TAInstructions(TAInstructions.Instr.SubF,lo,ro,result));//calc sub	
 									 			result.setType(Type.FLOAT);
 									 	}
 									 }
@@ -550,17 +527,17 @@ public TACVisitor(){
 									RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 									stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
 									addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float
-									addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc add	
+									addInstr(new TAInstructions(TAInstructions.Instr.MultF,floatLo,ro,result));//calc multiply	
 									result.setType(Type.FLOAT);
 								}else{
 										if (ro.getType()==Type.INT){//ro is int
 											RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 											stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
 											addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert ro to float
-									 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc add	
+									 		addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,floatRo,result)); //calc multiply	
 									 		result.setType(Type.FLOAT);
-									 	}else{//ninguno es int
-									 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc add	
+									 	}else{//anyone is int
+									 			addInstr(new TAInstructions(TAInstructions.Instr.MultF,lo,ro,result));//calc multiply	
 									 			result.setType(Type.FLOAT);
 									 	}
 									 }
@@ -569,21 +546,21 @@ public TACVisitor(){
 							return result;
 				case DIVIDE:
 							if(lo.getType()==Type.INT && ro.getType()==Type.INT){//semantica de la division entera
-								addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result));	
+								addInstr(new TAInstructions(TAInstructions.Instr.DivI,lo,ro,result)); //calc divide	
 								result.setType(Type.INT);
 							}else{//expr.getType()==Type.FLOAT	 
 							 		if (lo.getType()==Type.INT && ro.getType()==Type.FLOAT ){
 										RefLocation floatLo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 										stackBlocks.peek().addField(floatLo.getLocation()); //add a new location to a block that cointaint it.
 										addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,lo,floatLo));//convert lo to float										
-										addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	
+										addInstr(new TAInstructions(TAInstructions.Instr.DivF,floatLo,ro,result));	 //calc divide
 										result.setType(Type.FLOAT);
 									}else{
 											if (lo.getType()==Type.FLOAT && ro.getType()==Type.INT ){//If expr.type=int so leftop and rightop will be int
 													RefLocation floatRo= new RefVarLocation(Integer.toString(line), expr.getLineNumber(),expr.getColumnNumber(),Type.FLOAT,currentMethod.newLocalLocation());
 													stackBlocks.peek().addField(floatRo.getLocation()); //add a new location to a block that cointaint it.
 													addInstr(new TAInstructions(TAInstructions.Instr.ToFloat,ro,floatRo));//convert lo to float	
-													addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));					
+													addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,floatRo,result));	 //calc divde				
 													result.setType(Type.FLOAT);
 											}else{addInstr(new TAInstructions(TAInstructions.Instr.DivF,lo,ro,result));result.setType(Type.FLOAT);}//Both type operators are float
 									}
@@ -717,8 +694,176 @@ public TACVisitor(){
 		}	
 		return null;
 	}
+	
+	/**Visit Externivk call Experssion.
+	Push the parameters, call the method, pop the parameters and return the result value of the method (a literal always)
+	*/
+	public Expression visit(ExterninvkCallExpr expr){
+		List<Location> formalParameters= expr.getFormalParameters();
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
+		List<Expression> actualParametersEval= new LinkedList<Expression>();
+		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
+		int i=0;		
+		int cantParamPushedIntoStack=0;
+		Location dest;
+		for(Expression e: expr.getArguments()){//Loop for generate TAC instructions for calc parameters
+			Expression value= e.accept(this);
+			actualParametersEval.add(value);
+			dest=new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
+		}
+		genParametersPushLocation(actualParametersDestination);
+		for(Expression value: actualParametersEval){
+			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
+				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){
+							cantParamPushedIntoStack++;	
+							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+						} 
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 			
 
-//Method that implemets a lazzy evaluation for operators && and ||
+						((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
+						listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+						stringLabel++;	
+			}else{//value isn't stringLiteral
+						dest= actualParametersDestination.pop();
+						if (dest.getOffset()<0){
+							 cantParamPushedIntoStack++;
+							 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+						}
+						dest.setType(value.getType());//progate information about the expression type
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
+				}
+				i++;
+		}
+		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
+			addInstr(instr);
+		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
+		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExternWithReturn,new LabelExpr(expr.getMethod()),result));//Call sub-rutina with Return	
+		if(cantParamPushedIntoStack>0){
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
+ 		}
+		return result;
+	}
+
+	/**Visit Externivk call Experssion.
+	Push the parameters, call the method, pop the parameters and return the result value of the method (a literal always)
+	*/
+	public Expression visit(MethodCallExpr expr){
+		List<Location> formalParameters= expr.getMethod().getFormalParameters();
+		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
+		int i=0; 
+		int cantParamPushedIntoStack=0;
+		Location dest;
+		List<Expression> actualParametersEval= new LinkedList<Expression>();
+		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
+		/*If we has as a parameter a expression like as 2+3 or a function call,
+		 should evaluate and then push*/
+		for(Expression e: expr.getArguments()){//Loop for generate TAC code for actual parameters evaluation
+			Expression value= e.accept(this);
+			actualParametersEval.add(value);
+			dest=new VarLocation("PushParamDest",-1,-1);
+			dest.setType(value.getType());
+			actualParametersDestination.add(dest);
+		}
+		genParametersPushLocation(actualParametersDestination);
+		for(Expression value: actualParametersEval){//Loop for push parameters
+				dest= actualParametersDestination.pop();
+				if (dest.getOffset()<0){//param should be pushed into stack
+					 cantParamPushedIntoStack++;
+					 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
+				}else{
+						dest.setType(value.getType());//progate information about the expression type
+						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
+				}
+			i++;
+		}		
+		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
+			addInstr(instr);
+		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
+		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
+		addInstr(new TAInstructions(TAInstructions.Instr.CallWithReturn,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
+		if(cantParamPushedIntoStack>0){//if push parameters into stack, pop them
+			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
+			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
+		}		
+		return result;//return method's result 
+	}
+
+	/**Visit UnaryOpExpr*/
+	public Expression visit(UnaryOpExpr expr){
+		Expression value=expr.getExpression().accept(this);//Obtain the expresion		
+		UnaryOpType operator= expr.getOperator();
+		if (value instanceof Literal){
+			switch (operator){
+				case MINUS: if (value instanceof IntLiteral){
+								return new IntLiteral(-((Integer)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber()); // debo retornar otro literal
+							}else{return new FloatLiteral(-((Float)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber());} //debo retornar otro literal 		
+				case NOT:	return  new BooleanLiteral(!((Boolean)((Literal)value).getValue()),value.getLineNumber(),value.getColumnNumber());
+			}		
+		}else{
+				RefLocation temp= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),value.getType(),currentMethod.newLocalLocation());//place for current calculus
+				stackBlocks.peek().addField(temp.getLocation()); //add a new location to a block that cointaint it.
+				switch (operator){
+					case MINUS: 
+								addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
+								break; 		
+					case NOT:
+								addInstr(new TAInstructions(TAInstructions.Instr.Not,value,temp));//save sentence for calc this value								
+								break; 							
+				}
+				return temp;//return the temp place where will be the value of this aplication					
+		}	
+		return null;	
+	}
+
+	/**Visit Label Expression*/
+	public Expression visit(LabelExpr expr){
+		return expr;
+	}
+
+	/**visit literals*/
+	/**Visit Int Literal*/
+	public Expression visit(IntLiteral lit){return lit;}
+
+	/**Visit Float Literal
+		add label float to the end of TAC code. Assembly x86-64 drive with label the floats.
+	*/
+	public Expression visit(FloatLiteral lit){
+		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
+		String label=lit.toAsmCode();//label for FloatLiteral.
+		value.setValue(label+":\n \t"+".float "+lit.getValue());
+		if(setFloatLiteral.add(lit.getValue())) //for make label only one time for each float value
+			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
+		return lit;
+	}
+
+	/**Visit Boolean Literal*/
+	public Expression visit(BooleanLiteral lit){return lit;}
+
+	/**Visit String Literal*/
+	public Expression visit(StringLiteral lit){return lit;}
+
+	/**return TAC*/
+	public List<TAInstructions> getTAC(){
+		return TAC;
+	}
+
+	/**
+	Auxiliar methods
+	*/
+
+	/**Method for add Instrucction at TAC*/
+	private void addInstr(TAInstructions inst){
+		TAC.add(line, inst);
+		line++;
+	}	
+
+	/**Method Private that implemets a lazzy evaluation for operators && and ||*/
 	private Expression logicalOpLazzyEvaluation(BinOpExpr expr){
 		Expression lo= (Expression) expr.getLeftOperand().accept(this);//literal or location
 		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Ojo que el auxiliar para calcular los cambios a flot van a tener el mismo nombre que result,set offset for result location
@@ -782,171 +927,41 @@ public TACVisitor(){
 		}
 		return null;
 	}
-	
-	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
-	public Expression visit(ExterninvkCallExpr expr){
-		List<Location> formalParameters= expr.getFormalParameters();
-		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
-		List<Expression> actualParametersEval= new LinkedList<Expression>();
-		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
-		int i=0;		
-		int cantParamPushedIntoStack=0;
-		Location dest;
-		for(Expression e: expr.getArguments()){//Loop for generate TAC instructions for calc parameters
-			Expression value= e.accept(this);
-			actualParametersEval.add(value);
-			dest=new VarLocation("PushParamDest",-1,-1);
-			dest.setType(value.getType());
-			actualParametersDestination.add(dest);
-		}
 
-		genParametersPushLocation(actualParametersDestination);
-		for(Expression value: actualParametersEval){
-			if (value instanceof StringLiteral){//Generate a representation for String Literal pased as parameter
-				String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral				
-						dest= actualParametersDestination.pop();
-						if (dest.getOffset()<0){
-							cantParamPushedIntoStack++;	
-							listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
-						} 
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push 	 			
-
-						((StringLiteral)value).setValue(label+":\n \t"+".string "+value.toString());
-						listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-						stringLabel++;	
-			}else{//value isn't stringLiteral
-						dest= actualParametersDestination.pop();
-						if (dest.getOffset()<0){
-							 cantParamPushedIntoStack++;
-							 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
-						}
-						dest.setType(value.getType());//progate information about the expression type
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-				}
-				i++;
-		}
-
-		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
-			addInstr(instr);
-		
-		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
-		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
-		addInstr(new TAInstructions(TAInstructions.Instr.CallExternWithReturn,new LabelExpr(expr.getMethod()),result));//Call sub-rutina with Return	
-		if(cantParamPushedIntoStack>0){
-			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
-			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
- 		}
-		return result;
-	}
-
-	//Push de los parametros, llamada al metodo, pop de los parametros y retorno el valor de resultado del metodo(es un literal siempre)
-	public Expression visit(MethodCallExpr expr){
-		List<Location> formalParameters= expr.getMethod().getFormalParameters();
-		LinkedList<Location> actualParametersDestination= new LinkedList<Location>();
-		int i=0; 
-		int cantParamPushedIntoStack=0;
-		Location dest;
-		List<Expression> actualParametersEval= new LinkedList<Expression>();
-		LinkedList<TAInstructions> listStackParamPush=listStackParamPush= new LinkedList<TAInstructions>(); //List for implementation push parameters in inverse order
-		/*If we has as a parameter a expression like as 2+3 or a function call,
-		 should evaluate and then push*/
-		for(Expression e: expr.getArguments()){//Loop for generate TAC code for actual parameters evaluation
-			Expression value= e.accept(this);
-			actualParametersEval.add(value);
-			dest=new VarLocation("PushParamDest",-1,-1);
-			dest.setType(value.getType());
-			actualParametersDestination.add(dest);
-		}
-		genParametersPushLocation(actualParametersDestination);
-
-		for(Expression value: actualParametersEval){//Loop for push parameters
-				dest= actualParametersDestination.pop();
-				if (dest.getOffset()<0){//param should be pushed into stack
-					 cantParamPushedIntoStack++;
-					 listStackParamPush.push(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push in list for make push in invese order
-				}else{
-						dest.setType(value.getType());//progate information about the expression type
-						addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,value,dest));//Parameter's value Push 		 
-				}
-			i++;
-		}		
-		for(TAInstructions instr: listStackParamPush) //push instructions for push parameters into the stack in inverse order
-			addInstr(instr);
-
-		RefLocation result= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),expr.getType(),currentMethod.newLocalLocation());//Location for save procedure's result
-		stackBlocks.peek().addField(result.getLocation()); //add a new location to a block that cointaint it.
-		addInstr(new TAInstructions(TAInstructions.Instr.CallWithReturn,new LabelExpr(expr.getMethod().getId()),result));//Call sub-rutina 	
-		if(cantParamPushedIntoStack>0){//if push parameters into stack, pop them
-			Expression bytesForPop=	new IntLiteral(cantParamPushedIntoStack*4,-1,-1);
-			addInstr(new TAInstructions(TAInstructions.Instr.ParamPop,bytesForPop));//pop parameters that stay en stack
-		}		
-		return result;//return method's result 
-	}
-
-	public Expression visit(UnaryOpExpr expr){//return literal or location where will be the value
-		Expression value=expr.getExpression().accept(this);//Obtengo la expresion		
-		UnaryOpType operator= expr.getOperator();
-		if (value instanceof Literal){
-			switch (operator){
-				case MINUS: if (value instanceof IntLiteral){
-								return new IntLiteral(-((Integer)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber()); // debo retornar otro literal
-							}else{return new FloatLiteral(-((Float)(((Literal)value).getValue())),value.getLineNumber(),value.getColumnNumber());} //debo retornar otro literal 		
-				case NOT:	return  new BooleanLiteral(!((Boolean)((Literal)value).getValue()),value.getLineNumber(),value.getColumnNumber());
-			}		
-		}else{
-				RefLocation temp= new RefVarLocation(Integer.toString(line),expr.getLineNumber(),expr.getColumnNumber(),value.getType(),currentMethod.newLocalLocation());//place for current calculus
-				stackBlocks.peek().addField(temp.getLocation()); //add a new location to a block that cointaint it.
-				switch (operator){
-					case MINUS: 
-								addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
-								break; 		
-					case NOT:
-								addInstr(new TAInstructions(TAInstructions.Instr.Not,value,temp));//save sentence for calc this value								
-								break; 							
-				}
-				return temp;//return the temp place where will be the value of this aplication					
-		}	
-		return null;	
-	}
-
-	public Expression visit(LabelExpr expr){
-		return expr;
-	}
-
-// visit literals	
-	public Expression visit(IntLiteral lit){return lit;}
-
-//add label float to the end of TAC code.
-	public Expression visit(FloatLiteral lit){
-		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
-		String label=lit.toAsmCode();//label for FloatLiteral.
-		value.setValue(label+":\n \t"+".float "+lit.getValue());
-		if(setFloatLiteral.add(lit.getValue())) //for make label only one time for each float value
-			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
-		return lit;
-	}
-	public Expression visit(BooleanLiteral lit){return lit;}
-	public Expression visit(StringLiteral lit){return lit;}
-
-
-	public List<TAInstructions> getTAC(){
-		return TAC;
-	}
-
-//Auxiliar methods
-
-
-	private void addInstr(TAInstructions inst){
-		TAC.add(line, inst);
-		line++;
+	/** Method Private for drive the checking the acces one postion in array.	*/
+	private void checkArrayAccessPositionExeTime(Expression dir,IntLiteral arraySize){						
+		LabelExpr readOk=new LabelExpr(".ReadArray_"+line);
+		//Check in execution time if acces to available array position
+		RefLocation lessArraySize= new RefVarLocation(Integer.toString(line),dir.getLineNumber(),dir.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
+		lessArraySize.setType(Type.BOOLEAN);
+		stackBlocks.peek().addField(lessArraySize.getLocation()); //add a new location to a block that cointaint it.		
+		addInstr(new TAInstructions(TAInstructions.Instr.LesI,dir,arraySize,lessArraySize));	
+		RefLocation nonNegative= new RefVarLocation(Integer.toString(line),dir.getLineNumber(),dir.getColumnNumber(),Type.BOOLEAN,currentMethod.newLocalLocation());
+		nonNegative.setType(Type.BOOLEAN);
+		stackBlocks.peek().addField(nonNegative.getLocation()); //add a new location to a block that cointaint it.		
+		addInstr(new TAInstructions(TAInstructions.Instr.GEI,dir,new IntLiteral(0,-1,-1),nonNegative));	
+		//a[<expr>] is ok if <expr> >=0 AND <expr> < a.size
+		Expression accessOk= new BinOpExpr(lessArraySize,BinOpType.AND,nonNegative,-1,-1).accept(this);	
+		addInstr(new TAInstructions(TAInstructions.Instr.JTrue,accessOk,readOk));
+		//Create code for report error in execution time
+		StringLiteral errorMsj= new StringLiteral("",-1,-1);
+		String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral	
+		int lineNumber=dir.getLineNumber() +1; 			
+		errorMsj.setValue(label+":\n \t"+".string \"Invalid array position access in line: " + lineNumber +"\"");
+		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,errorMsj));
+		stringLabel++;	
+		//call printf	
+		VarLocation dest= new VarLocation(Integer.toString(line),-1,-1);
+		dest.setOffset(1);
+		addInstr(new TAInstructions(TAInstructions.Instr.ParamPush,new StringLiteral(label,-1,-1),dest));//Parameter's value Push in list for make push in invese order							
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"printf\"")));
+		addInstr(new TAInstructions(TAInstructions.Instr.CallExtern,new LabelExpr("\"exit\"")));
+		//behavior access OK
+		addInstr(new TAInstructions(TAInstructions.Instr.PutLabel,readOk));
 	}	
 
 
-	    /*Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
-the followings will be in the stack*/
-//This methods says to each parameters where should be pass in a method invocation
-    private void genParametersPushLocation(List<Location> listParameters){
-      /*
+	/*
         //Remember that address has 64 bits.
         STACK representation
         
@@ -961,11 +976,15 @@ the followings will be in the stack*/
 
       */
 
+    /**Method for set the offset to a method parameter list. The firsts 6 parameters will be in registers, 
+		the followings will be in the stack
+	This methods says to each parameters where should be pass in a method invocation*/
+    private void genParametersPushLocation(List<Location> listParameters){
+
       //clone listparameters
       LinkedList<Location> auxiliaryList=new LinkedList<Location>();
       for(Location l: listParameters)
         auxiliaryList.add(l);
-      
       int i=0;
       int offset=-4;
       int commonRegister=1;

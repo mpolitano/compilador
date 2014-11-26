@@ -1,3 +1,7 @@
+/**
+*	Class that containt the Instrucction.
+*	@author:Cornejo-Politano-Raverta.
+*/
 package ctds_pcr.intermediateCode;
 import ctds_pcr.ast.*;
 public class TAInstructions{

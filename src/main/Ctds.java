@@ -1,4 +1,4 @@
-/*------------------------------------------
+/**------------------------------------------
                 C-TDS-PCR COMPILER
 Class for execute de C-TDS-PCR compiler proccess. 
 The sintax for execute this is:
@@ -23,7 +23,7 @@ import ctds_pcr.optimization.*;
 import java.lang.Exception;
 
 public class Ctds{
-    //Method for execute Ctds compiler
+    /**Method for execute Ctds compiler*/
     public static void main(String[] args)throws Exception{
         try {
 						boolean makeFrameOptimization=false;

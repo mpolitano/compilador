@@ -1,3 +1,7 @@
+/**
+*	Class for report Error
+*	@author:Cornejo-Politano-Raverta.
+*/
 package error;
 
 public class Error{

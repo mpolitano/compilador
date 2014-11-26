@@ -1,3 +1,7 @@
+/**
+*	Interface the Visitor
+*	@author:Cornejo-Politano-Raverta.
+*/
 package ctds_pcr;
 
 import ctds_pcr.ast.*;

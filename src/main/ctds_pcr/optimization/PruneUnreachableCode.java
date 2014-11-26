@@ -1,21 +1,21 @@
+/**
+*Visit Statement nodes in AST an prune sub-tree that can't reachables. 
+*If a visiting return null so current statement visited is prune.
+*If a visiting return a Statement, it should be reemplze the before statement.
+*Expression nodes aren't visited.
+*@author: Cornejo-Politano-Raverta.
+*
+*Precondition= Type Check has been made  (also is desirable that ConstPropagation Has been made(for have more information))
+*Poscondition= Nodes in AST that being after returnStmt,BreakStmt,ContinueStmt has been prune.
+*			  Nodes in AST that will be unreachables because exist a condition that can be decided
+*			  in compilation time  has been prune(while's block, if's blocks,for's block).
+*/
 package ctds_pcr.optimization;
 
 import ctds_pcr.ast.*;
 import ctds_pcr.ASTVisitor;
 import java.util.LinkedList;
 import java.util.List;
-/* 
-Precondition= Type Check has been made  (also is desirable that ConstPropagation Has been made(for have more information))
-Poscondition= Nodes in AST that being after returnStmt,BreakStmt,ContinueStmt has been prune.
-			  Nodes in AST that will be unreachables because exist a condition that can be decided
-			  in compilation time  has been prune(while's block, if's blocks,for's block).
-
-Visit Statement nodes in AST an prune sub-tree that can't reachables. 
-If a visiting return null so current statement visited is prune.
-If a visiting return a Statement, it should be reemplze the before statement.
-Expression nodes aren't visited.
-*/
-
 
 public final class PruneUnreachableCode implements ASTVisitor<Statement>{
 //visit program
@@ -30,12 +30,12 @@ Visit Statements and  prune unreachables statements.
 */
 
 	
-	/* Nothing for do in visit Assign statement*/
+	/** Nothing for do in visit Assign statement*/
 	public  Statement visit(AssignStmt stmt){
 		return stmt;
 	}
 
-	/* Nothing for do in visit Return statement*/
+	/** Nothing for do in visit Return statement*/
 	public  Statement visit(ReturnStmt stmt){
 		return stmt;
 	}
@@ -59,7 +59,7 @@ Visit Statements and  prune unreachables statements.
 		}
 	}
 	
-	/*Prune unreachables statements in a block*/
+	/**Prune unreachables statements in a block*/
 	public  Statement visit(Block stmt){
 		int i=0;
 		List<Statement> statements=stmt.getStatements();
@@ -83,13 +83,13 @@ Visit Statements and  prune unreachables statements.
 		return stmt;
 	}
 	
-	/*Nothing for doing in break statement*/
+	/**Nothing for doing in break statement*/
 	public  Statement visit(BreakStmt stmt){return stmt;}
 	
-	/*Nothing for doing in continue statement*/
+	/**Nothing for doing in continue statement*/
 	public  Statement visit(ContinueStmt stmt){return stmt;}
 
-	/*Prune unreachable statements in For Statement*/
+	/**Prune unreachable statements in For Statement*/
 	public  Statement visit(ForStmt stmt){
 		Expression begin= stmt.getInitialValue();
 		Expression end= stmt.getFinalValue();
@@ -103,10 +103,10 @@ Visit Statements and  prune unreachables statements.
 		return stmt;	
 	}
 
-	/*Nothing for doing in sec Statement*/
+	/**Nothing for doing in sec Statement*/
 	public  Statement visit(SecStmt stmt){return stmt;}
 
-	/*Prune unreachable statements in While statement */
+	/**Prune unreachable statements in While statement */
 	public  Statement visit(WhileStmt stmt){
 		if (stmt.getCondition() instanceof BooleanLiteral)
 			if(!(((BooleanLiteral) stmt.getCondition()).getValue()))
@@ -116,34 +116,34 @@ Visit Statements and  prune unreachables statements.
 		return stmt;
 	}
 
-	/* Nothing for doing in methodCall Statement*/
+	/**Nothing for doing in methodCall Statement*/
 	public  Statement visit(MethodCallStmt stmt){
 		return stmt;
 	}
 
-	/* Nothing for doing*/
+	/**Nothing for doing*/
 	public  Statement visit(ExterninvkCallStmt stmt){
 		return stmt;
 	}
 
 //Visit Location
 
-	/*Nothing for doing in VarLocation*/
+	/**Nothing for doing in VarLocation*/
 	public  Statement visit(VarLocation var){return null;}
 	
-	/* Visit method's body and prune unreachables statements*/
+	/**Visit method's body and prune unreachables statements*/
 	public  Statement visit(MethodLocation method){
 		method.setBody((Block)(method.getBody()).accept(this));
 		return null;
 	}
 	
-	/*Nothing for doing in ArrayLocation*/
+	/**Nothing for doing in ArrayLocation*/
 	public  Statement visit(ArrayLocation array){return null;}
 	
-	/*Nothing for doing in RefVarLocation*/
+	/**Nothing for doing in RefVarLocation*/
 	public  Statement visit(RefVarLocation var){return null;}
 	
-	/*Nothing for doing*/
+	/**Nothing for doing*/
 	public  Statement visit(RefArrayLocation array){
 		return null;
 	}

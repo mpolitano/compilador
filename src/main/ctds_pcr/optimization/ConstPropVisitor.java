@@ -1,18 +1,19 @@
+/**
+*	Class that visit each node in AST and propagate constante in each expression. 
+*	Visitor's prune sub-tree that contain Expression only. Then in Three Addres Code Generation
+*	this resuts are analized, and will make code for reachables part in AST.
+*
+*	Precondition= Type Check has been made 
+*	Poscondition= All Expression that can be resolve in compilation time has been resolved.
+*	@author:Cornejo-Politano-Raverta.
+*
+*/
 package ctds_pcr.optimization;
 
 import ctds_pcr.ast.*;
 import ctds_pcr.ASTVisitor;
 import java.util.LinkedList;
 import java.util.List;
-/* 
-Precondition= Type Check has been made 
-Poscondition= All Expression that can be resolve in compilation time has been resolved.
-
-Visit each node in AST and propagate constante in each expression. 
-Visitor's prune sub-tree that contain Expression only. Then in Three Addres Code Generation
-this resuts are analized, and will make code for reachables part in AST.  
-*/
-
 
 public final class ConstPropVisitor implements ASTVisitor<Expression>{
 	public static List<String> errorDiv0;
@@ -20,14 +21,14 @@ public final class ConstPropVisitor implements ASTVisitor<Expression>{
 	public List<String> getListError(){
 		return errorDiv0;
 	}
-//visit program
+/**visit program*/
 	public Expression visit(Program prog){
 		for (MethodLocation m:prog.getMethods())//constant propagation in each program's methods
 			m.accept(this);
 		return null;
 	}
 	
-/* 
+/* *
 Visit Statements and  make constant propagation in each Expresion contained in Statement. 
 The Visitor's return type is always NULL when it visit Statement. It make change Statement object inside,
 making a constant propagation. Then, in Three Adress Code generation will be evaluate if's,while's and 
@@ -35,14 +36,14 @@ for's condition and then will generate code only for reachables sentences.
 */
 
 	
-	/* Visit assign's expression and make constant propagation */
+	/** Visit assign's expression and make constant propagation */
 	public Expression visit(AssignStmt stmt){
 		Expression e=stmt.getExpression().accept(this); //constant propagation in assign's expression
 		stmt.setExpression(e);
 		return null;
 	}
 
-	/* Visit return's expression and make constant propagation */
+	/** Visit return's expression and make constant propagation */
 	public Expression visit(ReturnStmt stmt){
 		if (stmt.getExpression()!=null){
 			Expression e= stmt.getExpression().accept(this);
@@ -51,7 +52,7 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 	
-//Visit if's condition and make constant propagation, if this is a BooleanLiteral then TACVisitor prune IfStmt	
+	/**Visit if's condition and make constant propagation, if this is a BooleanLiteral then TACVisitor prune IfStmt	*/
 	public Expression visit(IfStmt stmt){
 		Expression e= stmt.getCondition().accept(this);
 		stmt.setCondition(e);
@@ -67,20 +68,20 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 	
-	/*Visit each statement in a block and make constant propagation */
+	/**Visit each statement in a block and make constant propagation */
 	public Expression visit(Block stmt){
 		for(Statement s: stmt.getStatements())//visit each block's statetement
 			s.accept(this);
 		return null;
 	}
 	
-	/*Nothing for doing in break statement*/
+	/**Nothing for doing in break statement*/
 	public Expression visit(BreakStmt stmt){return null;}
 	
-	/*Nothing for doing in continue statement*/
+	/**Nothing for doing in continue statement*/
 	public Expression visit(ContinueStmt stmt){return null;}
 
-	/*Visit initialValue and finalValue expression in ForStatement and make constant propagation. 
+	/**Visit initialValue and finalValue expression in ForStatement and make constant propagation. 
 	Then, if is necessary, make a constant propagation in For's block */
 	public Expression visit(ForStmt stmt){
 		Expression begin= stmt.getInitialValue().accept(this);//constant propagation in initial expression
@@ -97,10 +98,10 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 
-	/*Nothing for doing in sec Statement*/
+	/**Nothing for doing in sec Statement*/
 	public Expression visit(SecStmt stmt){return null;}
 
-	/*Visit while condition and make constant progagation. Then, if is necessary make a constant propagation
+	/**Visit while condition and make constant progagation. Then, if is necessary make a constant propagation
 	in while's body */
 	public Expression visit(WhileStmt stmt){
 		Expression e= stmt.getCondition().accept(this);//constant propagation in while condition
@@ -115,7 +116,7 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 
-	/* Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
+	/**Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
 	for the new list that contain all expression that can be resolve in compilation time solve.*/
 	public Expression visit(MethodCallStmt stmt){
 		List<Expression> args= new LinkedList<Expression>();
@@ -126,7 +127,7 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 
-	/* Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
+	/** Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
 	for the new list that contain all expression that can be resolve in compilation time solve.*/
 	public Expression visit(ExterninvkCallStmt stmt){
 		List<Expression> args= new LinkedList<Expression>();
@@ -137,24 +138,24 @@ for's condition and then will generate code only for reachables sentences.
 		return null;
 	}
 
-//Visit Location
+	//Visit Location
 
-	/*Nothing for doing in VarLocation*/
+	/**Nothing for doing in VarLocation*/
 	public Expression visit(VarLocation var){return var;}
 	
-	/* Visit method's body and make constant propagation*/
+	/**Visit method's body and make constant propagation*/
 	public Expression visit(MethodLocation method){
 		method.getBody().accept(this);
 		return method;
 	}
 	
-	/*Nothing for doing in ArrayLocation*/
+	/**Nothing for doing in ArrayLocation*/
 	public Expression visit(ArrayLocation array){return array;}
 	
-	/*Nothing for doing in RefVarLocation*/
+	/**Nothing for doing in RefVarLocation*/
 	public Expression visit(RefVarLocation var){return var;}
 	
-	/*Visit refArrayLocation expression and make constant propagation here*/
+	/**Visit refArrayLocation expression and make constant propagation here*/
 	public Expression visit(RefArrayLocation array){
 		Expression e=array.getExpression().accept(this);
 		array.setExpression(e);
@@ -240,30 +241,7 @@ for's condition and then will generate code only for reachables sentences.
 	}
 }
 
-	private Expression lazzyLogicalOpPropConst(BinOpExpr expr){
-		Expression lo=expr.getLeftOperand().accept(this);
-		Expression ro= expr.getRightOperand();
-		if (lo instanceof BooleanLiteral)
-			switch(expr.getOperator()){	
-				case AND:
-						if (((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
-							ro=expr.getRightOperand().accept(this);
-							return ro;
-					 	}else{//value of this expression will be false
-					 		return lo; 
-					 	}					
-				case OR:
-						if (!((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
-							ro=expr.getRightOperand().accept(this);
-							return ro;
-					 	}else{//value of this expression will be true
-					 		return lo; 
-					 	}	
-		}
-		return expr;
-	}
-
-	/* Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
+	/**Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
 	for the new list that contain all expression that can be resolve in compilation time solve.*/		
 	public Expression visit(ExterninvkCallExpr expr){
 		List<Expression> args= new LinkedList<Expression>();
@@ -274,7 +252,7 @@ for's condition and then will generate code only for reachables sentences.
 		return expr;
 	}
 	
-	/* Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
+	/**Visit each arguments in Method invocation, and make constant propagation. Then reemplaze the original list,
 	for the new list that contain all expression that can be resolve in compilation time solve.*/
 	public Expression visit(MethodCallExpr expr){
 		List<Expression> args= new LinkedList<Expression>();
@@ -340,5 +318,28 @@ for's condition and then will generate code only for reachables sentences.
 		Float f= new Float(2.0);
 		System.out.println(e.accept(new ConstPropVisitor()).toString());
 		System.out.println(f.equals(i.floatValue()));
+	}
+	
+	private Expression lazzyLogicalOpPropConst(BinOpExpr expr){
+		Expression lo=expr.getLeftOperand().accept(this);
+		Expression ro= expr.getRightOperand();
+		if (lo instanceof BooleanLiteral)
+			switch(expr.getOperator()){	
+				case AND:
+						if (((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
+							ro=expr.getRightOperand().accept(this);
+							return ro;
+					 	}else{//value of this expression will be false
+					 		return lo; 
+					 	}					
+				case OR:
+						if (!((BooleanLiteral)lo).getValue()){//value of this expression will depend of ro only
+							ro=expr.getRightOperand().accept(this);
+							return ro;
+					 	}else{//value of this expression will be true
+					 		return lo; 
+					 	}	
+		}
+		return expr;
 	}
 }

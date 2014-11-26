@@ -1,14 +1,17 @@
+/**
+*	Class for drive break and Continue checker, concrete visitor
+*	@author:Cornejo-Politano-Raverta.
+*/
 package ctds_pcr.semcheck;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import ctds_pcr.ASTVisitor;
 import ctds_pcr.ast.*;
 import ctds_pcr.error.Error; // define class error
 import java.util.*;
 
-// break checker, concrete visitor 
+ 
 public class BreakContinueCheckVisitor implements ASTVisitor<Boolean> {
 private List<Error> errors;
 
@@ -16,7 +19,7 @@ private List<Error> errors;
 		errors= new LinkedList<Error>();
 	}
 
-//visit program
+/**visit program*/
 	public Boolean visit(Program prog){
 		for(MethodLocation m: prog.getMethods()){
 			m.accept(this);
@@ -24,7 +27,7 @@ private List<Error> errors;
 		return false;
 	}
 
-// visit statements
+/**visit statements*/
 	public Boolean visit(AssignStmt stmt){return false;}
 	public Boolean visit(ReturnStmt stmt){return false;}
 	public Boolean visit(IfStmt stmt){
@@ -56,23 +59,23 @@ private List<Error> errors;
 	public Boolean visit(MethodCallStmt stmt){return false;}
 	public Boolean visit(ExterninvkCallStmt stmt){return false;}
 
-//Visit Location
+/**Visit Location*/
 	public Boolean visit(VarLocation var){return false;}
 	public Boolean visit(MethodLocation method){return method.getBody().accept(this);}
 	public Boolean visit(ArrayLocation array){return false;}
 	public Boolean visit(RefVarLocation array){return false;}
 	public Boolean visit(RefArrayLocation array){return false;}
 	
-// visit expressions
+/** visit expressions*/
 	public Boolean visit(BinOpExpr expr){return false;}
 	public Boolean visit(ExterninvkCallExpr expr){return false;}
 	public Boolean visit(MethodCallExpr expr){return false;}	
 	public Boolean visit(UnaryOpExpr expr){return false;}	
-	public Boolean visit(LabelExpr expr){//Nunca voy a entrar a este metodo, mi lenguaje no tiene labels
+	public Boolean visit(LabelExpr expr){/**Never going to get to this method, my language has no labels*/
 		return false;
 	}
 
-// visit literals	
+/** visit literals*/	
 	public Boolean visit(IntLiteral lit){return false;}
 	public Boolean visit(FloatLiteral lit){return false;}
 	public Boolean visit(BooleanLiteral lit){return false;}

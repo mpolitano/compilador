@@ -1,26 +1,25 @@
-/*
-	Class that implements a visitor for tour AST
-	and make type checking.
- */
+/**
+*	Class that implements a visitor for tour AST
+*	and make type checking.
+*	@author: Cornejo-Politano-Raverta
+*/
+
 package ctds_pcr.semcheck;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import ctds_pcr.ASTVisitor;
 import ctds_pcr.ast.*;
 import ctds_pcr.error.Error; // define class error
 import java.util.*;
-
-// type checker, concrete visitor 
+ 
 public class TypeCheckVisitor implements ASTVisitor<Type> {
 	
 	private List<Error> errors;
-
 	public TypeCheckVisitor(){
 		errors= new LinkedList<Error>();
 	}
-//visit program
+	/**visit program*/
 	public Type visit(Program prog){
 		for(Location l: prog.getFields()){
 			l.accept(this);
@@ -31,7 +30,7 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 		return Type.UNDEFINED;
 	};
 
-// visit statements
+	/** visit statements*/
 	public Type visit(AssignStmt stmt){
 		Type locationType= stmt.getLocation().getType();
 		if (stmt.getLocation() instanceof RefArrayLocation){locationType=locationType.fromArray();}
@@ -262,11 +261,6 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 	public Type visit(BooleanLiteral lit){return lit.getType();};
 	public Type visit(StringLiteral lit){return lit.getType();};
 
-
-	private void addError(AST a, String desc) {
-		errors.add(new Error(a.getLineNumber(), a.getColumnNumber(), desc));
-	}
-
 	public List<Error> getErrors() {
 		return errors;
 	}
@@ -277,6 +271,11 @@ public class TypeCheckVisitor implements ASTVisitor<Type> {
 
 
 //Metodos Auxiliares
+
+
+	private void addError(AST a, String desc) {
+		errors.add(new Error(a.getLineNumber(), a.getColumnNumber(), desc));
+	}
 
 	private Type getTypeArithBinOp(Type lo, Type ro){
 		switch(lo){
