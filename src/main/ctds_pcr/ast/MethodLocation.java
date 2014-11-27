@@ -17,7 +17,6 @@ public class MethodLocation extends Location {
 	private List<Location> formalParameters;//List of formal parameters
 	private Block body;//Method's body
 	private int localOffset;
-	private boolean hayFloat;
 	
 	/**
 	 * Constructor of a MethodLocation object.
@@ -104,7 +103,7 @@ public class MethodLocation extends Location {
 	}
 
 //method for reports how many local location has this method	
-	public int amoutLocalLocation(){
+	public int amountLocalLocation(){
 			return (-1 * (localOffset)/4); //Calc amount local location
 	}
 
@@ -112,23 +111,13 @@ public class MethodLocation extends Location {
 	public int newLocalLocation(){
 		localOffset=localOffset-4;
 		return localOffset;
-	}
-	
-	/**
-	* Method to set the flag of float. 
-	*
-	* @param a - boolean flag.
-	*/			
-	public void setFloat(boolean a){
-		this.hayFloat=a;
-	}
+	}		
 
-	/**
-	* Method to get the flag of float. 
-	*
-	* @return boolean flag.
-	*/	
-	public boolean getFloat(){
-		return this.hayFloat;
-	}			
+	public int amountStackLocation(){ //IF OFFSET >0 WILL BE PASSED INTO STACK
+		int count=0;
+		for (Location l: formalParameters)
+			if(l.getOffset()>0)
+				count++;
+		return count;
+	}
 }

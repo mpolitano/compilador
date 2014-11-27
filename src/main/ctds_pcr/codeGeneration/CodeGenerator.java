@@ -53,6 +53,7 @@ public class CodeGenerator{
 			case AddI: genAddIAsmCode(instr);break;
 			case SubI: genSubIAsmCode(instr);break;
 			case MinusI: genMinusIAsmCode(instr); break;
+			case MinusF: genMinusFAsmCode(instr); break;
 			case Ret: genRetAsmCode(instr);break;
 			case ParamPush: genPushAsmCode(instr);break;
 			case ParamPop: genPopAsmCode(instr);break;
@@ -100,7 +101,7 @@ public class CodeGenerator{
 	private static void genBlockBeginAsmCode(TAInstructions instr){
 		if (frameOptimization){
 			IntLiteral offset= (IntLiteral)instr.getOp1();
-				switch(offset.getValue()%16){
+				switch(offset.getValue()%16){//for 16 bytes aling stack 
 					case 4: offset.setValue(offset.getValue()+12);
 							break;
 					case 8: offset.setValue(offset.getValue()+8);
@@ -135,28 +136,46 @@ public class CodeGenerator{
 		pw.println(".text");
 		pw.println(".globl "+ m.getId());
 		pw.println(m.getId() + ":");
-		int numEnter= m.amoutLocalLocation()*4;
+		/*aling frame, remeber that the inovcator can desalign frame */
+		int numEnter= (m.amountLocalLocation()*4) + (m.amountStackLocation()*4);
 		int suma;
-
 			if (!frameOptimization){
 				switch(numEnter%16){
-					case 4: suma=numEnter+12;
+					case 4: suma=numEnter+12; //for align frame in 16 byte
+							suma=suma -(m.amountStackLocation()*4);//sub bytes used by invocator
 							pw.println("enter $"+ suma+",$0");break;
-					case 8: suma=numEnter+8; 
+					case 8: suma=numEnter+8; //for align frame in 16 byte
+							suma=suma -(m.amountStackLocation()*4);//sub bytes used by invocator
 							pw.println("enter $"+ suma+",$0");break;
-					case 12:suma=numEnter+4;
+					case 12:suma=numEnter+4;//for align frame in 16 byte
+							suma=suma -(m.amountStackLocation()*4);//sub bytes used by invocator
 							pw.println("enter $"+ suma+",$0");break;
-					case 0: pw.println("enter $"+ numEnter+",$0");break; 	
+					case 0: numEnter=numEnter -(m.amountStackLocation()*4);//for align frame in 16 byte
+							pw.println("enter $"+ numEnter+",$0");break; 	
 				}
 			} 
-			else
-				pw.println("enter $0,$0"); 
+			else{
+				numEnter= m.amountStackLocation()*4;
+				switch(numEnter%16){ //for align frame when the invocator desaling frame
+					case 4: suma=12; //for align frame in 16 byte
+							pw.println("enter $"+ suma+",$0");break;
+					case 8: suma=8; //for align frame in 16 byte
+							pw.println("enter $"+ suma+",$0");break;
+					case 12:suma=4;//for align frame in 16 byte
+							pw.println("enter $"+ suma+",$0");break;
+					case 0: pw.println("enter $0,$0");break; 
+				} 
+				
+			}
 	}
 
 	/** method that close a method*/
 	private static void genMethodDeclEndAsmCode(TAInstructions instr){
 		MethodLocation m= (MethodLocation) instr.getOp1();
-		if (m.amoutLocalLocation()>0)pw.println("mov %rbp, %rsp");//pop local location
+		int numEnter;
+		if (m.amountLocalLocation()>0) 
+			pw.println("mov %rbp, %rsp");//pop local location
+		//make a epilogo
 		pw.println("leave");
 		pw.println("ret");
 
@@ -198,13 +217,24 @@ public class CodeGenerator{
 		}
 	}
 
-	/** Method for change the sign the float or int*/	
+	/** Method for change the sign the int*/	
 	private static void genMinusIAsmCode(TAInstructions instr){
 		Expression expr= instr.getOp1();
 		RefLocation l= instr.getDestination();
 			pw.println("movl "+expr.toAsmCode()+", %eax"); //mov op1 to eax to do an arithmetic operation
 			pw.println("negl %eax"); //denies the number
 			pw.println("movl %eax, "+l.toAsmCode()); //mov the result to destination
+	}
+
+	/** Method for change the sign the float.*/	
+	private static void genMinusFAsmCode(TAInstructions instr){
+		Expression expr= instr.getOp1();
+		RefLocation l= instr.getDestination();
+			pw.println("movl $0, %eax");
+			pw.println("cvtsi2ss %eax , %xmm1 ");
+			pw.println("movss "+ expr.toAsmCode()+", %xmm0");
+			pw.println("subss %xmm1 , %xmm0");
+			pw.println("movss %xmm0, "+l.toAsmCode()); //mov the result to destination
 	}
 
 	/** Method for add a integer*/

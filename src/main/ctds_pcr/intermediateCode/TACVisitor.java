@@ -12,7 +12,7 @@ public class TACVisitor implements ASTVisitor<Expression>{
 
 private List<TAInstructions> TAC;
 private List<TAInstructions> listString; //List for save the string used as parameter in externivink calls.
-private Set<Float> setFloatLiteral; //set for drive float literal expression
+private Set<String> setFloatLiteral; //set for drive float literal expression
 private int stringLabel; //amount the string label declared 
 private int line; //number the line
 private Stack<LabelExpr> loopsEndLabel; //for drive break statement
@@ -31,7 +31,7 @@ public TACVisitor(){
 	loopsLabel= new Stack<LabelExpr>();
 	loopsEndLabel= new Stack<LabelExpr>();
 	listString= new LinkedList<TAInstructions>();
-	setFloatLiteral=new HashSet<Float>();
+	setFloatLiteral=new HashSet<String>();
 	stackBlocks= new Stack<Block>();
 	firstBlockMethod=false;
 }
@@ -408,7 +408,8 @@ public TACVisitor(){
 		addInstr(new TAInstructions(TAInstructions.Instr.BlockBegin, method.getBody().getOffset()));
 		firstBlockMethod=true;
 		RefLocation from,dest;
-		for(Location l:method.getFormalParameters()){
+		//loop for save parameters passed into registers to stack.
+		for(Location l:method.getFormalParameters()){ 
 				if (l.getType()==Type.FLOAT && coprocessorRegister<=8){
 					from= new RefVarLocation("SaveParam",-1,-1,l.getType(),coprocessorRegister);
 					coprocessorRegister++;
@@ -416,7 +417,7 @@ public TACVisitor(){
 					dest.setType(l.getType());//propagate de types
 					addInstr(new TAInstructions(TAInstructions.Instr.SaveParam,from,dest)); 
 				}else
-						if (commonRegister<=6){
+						if (commonRegister<=6 && l.getType()!=Type.FLOAT){
 							from= new RefVarLocation("SaveParam",-1,-1,l.getType(),commonRegister);
 							commonRegister++;
 							dest= new RefVarLocation((VarLocation)l,-1,-1);
@@ -811,7 +812,10 @@ public TACVisitor(){
 				stackBlocks.peek().addField(temp.getLocation()); //add a new location to a block that cointaint it.
 				switch (operator){
 					case MINUS: 
-								addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
+								if(value.getType()==Type.FLOAT) 
+									addInstr(new TAInstructions(TAInstructions.Instr.MinusF,value,temp));//save sentence for calc this value
+								else //type int
+									addInstr(new TAInstructions(TAInstructions.Instr.MinusI,value,temp));//save sentence for calc this value
 								break; 		
 					case NOT:
 								addInstr(new TAInstructions(TAInstructions.Instr.Not,value,temp));//save sentence for calc this value								
@@ -837,8 +841,8 @@ public TACVisitor(){
 	public Expression visit(FloatLiteral lit){
 		StringLiteral value=new StringLiteral(lit.getStringValue(),-1,-1);
 		String label=lit.toAsmCode();//label for FloatLiteral.
-		value.setValue(label+":\n \t"+".float "+lit.getValue());
-		if(setFloatLiteral.add(lit.getValue())) //for make label only one time for each float value
+		value.setValue(label+":\n \t"+".float "+ Float.toString(lit.getValue()));
+		if(setFloatLiteral.add(value.toString())) //for make label only one time for each float value
 			listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,value));
 		return lit;
 	}
@@ -947,8 +951,8 @@ public TACVisitor(){
 		//Create code for report error in execution time
 		StringLiteral errorMsj= new StringLiteral("",-1,-1);
 		String label=".StringLiteral"+Integer.toString(stringLabel);//label for StringLiteral	
-		int lineNumber=dir.getLineNumber() +1; 			
-		errorMsj.setValue(label+":\n \t"+".string \"Invalid array position access in line: " + lineNumber +"\"");
+		int lineNumber=dir.getLineNumber() +1; 
+		errorMsj.setValue(label+":\n \t"+".string \"Invalid array position access in line: " + lineNumber + "\\n \"");
 		listString.add(new TAInstructions(TAInstructions.Instr.PutStringLiteral,errorMsj));
 		stringLabel++;	
 		//call printf	

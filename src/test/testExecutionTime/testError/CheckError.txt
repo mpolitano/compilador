@@ -1,1 +1,0 @@
-Invalid array position access in line: 6

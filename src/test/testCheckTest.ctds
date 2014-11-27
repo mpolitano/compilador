@@ -343,9 +343,27 @@ boolean initBoolean(){
 	return a;
 }
 
+//test parametros
+void onceparametrosInt(int a, int b, int c, int d, int e, int f, int g, int h,int x, int z, int w){
+      int c1;
+      c1 = a + b + c + d + e + f + g + h+x+z+w;
+      externinvk("printf",void,"%d\n",c1);
+      return; 
+  } 
 
-
-
+ void onceparametrosFloat(float a, float b, float c, float d, float e, float f, float g, float h,float x, float z, float w){
+      float c1;
+      c1 = a + b + c + d + e + f + g + h+x+z+w;
+      externinvk("print_float",void,c1);
+      return; 
+  } 
+     
+  void dieciseisparametrosMixtos(int a, float b, int c, float d, int e, float f, int g, float h,int i, float j,int k, float l,float m, float n,float o,int p){
+      float c2;
+      c2 = a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p;
+      externinvk("print_float",void,c2);
+      return; 
+  } 
 // funcion main 
 void main (){
        
@@ -506,6 +524,13 @@ void main (){
 	}
 	externinvk("print_float",void,initFloat());
 	externinvk("print_int",void,initBoolean());
+	externinvk("print_string",void,"---------------------------------------------------------");
+
+//test parametros
+	externinvk("print_string",void,"test parametros----------------------------------"); 
+	onceparametrosInt(1,2,3,4,5,6,7,8,9,10,11);
+	onceparametrosFloat(1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0);
+	dieciseisparametrosMixtos(1,2.0,3,4.0,5,6.0,7,8.0,9,10.0,11,12.0,13.0,14.0,15.0,16);
 	externinvk("print_string",void,"---------------------------------------------------------");
 }// endmain
 

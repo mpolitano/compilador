@@ -29,5 +29,8 @@ java Ctds pathArchivoACompilar pathDestino flags desde el directorio  /compilado
 Luego deberá utilizar gcc para generar código ejecutable:
 gcc pathDestion -o destinoEjecutable
 
+En compilador/src/main se encuentra disponible un script executeTest.sh que corre una bateria de test del compilador.
+Se ejecuta desde la carpeta donde se encuentra con el siguiente comando: sh executeTest.sh
+
 
 
