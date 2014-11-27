@@ -48,6 +48,11 @@ float get_float(){
 void print_float(float x){
        printf("%f\n",x);	
 	}
+
+// imprime dos reales en la salida
+void print_float2(char cad[30],float x,float y){
+       printf(cad,x,y);	
+	}
 	
 // imprime un string en la salida	
 void print_string(char *s){
