@@ -1,0 +1,33 @@
+******************* INTRUCCIONES PARA EL CORRECTO USO DEL COMPILADOR C-TDS-PCR *******************
+
+Compilación del código fuente del compilador
+
+Para compilar el Compilador C-TDS-PCR dispone de un script en /compilador/src/main/ llamado compileC-TDS-PCR.sh. 
+Ejecutar con sh compileC-TDS-PCR.sh desde linea de comando. 
+
+Uso del Compilador:
+El compilador se usa desde /compilador/src/main con ./ctds-PCR pathArchivoACompilar flags
+*El path del archivo a compilar debe conter .ctds 
+Los flags habilitados son:
+-f: Ejecución del compilador con optimización del frame. 
+-pu: Ejecución del compilador con poda de cógigo inalcanzable.
+-pc: Ejecución del compilador ocn la optimización de propagación de constantes.
+-o: Ejecución del compilador con todas las optimizaciones implementadas.
+o ninguno para indicar el codigo sin optimizaciones.
+
+Luego en el directorio donde se encuentra el archivo original .ctds encontrá el ejecutable
+bajo el mismo nombre sin el .ctds. 
+
+Por defecto el compilador linkea con la libreria standard del lenguaje C-TDS: libTestCTDS.c  
+
+Alternativamente puede ejecutar el compilador de la siguiente manera:
+java Ctds pathArchivoACompilar pathDestino flags desde el directorio  /compilador/src/
+
+*Donde pathDestino sera el lugar donde se almacenará el código assembler x86-64.
+*Los flags son idems a los mencionados anteriormente
+
+Luego deberá utilizar gcc para generar código ejecutable:
+gcc pathDestion -o destinoEjecutable
+
+
+
