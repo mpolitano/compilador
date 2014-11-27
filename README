@@ -1,4 +1,4 @@
-******************* INTRUCCIONES PARA EL CORRECTO USO DEL COMPILADOR C-TDS-PCR *******************
+**** INTRUCCIONES PARA EL CORRECTO USO DEL COMPILADOR C-TDS-PCR ****
 
 Compilación del código fuente del compilador
 
@@ -21,7 +21,7 @@ bajo el mismo nombre sin el .ctds.
 Por defecto el compilador linkea con la libreria standard del lenguaje C-TDS: libTestCTDS.c  
 
 Alternativamente puede ejecutar el compilador de la siguiente manera:
-java Ctds pathArchivoACompilar pathDestino flags desde el directorio  /compilador/src/
+java Ctds pathArchivoACompilar pathDestino flags desde el directorio  /compilador/src/main
 
 *Donde pathDestino sera el lugar donde se almacenará el código assembler x86-64.
 *Los flags son idems a los mencionados anteriormente
